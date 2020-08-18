@@ -1,0 +1,92 @@
+/* HTML
+
+<div title="CustomTab"
+
+elementSetup="Element Name =(html name)| Element Extra =(extra data based on type)| Element Type =(the type of the element)| Element ID =(Numerical ID)"
+
+moodButtonSetup="Name =(Name/text of button)| ID =(Numerical ID)| toEnable =(ID-zIndex,posX,posY (seperate elements by space) ID-zIndex,posX,posY)| toDisable =(same as toEnable)| enabled =(true or false)| disableSelf =(true or false)| OnClick (optional) =">
+
+</div>
+
+*/
+
+
+
+/* JAVASCRIPT
+
+//run creation on page load
+//rename functions to be unique
+//I.E project = initiateTab"Project"
+//and setupTab"Project"
+(function initiateTab() {
+	
+	if (typeof cEventListener != "undefined")
+	{
+		cEventListener.generic.addFunctionToWaitingForMessage("afterEventListenerCreation","setupTab()"));
+	}
+	else
+	{
+		setTimeout(function() { initiateTab(); }, 10);
+	}
+	
+})();
+
+function setupTab()
+{
+
+	//store element and button data
+	var _elementData = {
+		name : "",
+		extra : "",
+		type : "",
+		id : 0
+	};
+
+	var _buttonData = {
+		name : "",
+		id : 0,
+		elementsToEnable : [],
+		elementsToDisable : [],
+		enabledOnDefault : false,
+		canDisableSelf : false,
+		onClick :  null
+	};
+
+	//create elements/buttons and then modify data
+	//elementID and buttonID auto increments so 
+    //no need to modify id after initial setup,
+    // just order creation correctly
+		
+	//create elements
+	_elementData.name = "insert html name";
+	_elementData.type = "insert type of element";
+	_elementData.extra = "insert extra data based on type";
+	_elementData.id = insert numerical ID;
+	_elementData.requiredToEnable = "insert number";
+	createElement(_elementData);
+		
+	//create buttons
+	//elements to enable/disable setup as follows
+	//"elementID" + (extra data "-") + (extra data seperator ",")
+	//extra data =  Z Index (layer), X position, Y position
+	//extra data is optional but order must be followed so if you 
+	//want to modify Y position you also have to modify
+	//Z Index and X Position, Z Index default is 10000
+	//You can modify Z index indepentant to X/Y Position but
+	//X/Y positions are a bundle, supplying both is neccesary
+	//if you supply a disable with a zIndex it will stay visible
+
+	_buttonData = {
+		name : "insert name/text of button",
+		id : insert numerical ID,
+		elementsToEnable : ["ID-zIndex,posX,posY", "ID-zIndex,posX,posY", ... etc],
+		elementsToDisable : ["ID-zIndex,posX,posY", "ID-zIndex,posX,posY", ... etc],
+		enabledOnDefault : true or false,
+		canDisableSelf : true or false,
+		onClick :  null or "xxxxxx"
+	};
+	createButton(_buttonData);
+	
+}
+
+*/
