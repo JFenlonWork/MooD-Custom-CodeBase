@@ -412,7 +412,7 @@ function cElementModifyFunctions()
                         var _toEnable = (_enabled.message === "enable" || _enabled.message === true);
     
                         //modify the element's extras I.E position and zIndex
-                        cElement.modify.modifyElementExtras(htmlObject[obj], htmlOverlayPanels[i], _toEnable, _zIndex, _posX, _posY);
+                        cElement.modify.modifyElementExtras(_element, htmlObject[obj], htmlOverlayPanels[i], _messageData, _toEnable);
     
                         //check if the element now has a different active status and modify
                         if (_enabled.message == "enable" && !_element.elementEnabled || 
@@ -439,35 +439,122 @@ function cElementModifyFunctions()
         return false;
     }
 
-    this.modifyElementExtras = function modifyElementExtras(htmlObject, htmlOverlayPanel, _enabled, _zIndex, _posX, _posY)
+    this.modifyElementExtras = function modifyElementExtras(element, htmlObject, htmlOverlayPanel, _messageData, _enabled)
     {
-        //check if zIndex supplied and set to that if so
-        if (_zIndex && (_zIndex != "disable" && _zIndex != "ignore"))
+        //check custom css exists and message data
+        //has a custom opacity transition
+        if (cCss && _messageData.opacityTime)
         {
-            //change html style to be visiblie and put set _zIndex
+            //setup opacity transition data
+            var _transData = 
+            new cCss.cssTransitionData(
+                "opacity",
+                ((_messageData.opacityTime || 0) / 1000).toString() + "s",
+                _messageData.opacityTiming || "linear",
+                ((_messageData.opacityDelay || 0) / 1000).toString() + "s",
+                );
+
+            //add the transition data to the overylay panel
+            cCss.transition.addTransition(htmlOverlayPanel, _transData);
+        }
+
+        //check if the element is to be enabled or disabled
+        if (_enabled)
+        {
+            //change html style to be visiblie and set zIndex to default
+            htmlOverlayPanel.style.opacity = 100;
             htmlOverlayPanel.style.visibility = "visible";
-            htmlOverlayPanel.style.zIndex = _zIndex;
+            htmlOverlayPanel.style.zIndex = 10000;
         }
         else
         {
-            if (_enabled) 
+            //change html style to be visiblie and set zIndex to default
+            htmlOverlayPanel.style.opacity = 0;
+
+            setTimeout(
+                function()
+                {
+                    return (function()
+                    {
+                        if (element.elementEnabled == false)
+                        {
+                            htmlOverlayPanel.style.visibility = "hidden";
+                            htmlOverlayPanel.style.zIndex = 0;
+                        }
+                    })();
+                },
+                (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0)
+            )
+        }
+
+        //check if zIndex supplied and set to that if so
+        if (_messageData.zIndex)
+        {
+            htmlOverlayPanel.style.zIndex = _messageData.zIndex;
+        }
+
+        //setup position variables
+        var _posX = _messageData.posX || "undefined", _posY = _messageData.posY || "undefined";
+
+        //check if _posX exists
+        if (_posX == "undefined")
+        {
+            //check if there is a function to generate _posX
+            if (typeof _messageData.generatePosX == "function")
             {
-                //set zIndex to default 10000
-                htmlOverlayPanel.style.visibility = "visible";
-                htmlOverlayPanel.style.zIndex = 10000;
+                //run the function to generate _posX
+                _posX = _messageData.generatePosX();
             }
-            //change html style to be hidden and put element below unless zIndex supplied
             else
             {
-                htmlOverlayPanel.style.visibility = "hidden";
-                htmlOverlayPanel.style.zIndex = "0";
+                //set _posX to null as both it and
+                //a function to generate it don't exist
+                _posX = null;
             }
         }
+
+       //check if _posY exists
+       if (_posY == "undefined")
+       {
+           //check if there is a function to generate _posY
+           if (typeof _messageData.generateposY == "function")
+           {
+               //run the function to generate _posY
+               _posY = _messageData.generateposY();
+           }
+           else
+           {
+               //set _posY to null as both it and
+               //a function to generate it don't exist
+               _posY = null;
+           }
+       }
         
         //check if position supplied, if so set them up
         if (_posX && _posY)
         {
             htmlOverlayPanel.style.position = "absolute";
+
+            //check custom css exists and message data
+            //has a custom position transition
+            if (cCss && _messageData.positionMoveTime)
+            {
+                //setup position transition data
+                var _transData = 
+                    new cCss.cssTransitionData(
+                        "left",
+                        ((_messageData.positionMoveTime || 0) / 1000).toString() + "s",
+                        _messageData.positionTiming || "linear",
+                        ((_messageData.positionDelay || 0) / 1000).toString() + "s",
+                        );
+
+                //add transition data to "left" 
+                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+
+                //add same transition data to "top"
+                _transData.transitionProperty = "top";
+                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+            }
             
             //class scroll seems to be the object itself vs the surrounding div
             var scroller = $(htmlObject).children(".scroller");

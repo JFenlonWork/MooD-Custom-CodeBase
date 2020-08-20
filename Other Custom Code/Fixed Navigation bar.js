@@ -108,7 +108,7 @@ function navigationBarFixer()
             //update the navigation bar transforms
             for (var i = 0; i < _navBar.navBarItems.length; i++)
             {
-                cCss.Transform.modifyTransformVariables(_navBar.navBarItems[i], "scale", [_scaler.x, _scaler.y]);
+                cCss.transform.modifyTransformVariables(_navBar.navBarItems[i], "scale", [_scaler.x, _scaler.y]);
             }
         }
     }

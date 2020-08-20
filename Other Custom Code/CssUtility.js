@@ -6,13 +6,32 @@
 		Any miscellaneous css functions
 */
 
-window.cCss = new function customCSS()
+window.cCss = window.cCss || new function customCSS()
 {
-	
-	//function/classes
-	this.Transform = new customCssTransformFunctions();
-	this.Transition = new customCssTransitionFunctions();
+	//====DATA TYPES====//
+	this.dataTypes = new cCssDataTypes();
 
+	this.CssTransitionData = this.dataTypes.cssTransitionData.prototype;
+	this.cssTransitionData = this.dataTypes.cssTransitionData;
+	
+	//====FUNCTIONS====//
+	this.transform = new customCssTransformFunctions();
+	this.transition = new customCssTransitionFunctions();
+
+}
+
+function cCssDataTypes()
+{
+	//store cssTransitionData
+	this.cssTransitionData = function (_transitionProperty, _transitionDuration,
+										 _transitionTiming, _transitionDelay, _transitionIndex)
+	{
+		this.transitionProperty = _transitionProperty || '';
+		this.transitionDuration = _transitionDuration || 0;
+		this.transitionTiming = _transitionTiming || "ease";
+		this.transitionDelay = _transitionDelay || 0;
+		this.transitionIndex = _transitionIndex || 0;
+	}
 }
 
 //hold all transform functions
@@ -31,7 +50,7 @@ function customCssTransformFunctions()
 				var _values = _values || [];
 
 				//grab previous transform variables
-				var _prevTransformVars = cCss.Transform.returnTransformVariables(_object, _type);
+				var _prevTransformVars = cCss.transform.returnTransformVariables(_object, _type);
 				
 				//setup transform variables
 				var _transform = _prevTransformVars.previous + _type + "(";
@@ -127,21 +146,10 @@ function customCssTransformFunctions()
 //hold all transition functions
 function customCssTransitionFunctions()
 {
-	//store cssTransitionData
-	this.cssTransitionData = function (_transitionProperty, _transitionDuration,
-										 _transitionTiming, _transitionDelay, _transitionIndex)
-	{
-		this.transitionProperty = _transitionProperty || '';
-		this.transtionDuration = _transitionDuration || 0;
-		this.transitionTiming = _transitionTiming || "ease";
-		this.transitionDelay = _transitionDelay || 0;
-		this.transtionIndex = _transitionIndex || 0;
-	}
-
 	//add transition onto object
 	this.addTransition = function (_object, _transitionData)
 	{
-		if (_transtionData)
+		if (_transitionData)
 		{
 			//remove previous transition of same type
 			this.removeTransition(_object, _transitionData.transitionProperty);
@@ -151,20 +159,28 @@ function customCssTransitionFunctions()
 			{
 				if (_object.style)
 				{
-					if (_object.style.transition != '')
+					if (_object.style.transition != "")
 					{
 						//add transition onto end of transitions
 						_object.style.transitionProperty += ", " + _transitionData.transitionProperty;
-						_object.style.transtionDuration += ", " + _transitionData.transitionDuration;
+						_object.style.transitionDuration += ", " + _transitionData.transitionDuration;
 						_object.style.transitionTimingFunction += ", " + _transitionData.transitionTiming;
 						_object.style.transitionDelay += ", " + _transitionData.transitionDelay;					
+					}
+					else
+					{
+						//set transitions to transition
+						_object.style.transitionProperty = _transitionData.transitionProperty;
+						_object.style.transitionDuration = _transitionData.transitionDuration;
+						_object.style.transitionTimingFunction = _transitionData.transitionTiming;
+						_object.style.transitionDelay = _transitionData.transitionDelay;	
 					}
 				}
 			}
 		}
 	}
 
-	//remove transtion on object
+	//remove transition on object
 	this.removeTransition = function (_object, _transitionType)
 	{
 		var transIndex = this.getTransition(_object, _transitionType)
@@ -200,7 +216,7 @@ function customCssTransitionFunctions()
 				{
 					//add object onto end of transition variable
 					_object.style.transitionProperty += _transitionProperty[i] + _endString;
-					_object.style.transtionDuration += _transitionDuration[i] + _endString;
+					_object.style.transitionDuration += _transitionDuration[i] + _endString;
 					_object.style.transitionTimingFunction += _transitionTiming[i] + _endString;
 					_object.style.transitionDelay += _transitionDelay[i] + _endString;
 				}
@@ -226,7 +242,7 @@ function customCssTransitionFunctions()
 					{
 						if (_allTrans[i] == _transitionType)
 						{
-							return new this.cssTransitionData(_allTrans[i],
+							return new cCss.cssTransitionData(_allTrans[i],
 								_object.style.transitionDuration.split(",")[i],
 								_object.style.transitionTimingFunction.split(",")[i],
 								_object.style.transitionDelay.split(",")[i],
