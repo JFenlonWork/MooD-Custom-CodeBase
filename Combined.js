@@ -2646,9 +2646,9 @@ var cElementGroup = window.cElementGroup || new function cElementGroup()
 	this.elementGroupArray = [];
 
     //====DATA TYPES====//
-	this.dataTypes = new cElementDataTypes();
+	this.dataTypes = new cElementGroupDataTypes();
 	
-	this.ElementGroup = this.dataTypes.elementGroup.protype;
+	this.ElementGroup = this.dataTypes.elementGroup.prototype;
 	this.elementGroup = this.dataTypes.elementGroup;
 
 	//====FUNCTIONS====//
