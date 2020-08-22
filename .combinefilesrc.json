@@ -1,0 +1,26 @@
+{
+    "fileGroups": [{
+        "fileGlobs": [
+            "**/*.js"
+        ],
+        "fileHeader": [
+            "/**********************************************************************************",
+            "* This is a concatenation of all the selected files, including files in subfolders.",
+            "* The start and end of each file contains a comment with its name, as well as a",
+            "* print statement.",
+            "***********************************************************************************"
+        ],
+        "includeToc": true,
+        "tocHeader": [
+            "* These are the line numbers for the included files:"
+        ],
+        "tocEntry": "* ${lineNo}",
+        "tocFooter": [
+            "***********************************************************************************/"
+        ],
+        "entryHeader": [""],
+        "entryFooter": [""],
+        "outputFileName": "Combined.js",
+        "fileFooter": []
+    }]
+}
