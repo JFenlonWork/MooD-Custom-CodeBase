@@ -13,10 +13,14 @@ window.cCss = window.cCss || new function customCSS()
 
 	this.CssTransitionData = this.dataTypes.cssTransitionData.prototype;
 	this.cssTransitionData = this.dataTypes.cssTransitionData;
+
+	this.StyleModificationData = this.dataTypes.styleModificationData.prototype;
+	this.styleModificationData = this.dataTypes.styleModificationData;
 	
 	//====FUNCTIONS====//
 	this.transform = new customCssTransformFunctions();
 	this.transition = new customCssTransitionFunctions();
+	this.style = new customCssStyleFunctions();
 
 }
 
@@ -32,13 +36,22 @@ function cCssDataTypes()
 		this.transitionDelay = _transitionDelay || 0;
 		this.transitionIndex = _transitionIndex || 0;
 	}
+
+	//store style data
+	this.styleModificationData = function styleModificationData(_property, _value, _importance, _propertyIndex)
+	{
+		this.property = _property || "";
+		this.value = _value || "";
+		this.importance = _importance || "";
+		this.propertyIndex = _propertyIndex || 0;
+	}
 }
 
 //hold all transform functions
 function customCssTransformFunctions()
 {
 	//get current transform and add onto it
-	this.modifyTransformVariables = function (_object, _type, _values)
+	this.modifyTransformVariables = function modifyTransformVariables(_object, _type, _values)
 	{
 		//check object style exists
 		if (_object)
@@ -99,7 +112,7 @@ function customCssTransformFunctions()
 	}
 
 	//get current transform on object
-	this.returnTransformVariables = function (_object, _type)
+	this.returnTransformVariables = function returnTransformVariables(_object, _type)
 	{
 		//store variables
 		var _ret = {
@@ -147,12 +160,12 @@ function customCssTransformFunctions()
 function customCssTransitionFunctions()
 {
 	//add transition onto object
-	this.addTransition = function (_object, _transitionData)
+	this.addTransition = function addTransition(_object, _transitionData)
 	{
 		if (_transitionData)
 		{
 			//remove previous transition of same type
-			this.removeTransition(_object, _transitionData.transitionProperty);
+			cCss.transition.removeTransition(_object, _transitionData.transitionProperty);
 
 			//check object transform exists
 			if (_object)
@@ -181,9 +194,9 @@ function customCssTransitionFunctions()
 	}
 
 	//remove transition on object
-	this.removeTransition = function (_object, _transitionType)
+	this.removeTransition = function removeTransition(_object, _transitionType)
 	{
-		var transIndex = this.getTransition(_object, _transitionType)
+		var transIndex = cCss.transition.getTransition(_object, _transitionType)
 		
 		//check transition exists
 		if (transIndex != null)
@@ -225,7 +238,7 @@ function customCssTransitionFunctions()
 	}
 
 	//get index of transition property
-	this.getTransition = function (_object, _transitionType)
+	this.getTransition = function getTransition(_object, _transitionType)
 	{
 		//check object transform exists
 		if (_object)
@@ -254,5 +267,94 @@ function customCssTransitionFunctions()
 		}
 
 		return null;
+	}
+}
+
+//hold all style functions
+function customCssStyleFunctions()
+{
+	//add transition onto object
+	this.addStyleProperty = function addStyleProperty(_object, _stylePropertyData)
+	{
+		if (_stylePropertyData)
+		{
+			//remove previous style property of same type
+			cCss.style.removeStyleProperty(_object, _stylePropertyData.property);
+
+			//check object style exists
+			if (_object)
+			{
+				if (_object.style)
+				{
+					var _property = _stylePropertyData.property + ": " + _stylePropertyData.value.toString();
+					
+					if (_stylePropertyData.importance != "")
+					{
+						_property += " " + _stylePropertyData.importance;
+					}
+
+					_property += ";";
+					//add the style property to the object
+					_object.style.cssText += _property;
+				}
+			}
+		}
+	}
+
+	//remove style property on object
+	this.removeStyleProperty = function removeStyleProperty(_object, _property)
+	{
+		var propertyIndex = cCss.style.getProperty(_object, _property)
+		
+		//check transition exists
+		if (propertyIndex != null)
+		{
+			//store all transition data
+			var _properties = _object.style.cssText.split("; ");
+
+			//reset object transition to nothing
+			_object.style = '';
+
+			//loop through all transitions
+			for (var i = 0; i < _properties.length; i++)
+			{
+				var _endString = '; ';
+
+				//check if index is not equal to property being removed
+				if (i != propertyIndex)
+				{
+					//add object onto end of transition variable
+					_object.style.cssText += _properties[i] + _endString;
+				}
+			}
+		}
+	}
+
+	//get index of style property
+	this.getProperty = function getProperty(_object, _styleProperty)
+	{
+		//check object style exists
+		if (_object)
+		{
+			if (_object.style)
+			{
+					//split style up into _allStyle variable
+					var _allStyle = _object.style.cssText.split("; ");
+
+					//loop through all style properties and return _styleProperty index
+					for (var i = 0; i < _allStyle.length; i++)
+					{
+						//substring the property out of the style
+						var currentProperty = _allStyle[i].substring(0, _allStyle[i].indexOf(":"));
+
+						if (currentProperty == _styleProperty)
+						{
+							return i;
+						}
+					}
+			}
+		}
+
+		return -1;
 	}
 }

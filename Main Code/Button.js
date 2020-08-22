@@ -346,41 +346,47 @@ function cButtonGenericFunctions()
 	//function to handle when button listener is registered/deregistered
 	this.buttonRegistered = function buttonRegistered(_successful, _button, _message)
 	{
+		var _registeredMessageType = _message.message.message.type;
+
 		switch(_message.type)
 		{
 			//if listener is listening to deregistered element 
 			case "registerListenerSuccesful":
 			case "degregisterListenerSuccesful":
-				
-				//var listenerElement = cElement.search.getElementID(_message.message.message.message.id);
-				var listenerElement = cElement.search.getElementByListener(_message.message.listener);
 
-				if (listenerElement)
+				if (_registeredMessageType == "listenToElementEnableChange")
 				{
-					if (_successful)
+					
+					//var listenerElement = cElement.search.getElementID(_message.message.message.message.id);
+					var listenerElement = cElement.search.getElementByListener(_message.message.listener);
+
+					if (listenerElement)
 					{
-						if (listenerElement.elementEnabled)
+						if (_successful)
 						{
-							//if element was enabled then increase both max and current count
-							cButton.generic.buttonUpdateElementCount(_button, new cEventListener.basicMessage(null, "increaseBoth"));
+							if (listenerElement.elementEnabled)
+							{
+								//if element was enabled then increase both max and current count
+								cButton.generic.buttonUpdateElementCount(_button, new cEventListener.basicMessage(null, "increaseBoth"));
+							}
+							else
+							{
+								//if element was disabled then increase max count
+								cButton.generic.buttonUpdateElementCount(_button, new cEventListener.basicMessage(null, "increase"));
+							}
 						}
 						else
 						{
-							//if element was disabled then increase max count
-							cButton.generic.buttonUpdateElementCount(_button, new cEventListener.basicMessage(null, "increase"));
-						}
-					}
-					else
-					{
-						if (listenerElement.elementEnabled)
-						{
-							//if element was enabled then decrease both max and current count
-							cButton.generic.buttonUpdateElementCount(_button, new cEventListener.basicMessage(null, "decreaseBoth"));
-						}
-						else
-						{
-							//if element was disabled then decrease max count
-							cButton.generic.buttonUpdateElementCount(_button, new cEventListener.basicMessage(null, "decrease"));
+							if (listenerElement.elementEnabled)
+							{
+								//if element was enabled then decrease both max and current count
+								cButton.generic.buttonUpdateElementCount(_button, new cEventListener.basicMessage(null, "decreaseBoth"));
+							}
+							else
+							{
+								//if element was disabled then decrease max count
+								cButton.generic.buttonUpdateElementCount(_button, new cEventListener.basicMessage(null, "decrease"));
+							}
 						}
 					}
 				}
@@ -478,18 +484,15 @@ function cButtonGenericFunctions()
 		if (_tabElementsToEnable)
 		{
 			//register _tabElementsToEnable to listen to button "elementToggleEnable"
-			//cButton.registration.registerElementToButton(_tabElementsToEnable, button, "listenToElementEnableChange");
 			cButton.registration.registerButton(_tabElementsToEnable, button, "listenToToggleElementToEnableStatus");
 			
 			//register button to listen to _tabElementsToEnable "elementToggleEnable"
-			//cButton.registration.registerButtonToElement(_tabElementsToEnable, button, "listenToToggleElementToEnableStatus");
 			cButton.registration.registerElement(_tabElementsToEnable, button, "listenToElementEnableChange");
 		}
 			
 		if (_tabElementsToDisable)
 		{
 			//register button to listen to _tabElementsToDisable "elementToggleEnable"
-			//cButton.registration.registerButtonToElement(_tabElementsToDisable, button, "listenToToggleElementToDisableStatus");
 			cButton.registration.registerButton(_tabElementsToDisable, button, "listenToToggleElementToDisableStatus");
 		}
 		
@@ -576,19 +579,6 @@ function cButtonRegistrationFunctions()
 					};
 
 					cEventListener.listenerRegistrationQueue.push(_registrationContent);
-					/*
-					//register the button to the element 
-					var _listenerContents = new cEventListener.basicMessage("element", _elementsInfo[a].id);
-					var _listenToContents = new cEventListener.basicMessage("button", _button);
-					var _messageContents = new cEventListener.basicMessage(_type, _elementsInfo[a]);
-
-					cEventListener.listenerRegistrationQueue.push(
-						new cEventListener.listenerQueuerInfo(
-							new cEventListener.basicMessage(_listenerContents, _messageContents),
-							new cEventListener.basicMessage(_listenToContents, _messageContents)
-						)
-					);
-					*/
 				}
 			}
 		}

@@ -111,15 +111,15 @@ function cEventListenerDataTypes()
             if (this.message === Object(this.message))
             {
                 //check that the custom message function exists
-                if (typeof eval("this.message." + _messageFunction) === "function")
+                if (typeof this.message[_messageFunction] === "function")
                 {
                     //invoke custom message function on the message
-                    return eval("this.message." + _messageFunction + ".call(this.message, _messageExtras)");
+                    return this.message[_messageFunction].call(this.message, _messageExtras);
                 }
                 
                 //return the messageFunction as it isn't
                 //a function and is probably a value instead
-                return eval("this.message." + _messageFunction);
+                return this.message[_messageFunction];
             }
             
             //return evaluated message as the
@@ -189,15 +189,14 @@ function cEventListenerDataTypes()
                         var senderListenerData = _currentListener.listeningTo[senderListenerIndex];
 
                         //return the result of the method used to handle this message
-                        return eval(
-                            this.messagesListeningTo[i].evaluateMessage(
-                                "receiveMessage",
-                                {   //sender extra message data
-                                    message: _message,
-                                    sender: _sender,
-                                    senderListener: senderListenerData
-                                }
-                            )
+                        return this.messagesListeningTo[i].evaluateMessage
+                        (
+                            "receiveMessage",
+                            {   //sender extra message data
+                                message: _message,
+                                sender: _sender,
+                                senderListener: senderListenerData
+                            }
                         );
                     }
                 }
@@ -484,8 +483,8 @@ function cEventListenerQueueFunctions()
             //check if message type is the same as _functionType
             if (cEventListener.functionWaitingForMessageQueue[l].type == _functionType)
             {
-                //evaluate the message and invoke the "setupFunction" of that message
-                eval(cEventListener.functionWaitingForMessageQueue[l].evaluateMessage("setupFunction"));
+                //invoke the "setupFunction" of that message
+                cEventListener.functionWaitingForMessageQueue[l].evaluateMessage("setupFunction");
                 cEventListener.functionWaitingForMessageQueue.splice(l,1);
                 l--;
             }
@@ -647,7 +646,7 @@ function cEventListenerSearchFunctions()
         if (registraitonFunction != null)
         {
             //return the queue listener based on _data
-            return eval(cEventListener.listenerRegistrationFunctions[registraitonFunction].evaluateMessage("getRegisterQueueType", _data));
+            return cEventListener.listenerRegistrationFunctions[registraitonFunction].evaluateMessage("getRegisterQueueType", _data);
         }
         
         //return null if no custom type found

@@ -205,7 +205,10 @@ function cElementGenericFunctions()
 
             for (var obj = 0; obj < removeZIndex.length; obj++)
             {
-                $(removeZIndex[obj]).closest(".WebPanelOverlay")[0].style.zIndex = "unset";
+                cCss.style.addStyleProperty($(
+                    removeZIndex[obj]).closest(".WebPanelOverlay")[0],
+                    new cCss.styleModificationData("z-index", "unset")
+                );
             }
 
             //return the newly created element
@@ -385,24 +388,23 @@ function cElementModifyFunctions()
                     
                     //try to find overlay panel if mood object
                     var htmlOverlayPanels = null;
-    
-                    //var messagePanelData = cEventListener.message.findMessageOfType("panelData",_messageData.message);
-                    var messagePanelData = _messageData.panel || null;
 
                     //if message for panel data exists find panelOverlay
-                    if (messagePanelData != null)
+                    if (_messageData["panel"] && typeof _messageData["panel"] === "function")
                     {
-                        htmlOverlayPanels = eval("$(htmlObject[obj])" + messagePanelData);
+                        htmlOverlayPanels = 
+                            _messageData["panel"].call(this, htmlObject[obj]);
                     }
                     else
-                    {	
-                        htmlOverlayPanels = $(htmlObject[obj]).closest(".WebPanelOverlay");
+                    {
+                        htmlOverlayPanels = 
+                            $(htmlObject[obj]).closest(".WebPanelOverlay");
                     }
                     
                     //if not mood object then reset back to html object
-                    if (htmlOverlayPanels.length == 0)
+                    if (typeof htmlOverlayPanels == "undefined" || htmlOverlayPanels.length == 0)
                     {
-                        htmlOverlayPanels.push(htmlObject[obj]);
+                        htmlOverlayPanels = htmlObject[obj];
                     }
     
                     //loop through all panels that need modifiying
@@ -443,19 +445,36 @@ function cElementModifyFunctions()
     {
         //check custom css exists and message data
         //has a custom opacity transition
-        if (cCss && _messageData.opacityTime)
+        if (cCss)
         {
-            //setup opacity transition data
-            var _transData = 
-            new cCss.cssTransitionData(
-                "opacity",
-                ((_messageData.opacityTime || 0) / 1000).toString() + "s",
-                _messageData.opacityTiming || "linear",
-                ((_messageData.opacityDelay || 0) / 1000).toString() + "s",
-                );
+            if (_messageData.opacityTime)
+            {
+                //setup opacity transition data
+                var _transData = 
+                new cCss.cssTransitionData(
+                    "opacity",
+                    ((_messageData.opacityTime || 0) / 1000).toString() + "s",
+                    _messageData.opacityTiming || "linear",
+                    ((_messageData.opacityDelay || 0) / 1000).toString() + "s",
+                    );
 
-            //add the transition data to the overylay panel
-            cCss.transition.addTransition(htmlOverlayPanel, _transData);
+                //add the transition data to the overylay panel
+                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+            }
+            else
+            {
+                //setup opacity transition data
+                var _transData = 
+                new cCss.cssTransitionData(
+                    "opacity",
+                    "0s",
+                    "linear",
+                    "0s",
+                    );
+
+                //add the transition data to the overylay panel
+                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+            }
         }
 
         //check if the element is to be enabled or disabled
@@ -464,33 +483,55 @@ function cElementModifyFunctions()
             //change html style to be visiblie and set zIndex to default
             htmlOverlayPanel.style.opacity = 100;
             htmlOverlayPanel.style.visibility = "visible";
-            htmlOverlayPanel.style.zIndex = 10000;
+            cCss.style.addStyleProperty(htmlOverlayPanel,
+                new cCss.styleModificationData("z-index",
+                    10000
+                )
+            );
         }
         else
         {
             //change html style to be visiblie and set zIndex to default
             htmlOverlayPanel.style.opacity = 0;
+            var currentDelay = (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0);
 
-            setTimeout(
-                function()
+            function opacityChange(_tick)
+            {
+                if (_tick < currentDelay)
                 {
-                    return (function()
+                    if (element.elementEnabled == true)
                     {
-                        if (element.elementEnabled == false)
-                        {
-                            htmlOverlayPanel.style.visibility = "hidden";
-                            htmlOverlayPanel.style.zIndex = 0;
-                        }
-                    })();
-                },
-                (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0)
-            )
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (element.elementEnabled == false)
+                    {
+                        htmlOverlayPanel.style.visibility = "hidden";
+                        cCss.style.addStyleProperty(htmlOverlayPanel,
+                            new cCss.styleModificationData("z-index",
+                                0
+                            )
+                        );
+                    }
+
+                    return false;
+                }
+            }
+            
+            new cTimer.realtimeTimer(opacityChange, true, currentDelay + 1);
         }
 
         //check if zIndex supplied and set to that if so
         if (_messageData.zIndex)
         {
-            htmlOverlayPanel.style.zIndex = _messageData.zIndex;
+            cCss.style.addStyleProperty(htmlOverlayPanel,
+                new cCss.styleModificationData("z-index",
+                    _messageData.zIndex, 
+                    _messageData.zIndexImportance || ""
+                )
+            );
         }
 
         //setup position variables
