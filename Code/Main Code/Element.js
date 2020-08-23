@@ -495,19 +495,28 @@ function cElementModifyFunctions()
             htmlOverlayPanel.style.opacity = 0;
             var currentDelay = (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0);
 
+            //function for callback in timer
             function opacityChange(_tick)
             {
+                //check if current timer tick is less than delay
                 if (_tick < currentDelay)
                 {
+                    //check if element enabled has been changed to true
                     if (element.elementEnabled == true)
                     {
+                        //stop timer if true
                         return false;
                     }
+
+                    //otherwise continue timer
+                    return true;
                 }
                 else
                 {
+                    //check if element is stil false when timer ends
                     if (element.elementEnabled == false)
                     {
+                        //set element to be hidden and set z-index to 0
                         htmlOverlayPanel.style.visibility = "hidden";
                         cCss.style.addStyleProperty(htmlOverlayPanel,
                             new cCss.styleModificationData("z-index",
@@ -516,6 +525,7 @@ function cElementModifyFunctions()
                         );
                     }
 
+                    //then stop the timer
                     return false;
                 }
             }

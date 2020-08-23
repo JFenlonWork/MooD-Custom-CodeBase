@@ -8,10 +8,10 @@
 * 1025
 * 1387
 * 2013
-* 2634
-* 2808
-* 3636
-* 3917
+* 2644
+* 2818
+* 3646
+* 4021
 ***********************************************************************************/
 
 /*
@@ -2508,19 +2508,28 @@ function cElementModifyFunctions()
             htmlOverlayPanel.style.opacity = 0;
             var currentDelay = (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0);
 
+            //function for callback in timer
             function opacityChange(_tick)
             {
+                //check if current timer tick is less than delay
                 if (_tick < currentDelay)
                 {
+                    //check if element enabled has been changed to true
                     if (element.elementEnabled == true)
                     {
+                        //stop timer if true
                         return false;
                     }
+
+                    //otherwise continue timer
+                    return true;
                 }
                 else
                 {
+                    //check if element is stil false when timer ends
                     if (element.elementEnabled == false)
                     {
+                        //set element to be hidden and set z-index to 0
                         htmlOverlayPanel.style.visibility = "hidden";
                         cCss.style.addStyleProperty(htmlOverlayPanel,
                             new cCss.styleModificationData("z-index",
@@ -2529,6 +2538,7 @@ function cElementModifyFunctions()
                         );
                     }
 
+                    //then stop the timer
                     return false;
                 }
             }
@@ -3668,10 +3678,9 @@ window.cTimer = window.cTimer || new function cTimer()
 function cTimerDataTypes()
 {
     //holds specific timer data for individual timers
-    this.timer = function timer(_callBack, _timing, _startOnCreation)
+    this.timer = function timer(_callBack, _timing, _startOnCreation, _runTime, _enableOffset)
     {
         //store basic variables for timer
-        this.interval = _timing || 0;
         this.running = _startOnCreation || false;
         this.pausedAt = 0;
         this.lastCompletion = 0;
@@ -3679,16 +3688,40 @@ function cTimerDataTypes()
         this.timeout = null;
         this.timerID = cTimer.uniqueTimerID++;
 
+        //function to get the current system time
+        this.time = function time()
+        {
+            return new Date().getTime();
+        }
+
+        //store timer time variables
+        //anything below 4ms will be capped at 4ms
+        //after 5 iterations due to ancient browser stuff
+        this.interval = _timing || 0;
+        this.startDate = this.time();
+        this.lastTickDate = this.startDate;
+        this.ticksRemaining = _runTime || Number.MAX_SAFE_INTEGER;
+        this.ticksElapsed = 0;
+        
+        //allow timeout offset to enable interval-like
+        //mechanics without using interval to enable
+        //realtime with script order
+        this.enableOffset = _enableOffset || false;
+        this.intervalOffset = 0;
+        this.skipOffset = true;
+
         //will start the timer
-        this.start = function()
+        this.start = function start()
         {
             this.running = true;
+            this.lastTickDate = this.time();
+            this.skipOffset = true;
             this.loop();
         }
 
         //will stop the timer
         //and reset pausedAt
-        this.stop = function()
+        this.stop = function stop()
         {
             this.running = false;
             this.pausedAt = 0;
@@ -3697,7 +3730,7 @@ function cTimerDataTypes()
 
         //will stop and then start
         //the timer again
-        this.restart = function()
+        this.restart = function restart()
         {
             this.stop();
             this.start();
@@ -3705,18 +3738,18 @@ function cTimerDataTypes()
 
         //will stop the timer and
         //record when it was paused
-        this.pause = function()
+        this.pause = function pause()
         {
             if (this.running)
             {
                 this.stop();
-                this.pausedAt = Date.now();
+                this.pausedAt = this.time();
             }
         }
 
         //will run start, only if timer is
         //currently not running
-        this.resume = function()
+        this.resume = function resume()
         {
             if (!this.running)
             {
@@ -3730,30 +3763,76 @@ function cTimerDataTypes()
         //On start of timer calculate
         //the required timeout time,
         //start and store the timeout
-        this.loop = function()
+        this.loop = function loop()
         {
             var currentInterval = this.interval;
 
+            //check if previously paused
             if (this.pausedAt != 0)
             {
+                //set current interval to restart at paused state
                 currentInterval = currentInterval - (this.pausedAt - this.lastCompletion);
                 this.pausedAt = 0;
             }
 
+            //add on the time it has taken since the last tick
+            var _time = this.time();
+            var timeSinceLastUpdate = _time - this.lastTickDate;
+            this.lastTickDate = _time;
+            this.ticksElapsed += timeSinceLastUpdate;
+            this.ticksRemaining -= timeSinceLastUpdate;
+
+            //check if enable offset is enabled and if a new offset is needed
+            if (this.enableOffset == true
+                 && timeSinceLastUpdate != currentInterval
+                 && this.skipOffset == false)
+            {
+                //calculate new offset to get closer to interval timings
+                this.intervalOffset = currentInterval - timeSinceLastUpdate;
+
+                //if offset is more than interval total
+                //limit offset to be interval (instant loop)
+                if (this.intervalOffset < -currentInterval)
+                {
+                    this.intervalOffset = -currentInterval;
+                }
+            }
+            else
+            {
+                //set interval to be 0 and reset skip offset
+                this.intervalOffset = 0;
+                this.skipOffset = false;
+            }
+
+            //continue loop
             var _this = this;
-            this.timeout = window.setTimeout(function() { _this.runLoop() }, currentInterval);
+            this.timeout = window.setTimeout(function() { _this.runLoop() }, currentInterval + this.intervalOffset);
         }
 
         //on the end of every loop run this function
-        //to calculate 
-        this.runLoop = function()
+        //to calculate if it should continue
+        this.runLoop = function runLoop()
         {
-            this.lastCompletion = Date.now();
+            this.lastCompletion = this.time();
             this.callBack();
             if (this.running)
             {
+                //check timer should still be running
+                if (this.ticksRemaining < 0)
+                {
+                    this.running = false;
+                    return;
+                }
                 this.loop();
             }
+        }
+
+        //on destroy call, find index of timer
+        //and remove it from array
+        this.destroy = function destroy()
+        {
+            var index = cTimer.generic.findTimerIndexByID(this.timerID);
+            cTimer.timers.splice(index, 1);
         }
 
         //add current timer to list of timers
@@ -3770,7 +3849,7 @@ function cTimerDataTypes()
     }
 
     //holds specific timer data with scaling time based on results
-    this.scaledTimer = function scaledTimer(_callBack, _startOnCreation, _timeScalers)
+    this.scaledTimer = function scaledTimer(_callBack, _startOnCreation, _timeScalers, _runTime, _enableOffset)
     {
         //setup timer for current scaled timer
         this.scaledCallBack = _callBack;
@@ -3817,6 +3896,8 @@ function cTimerDataTypes()
             //the value to see if it has succeeded
             var succeeded = _this.scaledCallBack();
 
+            var currentInterval = this.interval;
+
             //check if the above succeeded
             if (succeeded == false)
             {
@@ -3841,49 +3922,69 @@ function cTimerDataTypes()
                     this.interval = _this.findCurrentTimeScaler().interval;
                 }
             }
+
+            //check if interval is changing, then
+            //force offset skipping to allow interval change
+            if (currentInterval != this.interval)
+            {
+                this.skipOffset = true;
+            }
         }
 
         //create timer with the callback of "waitForTimer"
-        cTimer.timer.call(this, this.waitForTimer, _timeScalers[0].interval, _startOnCreation);
+        cTimer.timer.call(this, this.waitForTimer,
+                        _timeScalers[0].interval, _startOnCreation, 
+                        _runTime, _enableOffset);
     }
 
-    //holds specific real-time timer data
+    //holds specific real-time timer data (10ms fastest realtime due to ancient browser stuff)
     this.realtimeTimer = function realtimeTimer(_callBack, _startOnCreation, _runTime)
     {
         //setup timer for current scaled timer
         this.realtimeCallBack = _callBack;
 
-        //store timer variables
-        this.currentTick = 0;
-        this.maxTick = _runTime || Number.MAX_SAFE_INTEGER;
         var _this = this;
 
         //wait and respond to timer
         this.waitForTimer = function waitForTimer()
         {
             //update callback and test if continue
-            var _cont = _this.realtimeCallBack(_this.currentTick);
+            var _cont = _this.realtimeCallBack(_this.ticksElapsed);
 
             //check if timer has ran out or continue is false
-            if (_this.currentTick == _this.maxTick || _cont == false)
+            if (_this.ticksRemaining <= 0 || _cont == false)
             {
                 //stop the timer
                 //EDIT ADD TIMER REMOVAL
                 //cTimer.timers[cTimer.generic.findTimerByID(_this.timerID)].stop();
                 _this.stop();
+                _this.destroy();
             }
+
         }
 
         //create a 1ms timer with the callback wait for timer
         //this.timerID = new cTimer.timer(this.waitForTimer, 1, _startOnCreation);
-        cTimer.timer.call(this, this.waitForTimer, 1, _startOnCreation);
+        cTimer.timer.call(this, this.waitForTimer, 10, _startOnCreation, _runTime, true);
     }
 }
 
 function cTimerFunctions()
 {
     //return the timer with _id
-    this.findTimerByID = function (_id)
+    this.findTimerByID = function findTimerByID(_id)
+    {
+        //find index of timer with id
+        var index = cTimer.generic.findTimerIndexByID(_id);
+        
+        //check index exists
+        if (index != null)
+        {
+            return cTimer.timers[index];
+        }
+    }
+
+    this.findTimerIndexByID = function findTimerIndexByID(_id)
     {
         //loop through all timer in cTimer
         for (var t = 0; t < cTimer.timers.length; t++)
@@ -3892,9 +3993,12 @@ function cTimerFunctions()
             if (cTimer.timers[t].timerID == _id)
             {
                 //return the timer if it is
-                return cTimer.timers[t];
+                return t;
             }
         }
+
+        //return null to show it doesn't exist
+        return null;
     }
 
     //run timer function
