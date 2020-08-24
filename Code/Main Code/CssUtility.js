@@ -460,4 +460,7 @@ function elementCSSFunctions()
 	}
 
 	this.addCustomCSS = function addCustomCSS()
+	{
+		
+	}
 }

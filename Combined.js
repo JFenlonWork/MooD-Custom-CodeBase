@@ -6,12 +6,12 @@
 * These are the line numbers for the included files:
 * 16
 * 1025
-* 1387
-* 2013
-* 2663
-* 2837
-* 3665
-* 4066
+* 1493
+* 2119
+* 2769
+* 2943
+* 3771
+* 4172
 ***********************************************************************************/
 
 /*
@@ -1025,34 +1025,35 @@ function cButtonModifyFunctions()
 
 /*
 	Title:
-		CssUtility
+		CSSUtility
 	
 	Description:
-		Any miscellaneous css functions
+		Any miscellaneous CSS functions
 */
 
 window.cCSS = window.cCSS || new function customCSS()
 {
 	//====DATA TYPES====//
-	this.dataTypes = new cCssDataTypes();
+	this.dataTypes = new cCSSDataTypes();
 
-	this.CssTransitionData = this.dataTypes.cssTransitionData.prototype;
-	this.cssTransitionData = this.dataTypes.cssTransitionData;
+	this.CSSTransitionData = this.dataTypes.CSSTransitionData.prototype;
+	this.CSSTransitionData = this.dataTypes.CSSTransitionData;
 
 	this.StyleModificationData = this.dataTypes.styleModificationData.prototype;
 	this.styleModificationData = this.dataTypes.styleModificationData;
 	
 	//====FUNCTIONS====//
-	this.transform = new customCssTransformFunctions();
-	this.transition = new customCssTransitionFunctions();
-	this.style = new customCssStyleFunctions();
+	this.transform = new customCSSTransformFunctions();
+	this.transition = new customCSSTransitionFunctions();
+	this.style = new customCSSStyleFunctions();
+	this.elementCSS = new customCSSElementCSSFunctions();
 
 }
 
-function cCssDataTypes()
+function cCSSDataTypes()
 {
-	//store cssTransitionData
-	this.cssTransitionData = function (_transitionProperty, _transitionDuration,
+	//store CSSTransitionData
+	this.CSSTransitionData = function (_transitionProperty, _transitionDuration,
 										 _transitionTiming, _transitionDelay, _transitionIndex)
 	{
 		this.transitionProperty = _transitionProperty || '';
@@ -1073,7 +1074,7 @@ function cCssDataTypes()
 }
 
 //hold all transform functions
-function customCssTransformFunctions()
+function customCSSTransformFunctions()
 {
 	//get current transform and add onto it
 	this.modifyTransformVariables = function modifyTransformVariables(_object, _type, _values)
@@ -1182,7 +1183,7 @@ function customCssTransformFunctions()
 }
 
 //hold all transition functions
-function customCssTransitionFunctions()
+function customCSSTransitionFunctions()
 {
 	//add transition onto object
 	this.addTransition = function addTransition(_object, _transitionData)
@@ -1280,7 +1281,7 @@ function customCssTransitionFunctions()
 					{
 						if (_allTrans[i] == _transitionType)
 						{
-							return new cCSS.cssTransitionData(_allTrans[i],
+							return new cCSS.CSSTransitionData(_allTrans[i],
 								_object.style.transitionDuration.split(",")[i],
 								_object.style.transitionTimingFunction.split(",")[i],
 								_object.style.transitionDelay.split(",")[i],
@@ -1296,7 +1297,7 @@ function customCssTransitionFunctions()
 }
 
 //hold all style functions
-function customCssStyleFunctions()
+function customCSSStyleFunctions()
 {
 	//add transition onto object
 	this.addStyleProperty = function addStyleProperty(_object, _stylePropertyData)
@@ -1320,7 +1321,7 @@ function customCssStyleFunctions()
 
 					_property += ";";
 					//add the style property to the object
-					_object.style.cssText += _property;
+					_object.style.CSSText += _property;
 				}
 			}
 		}
@@ -1335,7 +1336,7 @@ function customCssStyleFunctions()
 		if (propertyIndex != null)
 		{
 			//store all transition data
-			var _properties = _object.style.cssText.split("; ");
+			var _properties = _object.style.CSSText.split("; ");
 
 			//reset object transition to nothing
 			_object.style = '';
@@ -1349,7 +1350,7 @@ function customCssStyleFunctions()
 				if (i != propertyIndex)
 				{
 					//add object onto end of transition variable
-					_object.style.cssText += _properties[i] + _endString;
+					_object.style.CSSText += _properties[i] + _endString;
 				}
 			}
 		}
@@ -1364,7 +1365,7 @@ function customCssStyleFunctions()
 			if (_object.style)
 			{
 					//split style up into _allStyle variable
-					var _allStyle = _object.style.cssText.split("; ");
+					var _allStyle = _object.style.CSSText.split("; ");
 
 					//loop through all style properties and return _styleProperty index
 					for (var i = 0; i < _allStyle.length; i++)
@@ -1381,6 +1382,111 @@ function customCssStyleFunctions()
 		}
 
 		return -1;
+	}
+}
+
+function customCSSstyleSheetFunctions()
+{
+	//modified from https://stackoverflow.com/questions/1720320/how-to-dynamically-create-css-class-in-javascript-and-apply
+	this.createCSSSelector = function createCSSSelector (selector, style) {
+		//check if stylesheets and "head" exists
+		if (!document.styleSheets) return;
+		if (document.getElementsByTagName('head').length == 0) return;
+	  
+		//setup stylesheet variables
+		var styleSheet,mediaType;
+	  
+		//check stylesheets is populated
+		if (document.styleSheets.length > 0) {
+			//loop through all stylesheets
+		  for (var i = 0, l = document.styleSheets.length; i < l; i++) {
+			  //check if current stylesheet is disabled
+			if (document.styleSheets[i].disabled) 
+			  continue;
+
+			  //setup media variables
+			var media = document.styleSheets[i].media;
+			mediaType = typeof media;
+	  
+			//check what the media type is and setup stylesheet
+			if (mediaType === 'string') {
+			  if (media === '' || (media.indexOf('screen') !== -1)) {
+				styleSheet = document.styleSheets[i];
+			  }
+			}
+			else if (mediaType=='object') {
+			  if (media.mediaText === '' || (media.mediaText.indexOf('screen') !== -1)) {
+				styleSheet = document.styleSheets[i];
+			  }
+			}
+	  
+			//ignore current if stylesheet is undefined
+			if (typeof styleSheet !== 'undefined') 
+			  break;
+		  }
+		}
+	  
+		//check stylesheet has been found
+		if (typeof styleSheet === 'undefined') {
+
+			//create new style sheet element if style sheet is empty
+		  var styleSheetElement = document.createElement('style');
+		  styleSheetElement.type = 'text/css';
+		  document.getElementsByTagName('head')[0].appendChild(styleSheetElement);
+	  
+			//setup style sheet variables to be newly create style sheet
+		  for (i = 0; i < document.styleSheets.length; i++) {
+			if (document.styleSheets[i].disabled) {
+			  continue;
+			}
+			styleSheet = document.styleSheets[i];
+		  }
+	  
+		  mediaType = typeof styleSheet.media;
+		}
+	  
+		if (mediaType === 'string') {
+			//loop through style sheets
+		  for (var i = 0, l = styleSheet.rules.length; i < l; i++) {
+			  //update current stylesheet rule and return if stylesheet already exists
+			if(styleSheet.rules[i].selectorText && styleSheet.rules[i].selectorText.toLowerCase()==selector.toLowerCase()) {
+			  styleSheet.rules[i].style.cssText = style;
+			  return;
+			}
+		  }
+		  //add rule to stylesheet if it doesn't exist
+		  styleSheet.addRule(selector,style);
+		}
+		else if (mediaType === 'object') {
+			//check variables for browser compatability
+		  var styleSheetLength = (styleSheet.cssRules) ? styleSheet.cssRules.length : 0;
+
+		  //loop through all stylesheets
+		  for (var i = 0; i < styleSheetLength; i++) {
+			  //update current stylesheet rule and return if stylesheet already exists
+			if (styleSheet.cssRules[i].selectorText && styleSheet.cssRules[i].selectorText.toLowerCase() == selector.toLowerCase()) {
+			  styleSheet.cssRules[i].style.cssText = style;
+			  return;
+			}
+		  }
+			//insert rule to stylesheet if it doesn't exist
+		  styleSheet.insertRule(selector + '{' + style + '}', styleSheetLength);
+		}
+	  }
+}
+
+//hold all custom element CSS functions
+function elementCSSFunctions()
+{
+	//
+	this.requestCustomCSS = function requestCustomCSS(_class, _object)
+	{
+
+	}
+
+	this.addCustomCSS = function addCustomCSS()
+	{
+		
 	}
 }
 
