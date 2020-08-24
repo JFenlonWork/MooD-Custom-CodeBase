@@ -224,9 +224,9 @@ function cElementGenericFunctions()
 
             for (var obj = 0; obj < removeZIndex.length; obj++)
             {
-                cCSS.style.addStyleProperty($(
+                cCss.style.addStyleProperty($(
                     removeZIndex[obj]).closest(".WebPanelOverlay")[0],
-                    new cCSS.styleModificationData("z-index", "unset")
+                    new cCss.styleModificationData("z-index", "unset")
                 );
             }
 
@@ -464,13 +464,13 @@ function cElementModifyFunctions()
     {
         //check custom css exists and message data
         //has a custom opacity transition
-        if (cCSS)
+        if (cCss)
         {
             if (_messageData.opacityTime)
             {
                 //setup opacity transition data
                 var _transData = 
-                new cCSS.cssTransitionData(
+                new cCss.cssTransitionData(
                     "opacity",
                     ((_messageData.opacityTime || 0) / 1000).toString() + "s",
                     _messageData.opacityTiming || "linear",
@@ -478,13 +478,13 @@ function cElementModifyFunctions()
                     );
 
                 //add the transition data to the overylay panel
-                cCSS.transition.addTransition(htmlOverlayPanel, _transData);
+                cCss.transition.addTransition(htmlOverlayPanel, _transData);
             }
             else
             {
                 //setup opacity transition data
                 var _transData = 
-                new cCSS.cssTransitionData(
+                new cCss.cssTransitionData(
                     "opacity",
                     "0s",
                     "linear",
@@ -492,7 +492,7 @@ function cElementModifyFunctions()
                     );
 
                 //add the transition data to the overylay panel
-                cCSS.transition.addTransition(htmlOverlayPanel, _transData);
+                cCss.transition.addTransition(htmlOverlayPanel, _transData);
             }
         }
 
@@ -502,8 +502,8 @@ function cElementModifyFunctions()
             //change html style to be visiblie and set zIndex to default
             htmlOverlayPanel.style.opacity = 100;
             htmlOverlayPanel.style.visibility = "visible";
-            cCSS.style.addStyleProperty(htmlOverlayPanel,
-                new cCSS.styleModificationData("z-index",
+            cCss.style.addStyleProperty(htmlOverlayPanel,
+                new cCss.styleModificationData("z-index",
                     10000
                 )
             );
@@ -537,8 +537,8 @@ function cElementModifyFunctions()
                     {
                         //set element to be hidden and set z-index to 0
                         htmlOverlayPanel.style.visibility = "hidden";
-                        cCSS.style.addStyleProperty(htmlOverlayPanel,
-                            new cCSS.styleModificationData("z-index",
+                        cCss.style.addStyleProperty(htmlOverlayPanel,
+                            new cCss.styleModificationData("z-index",
                                 0
                             )
                         );
@@ -555,8 +555,8 @@ function cElementModifyFunctions()
         //check if zIndex supplied and set to that if so
         if (_messageData.zIndex)
         {
-            cCSS.style.addStyleProperty(htmlOverlayPanel,
-                new cCSS.styleModificationData("z-index",
+            cCss.style.addStyleProperty(htmlOverlayPanel,
+                new cCss.styleModificationData("z-index",
                     _messageData.zIndex, 
                     _messageData.zIndexImportance || ""
                 )
@@ -607,11 +607,11 @@ function cElementModifyFunctions()
 
             //check custom css exists and message data
             //has a custom position transition
-            if (cCSS && _messageData.positionMoveTime)
+            if (cCss && _messageData.positionMoveTime)
             {
                 //setup position transition data
                 var _transData = 
-                    new cCSS.cssTransitionData(
+                    new cCss.cssTransitionData(
                         "left",
                         ((_messageData.positionMoveTime || 0) / 1000).toString() + "s",
                         _messageData.positionTiming || "linear",
@@ -619,11 +619,11 @@ function cElementModifyFunctions()
                         );
 
                 //add transition data to "left" 
-                cCSS.transition.addTransition(htmlOverlayPanel, _transData);
+                cCss.transition.addTransition(htmlOverlayPanel, _transData);
 
                 //add same transition data to "top"
                 _transData.transitionProperty = "top";
-                cCSS.transition.addTransition(htmlOverlayPanel, _transData);
+                cCss.transition.addTransition(htmlOverlayPanel, _transData);
             }
             
             //class scroll seems to be the object itself vs the surrounding div

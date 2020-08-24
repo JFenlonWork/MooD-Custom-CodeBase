@@ -6,7 +6,7 @@
 		Modify Inline Forms To Make Relatinships Navigable
 */
 
-/*CSS for relationship text:
+/*Css for relationship text:
 
 .inlineFormRelationshipTextModified
 {

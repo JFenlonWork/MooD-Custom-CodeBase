@@ -1,34 +1,34 @@
 /*
 	Title:
-		CSSUtility
+		CssUtility
 	
 	Description:
-		Any miscellaneous CSS functions
+		Any miscellaneous Css functions
 */
 
-window.cCSS = window.cCSS || new function customCSS()
+window.cCss = window.cCss || new function customCss()
 {
 	//====DATA TYPES====//
-	this.dataTypes = new cCSSDataTypes();
+	this.dataTypes = new cCssDataTypes();
 
-	this.CSSTransitionData = this.dataTypes.CSSTransitionData.prototype;
-	this.CSSTransitionData = this.dataTypes.CSSTransitionData;
+	this.cssTransitionData = this.dataTypes.cssTransitionData.prototype;
+	this.cssTransitionData = this.dataTypes.cssTransitionData;
 
 	this.StyleModificationData = this.dataTypes.styleModificationData.prototype;
 	this.styleModificationData = this.dataTypes.styleModificationData;
 	
 	//====FUNCTIONS====//
-	this.transform = new customCSSTransformFunctions();
-	this.transition = new customCSSTransitionFunctions();
-	this.style = new customCSSStyleFunctions();
-	this.elementCSS = new customCSSElementCSSFunctions();
+	this.transform = new customCssTransformFunctions();
+	this.transition = new customCssTransitionFunctions();
+	this.style = new customCssStyleFunctions();
+	this.elementCss = new customCssElementCssFunctions();
 
 }
 
-function cCSSDataTypes()
+function cCssDataTypes()
 {
-	//store CSSTransitionData
-	this.CSSTransitionData = function (_transitionProperty, _transitionDuration,
+	//store CssTransitionData
+	this.cssTransitionData = function (_transitionProperty, _transitionDuration,
 										 _transitionTiming, _transitionDelay, _transitionIndex)
 	{
 		this.transitionProperty = _transitionProperty || '';
@@ -49,7 +49,7 @@ function cCSSDataTypes()
 }
 
 //hold all transform functions
-function customCSSTransformFunctions()
+function customCssTransformFunctions()
 {
 	//get current transform and add onto it
 	this.modifyTransformVariables = function modifyTransformVariables(_object, _type, _values)
@@ -64,7 +64,7 @@ function customCSSTransformFunctions()
 				var _values = _values || [];
 
 				//grab previous transform variables
-				var _prevTransformVars = cCSS.transform.returnTransformVariables(_object, _type);
+				var _prevTransformVars = cCss.transform.returnTransformVariables(_object, _type);
 				
 				//setup transform variables
 				var _transform = _prevTransformVars.previous + _type + "(";
@@ -158,7 +158,7 @@ function customCSSTransformFunctions()
 }
 
 //hold all transition functions
-function customCSSTransitionFunctions()
+function customCssTransitionFunctions()
 {
 	//add transition onto object
 	this.addTransition = function addTransition(_object, _transitionData)
@@ -166,7 +166,7 @@ function customCSSTransitionFunctions()
 		if (_transitionData)
 		{
 			//remove previous transition of same type
-			cCSS.transition.removeTransition(_object, _transitionData.transitionProperty);
+			cCss.transition.removeTransition(_object, _transitionData.transitionProperty);
 
 			//check object transform exists
 			if (_object)
@@ -197,7 +197,7 @@ function customCSSTransitionFunctions()
 	//remove transition on object
 	this.removeTransition = function removeTransition(_object, _transitionType)
 	{
-		var transIndex = cCSS.transition.getTransition(_object, _transitionType)
+		var transIndex = cCss.transition.getTransition(_object, _transitionType)
 		
 		//check transition exists
 		if (transIndex != null)
@@ -256,7 +256,7 @@ function customCSSTransitionFunctions()
 					{
 						if (_allTrans[i] == _transitionType)
 						{
-							return new cCSS.CSSTransitionData(_allTrans[i],
+							return new cCss.cssTransitionData(_allTrans[i],
 								_object.style.transitionDuration.split(",")[i],
 								_object.style.transitionTimingFunction.split(",")[i],
 								_object.style.transitionDelay.split(",")[i],
@@ -272,7 +272,7 @@ function customCSSTransitionFunctions()
 }
 
 //hold all style functions
-function customCSSStyleFunctions()
+function customCssStyleFunctions()
 {
 	//add transition onto object
 	this.addStyleProperty = function addStyleProperty(_object, _stylePropertyData)
@@ -280,7 +280,7 @@ function customCSSStyleFunctions()
 		if (_stylePropertyData)
 		{
 			//remove previous style property of same type
-			cCSS.style.removeStyleProperty(_object, _stylePropertyData.property);
+			cCss.style.removeStyleProperty(_object, _stylePropertyData.property);
 
 			//check object style exists
 			if (_object)
@@ -296,7 +296,7 @@ function customCSSStyleFunctions()
 
 					_property += ";";
 					//add the style property to the object
-					_object.style.CSSText += _property;
+					_object.style.cssText += _property;
 				}
 			}
 		}
@@ -305,13 +305,13 @@ function customCSSStyleFunctions()
 	//remove style property on object
 	this.removeStyleProperty = function removeStyleProperty(_object, _property)
 	{
-		var propertyIndex = cCSS.style.getProperty(_object, _property)
+		var propertyIndex = cCss.style.getProperty(_object, _property)
 		
 		//check transition exists
 		if (propertyIndex != null)
 		{
 			//store all transition data
-			var _properties = _object.style.CSSText.split("; ");
+			var _properties = _object.style.cssText.split("; ");
 
 			//reset object transition to nothing
 			_object.style = '';
@@ -325,7 +325,7 @@ function customCSSStyleFunctions()
 				if (i != propertyIndex)
 				{
 					//add object onto end of transition variable
-					_object.style.CSSText += _properties[i] + _endString;
+					_object.style.cssText += _properties[i] + _endString;
 				}
 			}
 		}
@@ -340,7 +340,7 @@ function customCSSStyleFunctions()
 			if (_object.style)
 			{
 					//split style up into _allStyle variable
-					var _allStyle = _object.style.CSSText.split("; ");
+					var _allStyle = _object.style.cssText.split("; ");
 
 					//loop through all style properties and return _styleProperty index
 					for (var i = 0; i < _allStyle.length; i++)
@@ -360,10 +360,10 @@ function customCSSStyleFunctions()
 	}
 }
 
-function customCSSstyleSheetFunctions()
+function customCssstyleSheetFunctions()
 {
 	//modified from https://stackoverflow.com/questions/1720320/how-to-dynamically-create-css-class-in-javascript-and-apply
-	this.createCSSSelector = function createCSSSelector (selector, style) {
+	this.createCssSelector = function createCssSelector (selector, style) {
 		//check if stylesheets and "head" exists
 		if (!document.styleSheets) return;
 		if (document.getElementsByTagName('head').length == 0) return;
@@ -450,16 +450,16 @@ function customCSSstyleSheetFunctions()
 	  }
 }
 
-//hold all custom element CSS functions
-function customCSSElementCSSFunctions()
+//hold all custom element Css functions
+function customCssElementCssFunctions()
 {
 	//
-	this.requestCustomCSS = function requestCustomCSS(_class, _object)
+	this.requestCustomCss = function requestCustomCss(_class, _object)
 	{
 
 	}
 
-	this.addCustomCSS = function addCustomCSS()
+	this.addCustomCss = function addCustomCss()
 	{
 		
 	}
