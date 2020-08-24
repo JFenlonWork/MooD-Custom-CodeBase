@@ -1476,7 +1476,7 @@ function customCSSstyleSheetFunctions()
 }
 
 //hold all custom element CSS functions
-function elementCSSFunctions()
+function customCSSElementCSSFunctions()
 {
 	//
 	this.requestCustomCSS = function requestCustomCSS(_class, _object)
