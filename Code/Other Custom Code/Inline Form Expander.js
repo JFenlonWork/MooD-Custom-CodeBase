@@ -195,7 +195,7 @@ function inlineFormExpansion()
                     _allWithin[i].style.transition = "transform " + parseInt(getComputedStyle(_inlineForm.inlineFormScroller).transitionDuration) + "s ease-in-out";
 
                     //modify the transform and add object to inline form moved
-                    cCss.transform.modifyTransformVariables(_allWithin[i], "translate", [0, _inlineForm.heightChange]);
+                    cCSS.transform.modifyTransformVariables(_allWithin[i], "translate", [0, _inlineForm.heightChange]);
                     _inlineForm.moved.push(_allWithin[i]);
 
                     //remove element from all elements to stop it
@@ -222,7 +222,7 @@ function inlineFormExpansion()
                 //loop through moved and modify transform position
                 for (var i = 0; i < _inlineForm.moved.length; i++)
                 {
-                    cCss.transform.modifyTransformVariables(_inlineForm.moved[i], "translate", [0, -_inlineForm.heightChange]);
+                    cCSS.transform.modifyTransformVariables(_inlineForm.moved[i], "translate", [0, -_inlineForm.heightChange]);
                 }
             }
         }

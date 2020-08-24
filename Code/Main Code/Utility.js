@@ -40,7 +40,7 @@ window.cUtility = window.cUtility || new function cUtility()
         if (_element.elementType == '')
         {
             //return the mood element
-            return window.cUtility.findHTMLObjectsFromName(_element.elementName);
+            return window.cUtility.findHTMLObjectsFromName("mood-node-name-" + _element.elementName);
         }
         
         //force values if element type is null/undefined
@@ -81,7 +81,6 @@ window.cUtility = window.cUtility || new function cUtility()
 			//default just incase incorrect typing
 			default:
 				console.log("Invalid element type for search: " + _element.elementName);
-				return null;
 				break;
 		}
 		

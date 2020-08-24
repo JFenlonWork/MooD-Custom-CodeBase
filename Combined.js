@@ -8,10 +8,10 @@
 * 1025
 * 1387
 * 2013
-* 2644
-* 2818
-* 3646
-* 4021
+* 2663
+* 2837
+* 3665
+* 4066
 ***********************************************************************************/
 
 /*
@@ -1031,7 +1031,7 @@ function cButtonModifyFunctions()
 		Any miscellaneous css functions
 */
 
-window.cCss = window.cCss || new function customCSS()
+window.cCSS = window.cCSS || new function customCSS()
 {
 	//====DATA TYPES====//
 	this.dataTypes = new cCssDataTypes();
@@ -1088,7 +1088,7 @@ function customCssTransformFunctions()
 				var _values = _values || [];
 
 				//grab previous transform variables
-				var _prevTransformVars = cCss.transform.returnTransformVariables(_object, _type);
+				var _prevTransformVars = cCSS.transform.returnTransformVariables(_object, _type);
 				
 				//setup transform variables
 				var _transform = _prevTransformVars.previous + _type + "(";
@@ -1190,7 +1190,7 @@ function customCssTransitionFunctions()
 		if (_transitionData)
 		{
 			//remove previous transition of same type
-			cCss.transition.removeTransition(_object, _transitionData.transitionProperty);
+			cCSS.transition.removeTransition(_object, _transitionData.transitionProperty);
 
 			//check object transform exists
 			if (_object)
@@ -1221,7 +1221,7 @@ function customCssTransitionFunctions()
 	//remove transition on object
 	this.removeTransition = function removeTransition(_object, _transitionType)
 	{
-		var transIndex = cCss.transition.getTransition(_object, _transitionType)
+		var transIndex = cCSS.transition.getTransition(_object, _transitionType)
 		
 		//check transition exists
 		if (transIndex != null)
@@ -1280,7 +1280,7 @@ function customCssTransitionFunctions()
 					{
 						if (_allTrans[i] == _transitionType)
 						{
-							return new cCss.cssTransitionData(_allTrans[i],
+							return new cCSS.cssTransitionData(_allTrans[i],
 								_object.style.transitionDuration.split(",")[i],
 								_object.style.transitionTimingFunction.split(",")[i],
 								_object.style.transitionDelay.split(",")[i],
@@ -1304,7 +1304,7 @@ function customCssStyleFunctions()
 		if (_stylePropertyData)
 		{
 			//remove previous style property of same type
-			cCss.style.removeStyleProperty(_object, _stylePropertyData.property);
+			cCSS.style.removeStyleProperty(_object, _stylePropertyData.property);
 
 			//check object style exists
 			if (_object)
@@ -1329,7 +1329,7 @@ function customCssStyleFunctions()
 	//remove style property on object
 	this.removeStyleProperty = function removeStyleProperty(_object, _property)
 	{
-		var propertyIndex = cCss.style.getProperty(_object, _property)
+		var propertyIndex = cCSS.style.getProperty(_object, _property)
 		
 		//check transition exists
 		if (propertyIndex != null)
@@ -2087,6 +2087,13 @@ function cElementDataTypes()
         this.elementType = _elementType || '';
         this.ID = _ID || cElement.uniqueID;
         this.elementEnabled = false;
+
+        //generate new style for current element
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.innerHTML = '.' +  "CustomElement" + _ID.toString() + ' { color: #F00; }';
+        document.getElementsByTagName('head')[0].appendChild(style);
+
         
         if (_ID == cElement.uniqueID)
         {
@@ -2097,6 +2104,18 @@ function cElementDataTypes()
 
         //store a link to this current element for functions below
         var currentElement = this;
+
+        cUtility.findHTMLObjects(currentElement).closest(".WebPanelOverlay")[0].className +=
+         " CustomElement" + _ID.toString();
+
+        /*
+        cTimer.timer(new cTimer.callback(
+            function() 
+            { 
+                var ele = cUtility.findHTMLObjects(currentElement);
+                ele[0].className += " CustomElement" + _ID.toString(); 
+            }, currentElement), 100, true, 1, false);
+        */
         
         this.eventListener.messagesListeningTo.push(
             new cEventListener.basicMessage('listenToToggleElementToEnableStatus', 
@@ -2218,9 +2237,9 @@ function cElementGenericFunctions()
 
             for (var obj = 0; obj < removeZIndex.length; obj++)
             {
-                cCss.style.addStyleProperty($(
+                cCSS.style.addStyleProperty($(
                     removeZIndex[obj]).closest(".WebPanelOverlay")[0],
-                    new cCss.styleModificationData("z-index", "unset")
+                    new cCSS.styleModificationData("z-index", "unset")
                 );
             }
 
@@ -2458,13 +2477,13 @@ function cElementModifyFunctions()
     {
         //check custom css exists and message data
         //has a custom opacity transition
-        if (cCss)
+        if (cCSS)
         {
             if (_messageData.opacityTime)
             {
                 //setup opacity transition data
                 var _transData = 
-                new cCss.cssTransitionData(
+                new cCSS.cssTransitionData(
                     "opacity",
                     ((_messageData.opacityTime || 0) / 1000).toString() + "s",
                     _messageData.opacityTiming || "linear",
@@ -2472,13 +2491,13 @@ function cElementModifyFunctions()
                     );
 
                 //add the transition data to the overylay panel
-                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+                cCSS.transition.addTransition(htmlOverlayPanel, _transData);
             }
             else
             {
                 //setup opacity transition data
                 var _transData = 
-                new cCss.cssTransitionData(
+                new cCSS.cssTransitionData(
                     "opacity",
                     "0s",
                     "linear",
@@ -2486,7 +2505,7 @@ function cElementModifyFunctions()
                     );
 
                 //add the transition data to the overylay panel
-                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+                cCSS.transition.addTransition(htmlOverlayPanel, _transData);
             }
         }
 
@@ -2496,8 +2515,8 @@ function cElementModifyFunctions()
             //change html style to be visiblie and set zIndex to default
             htmlOverlayPanel.style.opacity = 100;
             htmlOverlayPanel.style.visibility = "visible";
-            cCss.style.addStyleProperty(htmlOverlayPanel,
-                new cCss.styleModificationData("z-index",
+            cCSS.style.addStyleProperty(htmlOverlayPanel,
+                new cCSS.styleModificationData("z-index",
                     10000
                 )
             );
@@ -2509,10 +2528,10 @@ function cElementModifyFunctions()
             var currentDelay = (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0);
 
             //function for callback in timer
-            function opacityChange(_tick)
+            function opacityChange(_args)
             {
                 //check if current timer tick is less than delay
-                if (_tick < currentDelay)
+                if (_args.ticksElapsed < currentDelay)
                 {
                     //check if element enabled has been changed to true
                     if (element.elementEnabled == true)
@@ -2531,8 +2550,8 @@ function cElementModifyFunctions()
                     {
                         //set element to be hidden and set z-index to 0
                         htmlOverlayPanel.style.visibility = "hidden";
-                        cCss.style.addStyleProperty(htmlOverlayPanel,
-                            new cCss.styleModificationData("z-index",
+                        cCSS.style.addStyleProperty(htmlOverlayPanel,
+                            new cCSS.styleModificationData("z-index",
                                 0
                             )
                         );
@@ -2543,14 +2562,14 @@ function cElementModifyFunctions()
                 }
             }
             
-            new cTimer.realtimeTimer(opacityChange, true, currentDelay + 1);
+            new cTimer.realtimeTimer(new cTimer.callback(opacityChange, this), true, currentDelay + 1);
         }
 
         //check if zIndex supplied and set to that if so
         if (_messageData.zIndex)
         {
-            cCss.style.addStyleProperty(htmlOverlayPanel,
-                new cCss.styleModificationData("z-index",
+            cCSS.style.addStyleProperty(htmlOverlayPanel,
+                new cCSS.styleModificationData("z-index",
                     _messageData.zIndex, 
                     _messageData.zIndexImportance || ""
                 )
@@ -2601,11 +2620,11 @@ function cElementModifyFunctions()
 
             //check custom css exists and message data
             //has a custom position transition
-            if (cCss && _messageData.positionMoveTime)
+            if (cCSS && _messageData.positionMoveTime)
             {
                 //setup position transition data
                 var _transData = 
-                    new cCss.cssTransitionData(
+                    new cCSS.cssTransitionData(
                         "left",
                         ((_messageData.positionMoveTime || 0) / 1000).toString() + "s",
                         _messageData.positionTiming || "linear",
@@ -2613,11 +2632,11 @@ function cElementModifyFunctions()
                         );
 
                 //add transition data to "left" 
-                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+                cCSS.transition.addTransition(htmlOverlayPanel, _transData);
 
                 //add same transition data to "top"
                 _transData.transitionProperty = "top";
-                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+                cCSS.transition.addTransition(htmlOverlayPanel, _transData);
             }
             
             //class scroll seems to be the object itself vs the surrounding div
@@ -3095,8 +3114,8 @@ function cEventListenerGenericFunctions()
             {
                 //setup scaled timer
                 cEventListener.listenerRegistrationQueueTimer 
-                = new cTimer.scaledTimer(
-                                            function() {return cEventListener.queue.registerListenersInQueue()}, true, 
+                = new cTimer.scaledTimer( new cTimer.callback(
+                                            function() {return cEventListener.queue.registerListenersInQueue()} ), true, 
                                             cEventListener.listenerRegistrationQueueScaledTimer
                                         );
             }
@@ -3661,6 +3680,9 @@ window.cTimer = window.cTimer || new function cTimer()
     //====DATA TYPES====//
     this.dataTypes = new cTimerDataTypes();
 
+    this.Callback = this.dataTypes.callback.prototype;
+    this.callback = this.dataTypes.callback;
+
     this.Timer = this.dataTypes.timer.prototype;
     this.timer = this.dataTypes.timer;
 
@@ -3677,14 +3699,22 @@ window.cTimer = window.cTimer || new function cTimer()
 
 function cTimerDataTypes()
 {
+    //holds specific callback data for use in timer
+    this.callback = function callback(_callback, _caller, _args)
+    {
+        this.callback = _callback || null;
+        this.caller = _caller || null;
+        this.args = _args || {};
+    }
+
     //holds specific timer data for individual timers
-    this.timer = function timer(_callBack, _timing, _startOnCreation, _runTime, _enableOffset)
+    this.timer = function timer(_callback, _timing, _startOnCreation, _runTime, _enableOffset)
     {
         //store basic variables for timer
         this.running = _startOnCreation || false;
         this.pausedAt = 0;
         this.lastCompletion = 0;
-        this.callBack = _callBack || null;
+        this.callback = _callback || null;
         this.timeout = null;
         this.timerID = cTimer.uniqueTimerID++;
 
@@ -3698,7 +3728,9 @@ function cTimerDataTypes()
         //anything below 4ms will be capped at 4ms
         //after 5 iterations due to ancient browser stuff
         this.interval = _timing || 0;
+        this.currentInterval = 0;
         this.startDate = this.time();
+        
         this.lastTickDate = this.startDate;
         this.ticksRemaining = _runTime || Number.MAX_SAFE_INTEGER;
         this.ticksElapsed = 0;
@@ -3765,18 +3797,20 @@ function cTimerDataTypes()
         //start and store the timeout
         this.loop = function loop()
         {
-            var currentInterval = this.interval;
+            //reset interval
+            this.currentInterval = this.interval;
 
             //check if previously paused
             if (this.pausedAt != 0)
             {
                 //set current interval to restart at paused state
-                currentInterval = currentInterval - (this.pausedAt - this.lastCompletion);
+                this.currentInterval = this.currentInterval - (this.pausedAt - this.lastCompletion);
                 this.pausedAt = 0;
             }
 
             //add on the time it has taken since the last tick
             var _time = this.time();
+
             var timeSinceLastUpdate = _time - this.lastTickDate;
             this.lastTickDate = _time;
             this.ticksElapsed += timeSinceLastUpdate;
@@ -3784,17 +3818,17 @@ function cTimerDataTypes()
 
             //check if enable offset is enabled and if a new offset is needed
             if (this.enableOffset == true
-                 && timeSinceLastUpdate != currentInterval
+                 && timeSinceLastUpdate != this.currentInterval
                  && this.skipOffset == false)
             {
                 //calculate new offset to get closer to interval timings
-                this.intervalOffset = currentInterval - timeSinceLastUpdate;
+                this.intervalOffset = this.currentInterval - timeSinceLastUpdate;
 
                 //if offset is more than interval total
                 //limit offset to be interval (instant loop)
-                if (this.intervalOffset < -currentInterval)
+                if (this.intervalOffset < - this.currentInterval)
                 {
-                    this.intervalOffset = -currentInterval;
+                    this.intervalOffset = -this.currentInterval;
                 }
             }
             else
@@ -3806,21 +3840,47 @@ function cTimerDataTypes()
 
             //continue loop
             var _this = this;
-            this.timeout = window.setTimeout(function() { _this.runLoop() }, currentInterval + this.intervalOffset);
+            this.timeout = window.setTimeout(function() { _this.runLoop() }, this.currentInterval + this.intervalOffset);
+        }
+
+        //run callback based on inputted callback
+        this.invokeCallback = function (_callback)
+        {
+            //check callback exists
+            if (_callback != null && _callback.callback != null)
+            {
+                //check if caller suppied with callback
+                if (_callback.caller != null)
+                {
+                    //invoke callback with caller as "this"
+                    return _callback.callback.call(_callback.caller, _callback.args);
+                }
+                else
+                {
+                    //invoke callback with timer as "this"
+                    return _callback.callback.call(this, _callback.args);
+                }
+            }
+
+            //return null if no callback
+            return null;
         }
 
         //on the end of every loop run this function
         //to calculate if it should continue
         this.runLoop = function runLoop()
         {
+            //invoke callback
+            this.invokeCallback(this.callback);
             this.lastCompletion = this.time();
-            this.callBack();
+
             if (this.running)
             {
                 //check timer should still be running
                 if (this.ticksRemaining < 0)
                 {
-                    this.running = false;
+                    //destroy the timer if it should stop
+                    this.destroy();
                     return;
                 }
                 this.loop();
@@ -3831,6 +3891,7 @@ function cTimerDataTypes()
         //and remove it from array
         this.destroy = function destroy()
         {
+            this.stop();
             var index = cTimer.generic.findTimerIndexByID(this.timerID);
             cTimer.timers.splice(index, 1);
         }
@@ -3849,18 +3910,14 @@ function cTimerDataTypes()
     }
 
     //holds specific timer data with scaling time based on results
-    this.scaledTimer = function scaledTimer(_callBack, _startOnCreation, _timeScalers, _runTime, _enableOffset)
+    this.scaledTimer = function scaledTimer(_callback, _startOnCreation, _timeScalers, _runTime, _enableOffset)
     {
         //setup timer for current scaled timer
-        this.scaledCallBack = _callBack;
+        this.scaledCallBack = _callback;
 
         //store time scaling variables
         this.currentFailedCount = 0;
         this.timeScalers = _timeScalers || [];
-
-        //function as intermediary for
-        //time scaling
-        var _this = this;
 
         //loop through all time scalers and find current
         //scaled time for failed count
@@ -3894,78 +3951,66 @@ function cTimerDataTypes()
         {
             //invoke the original callback and store
             //the value to see if it has succeeded
-            var succeeded = _this.scaledCallBack();
+            var succeeded = this.invokeCallback(this.scaledCallBack);
 
-            var currentInterval = this.interval;
+            this.currentInterval = this.interval;
 
             //check if the above succeeded
             if (succeeded == false)
             {
                 //add to current failed count
-                _this.currentFailedCount++;
+                this.currentFailedCount++;
 
                 //change interval of timer to new scaled interval
                 //use "this" as current function is timer's callback
-                this.interval = _this.findCurrentTimeScaler().interval;
+                this.interval = this.findCurrentTimeScaler().interval;
             }
             else
             {
                 //check if the function had failed before
-                if (_this.currentFailedCount != 0)
+                if (this.currentFailedCount != 0)
                 {     
                     //reset failed count
                     //once it has succeeded
-                    _this.currentFailedCount = 0;
+                    this.currentFailedCount = 0;
 
                     //change interval of timer to new scaled interval
                     //use "this" as current function is timer's callback
-                    this.interval = _this.findCurrentTimeScaler().interval;
+                    this.interval = this.findCurrentTimeScaler().interval;
                 }
             }
 
             //check if interval is changing, then
             //force offset skipping to allow interval change
-            if (currentInterval != this.interval)
+            if (this.currentInterval != this.interval)
             {
                 this.skipOffset = true;
             }
         }
 
         //create timer with the callback of "waitForTimer"
-        cTimer.timer.call(this, this.waitForTimer,
+        cTimer.timer.call(this, new cTimer.callback(this.waitForTimer),
                         _timeScalers[0].interval, _startOnCreation, 
                         _runTime, _enableOffset);
     }
 
     //holds specific real-time timer data (10ms fastest realtime due to ancient browser stuff)
-    this.realtimeTimer = function realtimeTimer(_callBack, _startOnCreation, _runTime)
+    this.realtimeTimer = function realtimeTimer(_callback, _startOnCreation, _runTime)
     {
         //setup timer for current scaled timer
-        this.realtimeCallBack = _callBack;
-
-        var _this = this;
+        this.realtimeCallback = _callback;
 
         //wait and respond to timer
         this.waitForTimer = function waitForTimer()
         {
             //update callback and test if continue
-            var _cont = _this.realtimeCallBack(_this.ticksElapsed);
-
-            //check if timer has ran out or continue is false
-            if (_this.ticksRemaining <= 0 || _cont == false)
-            {
-                //stop the timer
-                //EDIT ADD TIMER REMOVAL
-                //cTimer.timers[cTimer.generic.findTimerByID(_this.timerID)].stop();
-                _this.stop();
-                _this.destroy();
-            }
-
+            this.realtimeCallback.args.ticksElapsed = this.ticksElapsed;
+            var _cont = this.invokeCallback(this.realtimeCallback);
         }
 
-        //create a 1ms timer with the callback wait for timer
-        //this.timerID = new cTimer.timer(this.waitForTimer, 1, _startOnCreation);
-        cTimer.timer.call(this, this.waitForTimer, 10, _startOnCreation, _runTime, true);
+        //create a 10ms timer with the callback "waitForTimer"
+        cTimer.timer.call(this, new cTimer.callback(this.waitForTimer), 
+            10, _startOnCreation, _runTime, true);
     }
 }
 
@@ -4061,7 +4106,7 @@ window.cUtility = window.cUtility || new function cUtility()
         if (_element.elementType == '')
         {
             //return the mood element
-            return window.cUtility.findHTMLObjectsFromName(_element.elementName);
+            return window.cUtility.findHTMLObjectsFromName("mood-node-name-" + _element.elementName);
         }
         
         //force values if element type is null/undefined
@@ -4102,7 +4147,6 @@ window.cUtility = window.cUtility || new function cUtility()
 			//default just incase incorrect typing
 			default:
 				console.log("Invalid element type for search: " + _element.elementName);
-				return null;
 				break;
 		}
 		
