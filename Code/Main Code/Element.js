@@ -74,13 +74,6 @@ function cElementDataTypes()
         this.elementType = _elementType || '';
         this.ID = _ID || cElement.uniqueID;
         this.elementEnabled = false;
-
-        //generate new style for current element
-        var style = document.createElement('style');
-        style.type = 'text/css';
-        style.innerHTML = '.' +  "CustomElement" + _ID.toString() + ' { color: #F00; }';
-        document.getElementsByTagName('head')[0].appendChild(style);
-
         
         if (_ID == cElement.uniqueID)
         {
@@ -91,18 +84,6 @@ function cElementDataTypes()
 
         //store a link to this current element for functions below
         var currentElement = this;
-
-        cUtility.findHTMLObjects(currentElement).closest(".WebPanelOverlay")[0].className +=
-         " CustomElement" + _ID.toString();
-
-        /*
-        cTimer.timer(new cTimer.callback(
-            function() 
-            { 
-                var ele = cUtility.findHTMLObjects(currentElement);
-                ele[0].className += " CustomElement" + _ID.toString(); 
-            }, currentElement), 100, true, 1, false);
-        */
         
         this.eventListener.messagesListeningTo.push(
             new cEventListener.basicMessage('listenToToggleElementToEnableStatus', 

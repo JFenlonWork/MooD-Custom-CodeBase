@@ -101,11 +101,12 @@ function cEventListenerDataTypes()
         this.message = _message || '';
     
         //run _messageFunction on _message if available, otherwise return message
-        this.evaluateMessage =  function evaluateMessage(_messageFunction, _messageExtras)
+        this.evaluateMessage =  function evaluateMessage(_messageFunction, _messageExtras, _comparison)
         {
             //check if _messageFunction exists otherwise set it to null
             _messageFunction = _messageFunction || 'null';
             _messageExtras = _messageExtras || "";
+            _comparison = _comparison || false;
     
             //check if the message is a custom object
             if (this.message === Object(this.message))
@@ -113,8 +114,17 @@ function cEventListenerDataTypes()
                 //check that the custom message function exists
                 if (typeof this.message[_messageFunction] === "function")
                 {
-                    //invoke custom message function on the message
-                    return this.message[_messageFunction].call(this.message, _messageExtras);
+                    //check if evaluate message is being used for comparison
+                    if (_comparison)
+                    {
+                        //return the function itself
+                        return this.message[_messageFunction];
+                    }
+                    else 
+                    {
+                        //otherwise invoke custom message function on the message
+                        return this.message[_messageFunction].call(this.message, _messageExtras);
+                    }
                 }
                 
                 //return the messageFunction as it isn't
@@ -261,16 +271,9 @@ function cEventListenerGenericFunctions()
                 return cEventListener.queue.invokeMessageQueue("afterEventListenerCreation");
             }, 500);
         })();
-
-        /*
-        setTimeout(function() 
-        {
-            cEventListener.queue.invokeMessageQueue("afterEventListenerCreation");
-        },100);
-        */
         
-        //setup interval for registering any listeners in the queue, run every 500ms
-        //setInterval(function() { cEventListener.queue.registerListenersInQueue(); },500)
+        //setup interval for registering any listeners in the queue,
+        //run based on a slowdown timer
         (function setupScaledTimer() {
             //check if timer exists
             if (cTimer)
@@ -477,6 +480,9 @@ function cEventListenerQueueFunctions()
     //run all setup listener functions
     this.invokeMessageQueue = function invokeMessageQueue(_functionType)
     {
+        //store any messages that have been invoked
+        var _messagesInvoked = [];
+
         //loop through all functions within the current message queue
         for (var l = 0; l < cEventListener.functionWaitingForMessageQueue.length; l++)
         {
@@ -485,8 +491,37 @@ function cEventListenerQueueFunctions()
             {
                 //invoke the "setupFunction" of that message
                 cEventListener.functionWaitingForMessageQueue[l].evaluateMessage("setupFunction");
+
+                //add this individual to be removed
+                _messagesInvoked.push(
+                    new cEventListener.basicMessage(_functionType,
+                        cEventListener.functionWaitingForMessageQueue[l].evaluateMessage(
+                            "setupFunction", null, true)
+                    )
+                );
+            }
+        }
+
+        //loop through all messages that have been invoked and remove them
+        for (var m = 0; m < _messagesInvoked.length; m++)
+        {
+            cEventListener.queue.removeFromMessageQueue(_messagesInvoked[m]);
+        }
+    }
+
+    this.removeFromMessageQueue = function removeFromMessageQueue(_message)
+    {
+        //loop through all functions within the current message queue
+        for (var l = 0; l < cEventListener.functionWaitingForMessageQueue.length; l++)
+        {
+            //check if message type is the same as _functionType
+            if (cEventListener.functionWaitingForMessageQueue[l].type == _message.type &&
+                cEventListener.functionWaitingForMessageQueue[l].evaluateMessage("setupFunction", null, true) == _message.message)
+            {
+                //remove the message as removing it within the
+                //loop can cause array mismatches
                 cEventListener.functionWaitingForMessageQueue.splice(l,1);
-                l--;
+                return;
             }
         }
     }

@@ -21,6 +21,7 @@ window.cCss = window.cCss || new function customCss()
 	this.transform = new customCssTransformFunctions();
 	this.transition = new customCssTransitionFunctions();
 	this.style = new customCssStyleFunctions();
+	this.styleSheet = new customCssstyleSheetFunctions();
 	this.elementCss = new customCssElementCssFunctions();
 
 }
