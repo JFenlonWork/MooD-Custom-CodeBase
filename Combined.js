@@ -6,12 +6,12 @@
 * These are the line numbers for the included files:
 * 16
 * 1025
-* 1494
-* 2120
-* 2751
-* 2925
-* 3788
-* 4189
+* 1567
+* 2193
+* 2824
+* 2998
+* 3861
+* 4262
 ***********************************************************************************/
 
 /*
@@ -1049,6 +1049,8 @@ window.cCss = window.cCss || new function customCss()
 	this.styleSheet = new customCssstyleSheetFunctions();
 	this.elementCss = new customCssElementCssFunctions();
 
+	//====RUN-TIME FUNCTIONS====//
+
 }
 
 function cCssDataTypes()
@@ -1386,94 +1388,165 @@ function customCssStyleFunctions()
 	}
 }
 
+//hold all style sheet functions
 function customCssstyleSheetFunctions()
 {
-	//modified from https://stackoverflow.com/questions/1720320/how-to-dynamically-create-css-class-in-javascript-and-apply
-	this.createCssSelector = function createCssSelector (selector, style) {
-		//check if stylesheets and "head" exists
-		if (!document.styleSheets) return;
-		if (document.getElementsByTagName('head').length == 0) return;
-	  
-		//setup stylesheet variables
-		var styleSheet,mediaType;
-	  
-		//check stylesheets is populated
-		if (document.styleSheets.length > 0) {
-			//loop through all stylesheets
-		  for (var i = 0, l = document.styleSheets.length; i < l; i++) {
-			  //check if current stylesheet is disabled
-			if (document.styleSheets[i].disabled) 
-			  continue;
+	//create a new style and stylesheet or return an existing one
+	this.addCssSheet = function addCssSheet(_sheetName)
+	{
+		var _styleSheet = cCss.styleSheet.getCssSheet(_sheetName);
 
-			  //setup media variables
-			var media = document.styleSheets[i].media;
-			mediaType = typeof media;
-	  
-			//check what the media type is and setup stylesheet
-			if (mediaType === 'string') {
-			  if (media === '' || (media.indexOf('screen') !== -1)) {
-				styleSheet = document.styleSheets[i];
-			  }
-			}
-			else if (mediaType=='object') {
-			  if (media.mediaText === '' || (media.mediaText.indexOf('screen') !== -1)) {
-				styleSheet = document.styleSheets[i];
-			  }
-			}
-	  
-			//ignore current if stylesheet is undefined
-			if (typeof styleSheet !== 'undefined') 
-			  break;
-		  }
+		if (_styleSheet != null)
+		{
+			return _styleSheet;
 		}
-	  
-		//check stylesheet has been found
-		if (typeof styleSheet === 'undefined') {
+		else
+		{
+			//setup the style sheet element and add it to head
+			var _styleSheetElement = document.createElement('style');
+			_styleSheetElement.id = _sheetName;
+		  	_styleSheetElement.type = 'text/css';
+			document.getElementsByTagName('head')[0].appendChild(_styleSheetElement);
 
-			//create new style sheet element if style sheet is empty
-		  var styleSheetElement = document.createElement('style');
-		  styleSheetElement.type = 'text/css';
-		  document.getElementsByTagName('head')[0].appendChild(styleSheetElement);
-	  
-			//setup style sheet variables to be newly create style sheet
-		  for (i = 0; i < document.styleSheets.length; i++) {
-			if (document.styleSheets[i].disabled) {
-			  continue;
-			}
-			styleSheet = document.styleSheets[i];
-		  }
-	  
-		  mediaType = typeof styleSheet.media;
+			//return the stylesheet
+			return _styleSheetElement.sheet;
 		}
-	  
-		if (mediaType === 'string') {
-			//loop through style sheets
-		  for (var i = 0, l = styleSheet.rules.length; i < l; i++) {
-			  //update current stylesheet rule and return if stylesheet already exists
-			if(styleSheet.rules[i].selectorText && styleSheet.rules[i].selectorText.toLowerCase()==selector.toLowerCase()) {
-			  styleSheet.rules[i].style.cssText = style;
-			  return;
-			}
-		  }
-		  //add rule to stylesheet if it doesn't exist
-		  styleSheet.addRule(selector,style);
-		}
-		else if (mediaType === 'object') {
-			//check variables for browser compatability
-		  var styleSheetLength = (styleSheet.cssRules) ? styleSheet.cssRules.length : 0;
+	}
 
-		  //loop through all stylesheets
-		  for (var i = 0; i < styleSheetLength; i++) {
-			  //update current stylesheet rule and return if stylesheet already exists
-			if (styleSheet.cssRules[i].selectorText && styleSheet.cssRules[i].selectorText.toLowerCase() == selector.toLowerCase()) {
-			  styleSheet.cssRules[i].style.cssText = style;
-			  return;
-			}
-		  }
-			//insert rule to stylesheet if it doesn't exist
-		  styleSheet.insertRule(selector + '{' + style + '}', styleSheetLength);
+	//remove Css Style Sheet
+	this.removeCssSheet = function removeCssSheet(_sheetName)
+	{
+		//find the sheet with _sheetName
+		var _styleSheet = cCss.styleSheet.getCssSheet(_sheetName);
+
+		//check the sheet exists
+		if (_styleSheet)
+		{
+			//remove the sheet element
+			$(_styleSheet.ownerNode).remove();
+
+			//return true as sheet has been deleted
+			return true;
 		}
-	  }
+
+		//return false as sheet doesn't exist
+		return false;
+	}
+
+	//return the style with _sheetName
+	this.getCssSheet = function getCssSheet(_sheetName)
+	{
+		//search for all styles with id "_sheetName"
+		var _styleSheets = $("style[id=" + _sheetName + "]");
+
+		//check styles exist
+		if (_styleSheets.length != 0)
+		{
+			//loop through all avaialble sheets
+			for (var s = 0; s < _styleSheets.length; s++)
+			{
+				//check the sheet exists
+				if (_styleSheets[s].sheet != null)
+				{
+					//return the first sheet available
+					return _styleSheets[s].sheet;
+				}
+			}
+		}
+
+		//return null because no sheet exists
+		return null;
+	}
+
+	//return selector rule
+	this.getCssSelector = function getCssSelector(_sheet, _selector)
+	{
+		//get the index of _selector in _sheet's rules
+		var _index = cCss.styleSheet.getCssSelectorIndex(_sheet, _selector);
+
+		//check index exists
+		if (_index) 
+		{
+			//return rule at index
+			return _sheet.rules[_index];
+		}
+
+		//return null if selector doesn't exist
+		return null;
+	}
+
+	//return selector rule index
+	this.getCssSelectorIndex = function getCssSelectorIndex(_sheet, _selector)
+	{
+		//loop through all style sheet rules
+		for (var r = 0; r < _sheet.rules.length; r++) {
+			
+			//return the current sheet at index
+			if(_sheet.rules[r].selectorText 
+				&& _sheet.rules[r].selectorText.toLowerCase() == _selector.toLowerCase())
+			{
+				return r;
+		 	}
+		}
+	}
+
+	//add Css Selector To Style Sheet
+	this.addCssSelector = function addCssSelector(_sheetName, _selector)
+	{
+		//find style sheet and selector
+		var _styleSheet = cCss.styleSheet.addCssSheet(_sheetName);
+		var _media = typeof _styleSheet.media;
+		var _selector = cCss.styleSheet.getCssSelector(_styleSheet, _selector);
+
+		//if selector doesn't exist then create it
+		if (_selector == null)
+		{
+			if (_media == "string")
+			{
+				//add _selector rule into the style sheet
+				_styleSheet.addRule(_selector,"");
+				return cCss.styleSheet.getCssSelector(_styleSheet, _selector);
+			}
+			else if (_media == "object")
+			{
+				//setup style sheet rule index for
+				//browser (IE8...) compatability
+				var _styleSheetLength = 0;
+				
+				if (_styleSheet.cssRules)
+				{
+					_styleSheetLength = _styleSheet.cssRules.length
+				}
+
+				//insert _selector rule into the correct index of style sheet
+				return _styleSheet.rules[_styleSheet.insertRule(_selector + "{ }", _styleSheetLength)];
+			}
+		}
+		
+		//return the selector as it already exists
+		return _selector;
+	}
+
+	//remove Css Selector From Style Sheet
+	this.removeCssSelector = function removeCssSelector(_sheet, _selector)
+	{
+		//get the index of _selector in _sheet's rules
+		var _index = cCss.styleSheet.getCssSelectorIndex(_sheet, _selector);
+
+		//check index exists
+		if (_index) 
+		{
+			//return rule at index
+			_sheet.rules.splice(_index, 1);
+
+			//return true as _selector has been removed
+			return true;
+		}
+
+		//return false as _selector doesn't exist
+		return false;
+	}
+
 }
 
 //hold all custom element Css functions
