@@ -6,12 +6,12 @@
 * These are the line numbers for the included files:
 * 16
 * 1025
-* 1567
-* 2193
-* 2824
-* 2998
-* 3861
-* 4262
+* 1932
+* 2558
+* 3189
+* 3363
+* 4226
+* 4627
 ***********************************************************************************/
 
 /*
@@ -1392,9 +1392,9 @@ function customCssStyleFunctions()
 function customCssstyleSheetFunctions()
 {
 	//create a new style and stylesheet or return an existing one
-	this.addCssSheet = function addCssSheet(_sheetName)
+	this.addCssSheet = function addCssSheet(_sheet)
 	{
-		var _styleSheet = cCss.styleSheet.getCssSheet(_sheetName);
+		var _styleSheet = cCss.styleSheet.translateCssSheet(_sheet);
 
 		if (_styleSheet != null)
 		{
@@ -1404,7 +1404,7 @@ function customCssstyleSheetFunctions()
 		{
 			//setup the style sheet element and add it to head
 			var _styleSheetElement = document.createElement('style');
-			_styleSheetElement.id = _sheetName;
+			_styleSheetElement.id = _sheet;
 		  	_styleSheetElement.type = 'text/css';
 			document.getElementsByTagName('head')[0].appendChild(_styleSheetElement);
 
@@ -1414,10 +1414,10 @@ function customCssstyleSheetFunctions()
 	}
 
 	//remove Css Style Sheet
-	this.removeCssSheet = function removeCssSheet(_sheetName)
+	this.removeCssSheet = function removeCssSheet(_sheet)
 	{
-		//find the sheet with _sheetName
-		var _styleSheet = cCss.styleSheet.getCssSheet(_sheetName);
+		//find the sheet with _sheet
+		var _styleSheet = cCss.styleSheet.translateCssSheet(_sheet);
 
 		//check the sheet exists
 		if (_styleSheet)
@@ -1433,11 +1433,47 @@ function customCssstyleSheetFunctions()
 		return false;
 	}
 
-	//return the style with _sheetName
-	this.getCssSheet = function getCssSheet(_sheetName)
+	//return Style Sheet based on _sheet type
+	this.translateCssSheet = function translateCssSheet(_sheet, _createOnFail)
 	{
-		//search for all styles with id "_sheetName"
-		var _styleSheets = $("style[id=" + _sheetName + "]");
+		//check if _sheet is Sheet Name
+		if (typeof _sheet === "string")
+		{
+			//check if sheet exists	
+			var _found = cCss.styleSheet.getCssSheet(_sheet); 
+			
+			//if sheet doesn't exist and create on fail is true
+			//create the sheet
+			if (_createOnFail && _found == null)
+			{
+				_found = cCss.styleSheet.addCssSheet(_sheet);
+			}
+
+			//return the Style Sheet
+			return _found
+		}
+		//check if _sheet is a HTML Object with a Style Sheet
+		else if (_sheet.sheet)
+		{
+			//return the Style SHeet
+			return _sheet.sheet;
+		}
+		//check if _sheet is a Style Sheet
+		else if (_sheet.cssRules)
+		{
+			//return _sheet as it is a Style Sheet
+			return _sheet;
+		}
+
+		//return null because something failed
+		return null;
+	}
+
+	//return the style with _sheet
+	this.getCssSheet = function getCssSheet(_sheet)
+	{
+		//search for all styles with id "_sheet"
+		var _styleSheets = $("style[id=" + _sheet + "]");
 
 		//check styles exist
 		if (_styleSheets.length != 0)
@@ -1458,6 +1494,140 @@ function customCssstyleSheetFunctions()
 		return null;
 	}
 
+	//return the first style sheet with an instance of _selector
+	this.findCssSheetWithSelector = function findCssSheetWithSelector(_selector)
+	{
+		var _foundSelector = cCss.styleSheet.findCssSelector(_selector);
+
+		//return _foundSelector Style Sheet
+		if (_foundSelector)
+		{
+			return _foundSelector.parentStyleSheet;
+		}
+
+		//return null because no sheet exists
+		return null;
+	}
+
+	//add Css Selector To Style Sheet
+	this.addCssSelector = function addCssSelector(_sheet, _selector)
+	{
+		//find style sheet and selector
+		var _styleSheet = cCss.styleSheet.addCssSheet(_sheet);
+		var _media = typeof _styleSheet.media;
+		var _selectorExists = cCss.styleSheet.getCssSelector(_styleSheet, _selector);
+
+		//if selector doesn't exist then create it
+		if (_selectorExists == null)
+		{
+			if (_media == "string")
+			{
+				//add _selector rule into the style sheet
+				_styleSheet.addRule(_selector,"");
+				return cCss.styleSheet.getCssSelector(_styleSheet, _selector);
+			}
+			else if (_media == "object")
+			{
+				//setup style sheet rule index for
+				//browser (IE8...) compatability
+				var _styleSheetLength = 0;
+				
+				if (_styleSheet.cssRules)
+				{
+					_styleSheetLength = _styleSheet.cssRules.length
+				}
+
+				//insert _selector rule into the correct index of style sheet
+				return _styleSheet.rules[_styleSheet.insertRule(_selector + "{ }", _styleSheetLength)];
+			}
+
+			//return null because something failed
+			return null;
+		}
+		
+		//return the selector as it already exists
+		return _selector;
+	}
+
+	//remove Css Selector From Style Sheet
+	this.removeCssSelector = function removeCssSelector(_sheet, _selector)
+	{
+		//get the index of _selector in _sheet's rules
+		var _index = cCss.styleSheet.getCssSelectorIndex(_sheet, _selector);
+
+		//check index exists
+		if (_index != null) 
+		{
+			//return rule at index
+			_sheet.rules.splice(_index, 1);
+
+			//return true as _selector has been removed
+			return true;
+		}
+
+		//return false as _selector doesn't exist
+		return false;
+	}
+
+	//return Style Sheet based on _sheet type
+	this.translateCssSelector = function translateCssSelector(_selector, _createOnFailSheet)
+	{
+		//check if _selector is a CSS Style Rule
+		if (_selector.selectorText)
+		{
+			//return the selector
+			return _selector;
+		}
+		//check if _selector is Selector Name
+		else if (typeof _selector === "string")
+		{
+			//check if _selector exists
+			var _found = cCss.styleSheet.findCssSelector(_selector);
+
+			//if _selector doesn't exist and create on fail sheet exists
+			//then create the sheet
+			if (_createOnFailSheet && _found == null)
+			{
+				//setup the current Style Sheet and create it if it is a string
+				var _sheet = cCss.styleSheet.translateCssSheet(_createOnFailSheet, true);
+
+				//add the selector to _sheet and return this
+				_found = cCss.styleSheet.addCssSelector(_sheet, _selector);
+			}
+
+			//return the Selector
+			return _found;
+		}
+
+		//return null because something failed
+		return null;
+	}
+
+	//return the first instance of the Css selector
+	//across all style sheets
+	this.findCssSelector = function findCssSelector(_selector)
+	{
+		//store current style sheets
+		var _sheets = document.styleSheets;
+
+		//loop through all Style Sheets
+		//and return the first instance of _selector
+		for (var s = 0; s < _sheets.length; s++)
+		{
+			//try to find the selector on current style sheet
+			var _foundSelector = cCss.styleSheet.getCssSelector(_sheets[s], _selector);
+
+			//if selector was found then return selector
+			if (_foundSelector)
+			{
+				return _foundSelector;
+			}
+		}
+
+		//return null because no selector exists
+		return null;
+	}
+
 	//return selector rule
 	this.getCssSelector = function getCssSelector(_sheet, _selector)
 	{
@@ -1465,7 +1635,7 @@ function customCssstyleSheetFunctions()
 		var _index = cCss.styleSheet.getCssSelectorIndex(_sheet, _selector);
 
 		//check index exists
-		if (_index) 
+		if (_index != null) 
 		{
 			//return rule at index
 			return _sheet.rules[_index];
@@ -1490,61 +1660,256 @@ function customCssstyleSheetFunctions()
 		}
 	}
 
-	//add Css Selector To Style Sheet
-	this.addCssSelector = function addCssSelector(_sheetName, _selector)
+	//add Css Selector Style To Style Sheet
+	this.addCssStyle = function addCssStyle(_sheet, _selector, _style, _replace)
 	{
-		//find style sheet and selector
-		var _styleSheet = cCss.styleSheet.addCssSheet(_sheetName);
-		var _media = typeof _styleSheet.media;
-		var _selector = cCss.styleSheet.getCssSelector(_styleSheet, _selector);
-
-		//if selector doesn't exist then create it
-		if (_selector == null)
-		{
-			if (_media == "string")
-			{
-				//add _selector rule into the style sheet
-				_styleSheet.addRule(_selector,"");
-				return cCss.styleSheet.getCssSelector(_styleSheet, _selector);
-			}
-			else if (_media == "object")
-			{
-				//setup style sheet rule index for
-				//browser (IE8...) compatability
-				var _styleSheetLength = 0;
-				
-				if (_styleSheet.cssRules)
-				{
-					_styleSheetLength = _styleSheet.cssRules.length
-				}
-
-				//insert _selector rule into the correct index of style sheet
-				return _styleSheet.rules[_styleSheet.insertRule(_selector + "{ }", _styleSheetLength)];
-			}
-		}
+		//setup basic variables
+		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
+		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
+		var _styles = cCss.styleSheet.translateCssStyle(_style);
 		
-		//return the selector as it already exists
-		return _selector;
-	}
-
-	//remove Css Selector From Style Sheet
-	this.removeCssSelector = function removeCssSelector(_sheet, _selector)
-	{
-		//get the index of _selector in _sheet's rules
-		var _index = cCss.styleSheet.getCssSelectorIndex(_sheet, _selector);
-
-		//check index exists
-		if (_index) 
+		//check selector exists
+		if (_selector && _styles)
 		{
-			//return rule at index
-			_sheet.rules.splice(_index, 1);
+			var _currentStylesNotReplacing = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 2);
+			var _styleString = "";
 
-			//return true as _selector has been removed
+			//add all current style to style string
+			if (_currentStylesNotReplacing)
+			{
+				for (var cs = 0; cs < _currentStylesNotReplacing.length; cs++)
+				{
+					_styleString += _currentStylesNotReplacing[cs] + "; ";
+				}
+			}
+
+			//check if replacing style is true
+			if (_replace)
+			{
+				//append styles to the end of current style
+				for (var s = 0; s < _styles.length; s++)
+				{
+					_styleString += _styles[s] + "; ";
+				}
+			}
+			else
+			{
+				//loop through and find values to append based on current style
+				var _currentStylesNotReplacing = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 1) || [];
+				for (var s = 0; s < _styles.length; s++)
+				{
+					//store style substring
+					var _styleSubStr = _styles[s].substring(0, _styles[s].indexOf(":") || _styles[s].length);
+					var _found = false;
+					
+					//loop through all similar current styles
+					for (var cs = 0; cs < _currentStylesNotReplacing.length; cs++)
+					{
+						//check if style substring is the same as current style
+						if (_styleSubStr ==
+							 _currentStylesNotReplacing[cs].substring(
+								0,
+								_styles[s].indexOf(":") || _styles[s].length)
+							)
+						{
+							//set found to true and break
+							_found = true;
+							break;
+						}
+					}
+					
+					//if style hasn't been found
+					if (!_found)
+					{
+						//add style onto end of cssText
+						_styleString += _styles[s] + "; ";
+					}
+				}
+			}
+
+			//set the selector css to new css
+			_selector.style.cssText = _styleString;
+
+			//return true as suceeded
 			return true;
 		}
 
-		//return false as _selector doesn't exist
-		return false;
+		//return null as something failed
+		return null;
+
+	}
+
+	//remove Css Selector Style From Sheet
+	this.removeCssStyle = function removeCssStyle(_sheet, _selector, _style)
+	{
+		//setup basic variables
+		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
+		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
+		var _styles = cCss.styleSheet.translateCssStyle(_style);
+
+		if (_selector)
+		{
+			var _currentStylesToKeep = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 2);
+			var _styleString = "";
+
+			//add current style to keep to style string
+			if (_currentStylesToKeep)
+			{
+				for (var cs = 0; cs < _currentStylesToKeep.length; cs++)
+				{
+					_styleString += _currentStylesToKeep[cs] + "; ";
+				}
+			}
+
+			//set the selector css to new css
+			_selector.style.cssText = _styleString;
+
+			//return true as suceeded
+			return true;
+		}
+
+		//return null as something failed
+		return null;
+	}
+
+	//return the correct format for _style to be inserted
+	this.translateCssStyle = function translateCssStyle(_style)
+	{
+		//setup return value
+		var _ret = [];
+
+		//check if _style exists
+		if (!_style)
+		{	
+			//return null because _style doesn't exist
+			return null;
+		}
+
+		//check what type _style is
+		if (typeof _style === "string")
+		{
+			//remove potential object specifiers
+			_style = _style.replace(/[{}]/g, "");
+			
+			//split the string to individual styles
+			_ret = _style.split("; ");
+		}
+		else if (typeof _style === "array")
+		{
+			//loop through all style array values
+			for (var s = 0; s < _style.length; s++)
+			{
+				//translate the current style array index
+				var _translated = cCss.styleSheets.translateCssStyle(_style[s]);
+
+				//check if style exists and add it to ret
+				if (_translated)
+				{
+					_ret.push(_translated);
+				}
+			}
+		}
+		else if (typeof _style === "object")
+		{
+			//translate based on string version of _style
+			_ret = cCss.styleSheet.translateCssStyle(_style.toString());
+		}
+
+		//return _ret or null
+		if (_ret.length != 0)
+		{
+			return _ret;
+		}
+
+		//return null as something failed
+		return null;
+	}
+
+	/**
+	 * return the styles in a selector using the given _style
+	 * 
+	 * Return Types:
+	 * 
+	 * 0 -> return all
+	 * 
+	 * 1 -> return if the same style 
+	 * 
+	 * 2 -> return if not the same style
+	 */
+	this.getCssStyle = function getCssStyle(_sheet, _selector, _style, _returnType)
+	{
+		//setup basic variables
+		var _ret = [];
+		var _sheet = cCss.styleSheet.translateCssSheet(_sheet);
+		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
+		var _styles = cCss.styleSheet.translateCssStyle(_style) || [];
+		var _returnType = _returnType || 0;
+
+		//CHANGE TO HASH TABLE IF EFFICIENCY IS A PROBLEM (DOUBT IT)
+		//check selector exists
+		if (_selector)
+		{
+			//find current selector style and split them into comparable values
+			var _currentStyles = cCss.styleSheet.translateCssStyle(_selector.style.cssText) || [];
+
+			//if requesting all style split then return 
+			if (_returnType == 0)
+			{
+				return _currentStyles;
+			}
+			//check if return found and input empty
+			else if (_styles.length == 0 && _returnType == 1)
+			{
+				return null
+			}
+			//check if return not found and input empty
+			else if (_styles.length == 0 && _returnType == 2)
+			{
+				return _currentStyles;
+			}
+
+			//loop through input styles
+			for (var cs = 0; cs < _currentStyles.length; cs++)
+			{
+				//setup _style substring
+				var _currentStyleSubstr = _currentStyles[cs].substring(0, _currentStyles[cs].indexOf(":"));
+				var _found = false;
+
+				//loop through current styles
+				for (var s = 0; s < _styles.length; s++)
+				{
+					//check styles are the same
+					if (_currentStyleSubstr == _styles[s].substring(0, _styles[s].indexOf(":") || _styles[s].length))
+					{
+						//set found to true and break out of loop
+						_found = true;
+						break;
+					}
+				}
+
+				//add to return based on return type
+				if (_found && _returnType == 1)
+				{
+					//found
+					_ret.push(_currentStyles[cs]);
+				}
+				else if (!_found && _returnType == 2)
+				{
+					//not found
+					_ret.push(_currentStyles[cs]);
+				}
+			}
+		}
+		
+		//return the calculated value if valid
+		if (_ret.length != 0)
+		{
+			return _ret;
+		}
+
+		//return null as something failed
+		return null;
+		
 	}
 
 }
