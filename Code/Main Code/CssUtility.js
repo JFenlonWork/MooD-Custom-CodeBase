@@ -210,7 +210,7 @@ function customCssTransformFunctions()
 }
 
 //hold all transition functions
-function customCssTransitionFunctions()
+function customCssTransitionFunctions() 
 {
 	//add transition onto object
 	this.addTransition = function addTransition(_object, _transitionData)
@@ -1074,23 +1074,25 @@ function customCssstyleSheetFunctions()
 	}
 
 	//Add to separated style attribute
-	this.addSeparatedAttribute = function addSeparatedAttribute(_sheet, _selector, _style, _stylePrefix, _commaSeparated, _addOrReplace)
+	this.addSeparatedAttribute = function addSeparatedAttribute(_sheet, _selector, _style, _stylePrefix, _commaSeparated, _addOrReplace, _attributeIndexToEdit)
 	{
 		//setup basic variables
 		var _sheet = cCss.styleSheet.translateCssSheet(_sheet);
 		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
 		var _styles = cCss.styleSheet.translateCssStyle(_style) || [];
 		var _stylePrefix = cCss.styleSheet.translateSeparatedAttributePrefix(_stylePrefix) || [];
+		var _attributeIndexToEdit = _attributeIndexToEdit || 0;
 	}
 
 	//remove separated style attribute
-	this.removeSeparatedAttribute = function removeSeparatedAttribute(_sheet, _selector, _style, _stylePrefix, _commaSeparated, _removeOrErase)
+	this.removeSeparatedAttribute = function removeSeparatedAttribute(_sheet, _selector, _style, _stylePrefix, _commaSeparated, _removeOrErase, _attributeIndexToEdit)
 	{
 		//setup basic variables
 		var _sheet = cCss.styleSheet.translateCssSheet(_sheet);
 		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
 		var _styles = cCss.styleSheet.translateCssStyle(_style) || [];
 		var _stylePrefix = cCss.styleSheet.translateSeparatedAttributePrefix(_stylePrefix) || [];
+		var _attributeIndexToEdit = _attributeIndexToEdit || 0;
 	}
 
 }

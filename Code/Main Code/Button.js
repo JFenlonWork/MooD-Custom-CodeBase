@@ -179,7 +179,7 @@ function cButtonSetupFunctions()
 				{
 					setupFunction : function ()
 					{
-						cButton.modify.toggleButtonClick(buttonGenerated.buttonElementID, _enabled);
+						cButton.modify.toggleButtonClick(buttonGenerated.buttonElementID, _buttonData.enabledOnDefault.toString());
 					}
 				}
 			);
@@ -199,7 +199,7 @@ function cButtonSetupFunctions()
 			}
 
 			//add on click to object
-			cButton.modify.addOnClickToElement(buttonGenerated.buttonElementID, _buttonData.onClick, true);
+			cElement.modify.addOnClickToElement(buttonGenerated.buttonElementID, _buttonData.onClick, true);
 	
 			//return succeeded
 			return true;
@@ -901,6 +901,16 @@ function cButtonModifyFunctions()
 			
 			//setup switch value to be toggle
 			var switchValue = htmlButton.buttonEnabled;
+
+			switch (switchValue)
+			{
+				case "true":
+					switchValue = "false";
+					break;
+				case "false":
+					switchValue = "true";
+					break;
+			}
 			
 			//set switch value to _setValue if not null
 			if (_setValue != null)
@@ -922,23 +932,24 @@ function cButtonModifyFunctions()
 			switch(switchValue)
 			{
 				case "true":
-					//if switch value is true and the button can disable itself then disable
-					if (htmlButton.canDisableSelf == true || htmlButton.canDisableSelf == "true")
+					//enable itself and disable element it disables
+					cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[0]);
+					cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[3]);
+					break;
+				case "false":
+					if ((htmlButton.canDisableSelf == true || htmlButton.canDisableSelf == "true") && htmlButton.buttonEnabled == "true")
 					{
+						//disable the button's elements and enable any elements it disables
 						cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[1]);
 						cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[2]);
 					}
 					break;
-				case "false":
-					//disable the button's elements and enable any elements it disables
-					cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[0]);
-					cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[3]);
-					break;
 				case "partially":
 					//if button can disable itself then disable 
-					if (htmlButton.canDisableSelf == true || htmlButton.canDisableSelf == "true")
+					if ((htmlButton.canDisableSelf == true || htmlButton.canDisableSelf == "true") && htmlButton.buttonEnabled == "true")
 					{
 						cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[1]);
+						cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[2]);
 					}
 					else
 					{
@@ -954,54 +965,6 @@ function cButtonModifyFunctions()
 		}
 		console.log("Button Connected With Button: " + htmlButton.buttonElementID + " Doesn't Exist");
 		return false;	
-	}
-
-	this.addOnClickToElement = function addOnClickToElement(_elementID, _function, _addOrCreate, _css)
-	{
-		
-		var _css = _css || null;
-		//find all html objects from ID
-		var elementObjs = cUtility.findHTMLObjects(cElement.search.getElementID(_elementID));
-		
-		if (elementObjs)
-		{
-			//loop through all objects
-			for (var e = 0; e < elementObjs.length; e++)
-			{
-				//add onto onclick
-				cButton.modify.addOnClickToHTML(elementObjs[e], _function, _addOrCreate);
-
-				if (_css)
-				{
-					//Add css based on button
-					elementObjs[e].classList.add(_css);
-				}
-			}
-		}
-	}
-
-	this.addOnClickToHTML = function addOnClickToHTML(_elementObj, _function, _addOrCreate)
-	{
-		//add onto onclick
-		if (_addOrCreate)
-		{
-			//check if onclick exists and is add
-			if (_elementObj.getAttribute("onclick"))
-			{
-				//add onto onclick
-				_elementObj.setAttribute("onclick", _elementObj.getAttribute("onclick") + ";" + _function);
-			}
-			else
-			{
-				//set onclick to be _function
-				_elementObj.setAttribute("onclick", _function);
-			}
-		}
-		else
-		{
-			//create on click to be _function
-			_elementObj.setAttribute("onclick", _function);
-		}
 	}
 
 }

@@ -212,7 +212,7 @@ function cTimerDataTypes()
             if (this.running)
             {
                 //check timer should still be running
-                if (this.ticksRemaining < 0)
+                if (this.ticksRemaining - this.currentInterval < 0)
                 {
                     //destroy the timer if it should stop
                     this.destroy();
@@ -330,10 +330,11 @@ function cTimerDataTypes()
     }
 
     //holds specific real-time timer data (10ms fastest realtime due to ancient browser stuff)
-    this.realtimeTimer = function realtimeTimer(_callback, _startOnCreation, _runTime)
+    this.realtimeTimer = function realtimeTimer(_callback, _startOnCreation, _runTime, _destroyOnStop)
     {
         //setup timer for current scaled timer
         this.realtimeCallback = _callback;
+        this.destroyOnStop = _destroyOnStop || false;
 
         //wait and respond to timer
         this.waitForTimer = function waitForTimer()
@@ -341,6 +342,18 @@ function cTimerDataTypes()
             //update callback and test if continue
             this.realtimeCallback.args.ticksElapsed = this.ticksElapsed;
             var _cont = this.invokeCallback(this.realtimeCallback);
+
+            if (!_cont)
+            {
+                if (this.destroyOnStop)
+                {
+                    this.destroy();
+                }
+                else
+                {
+                    this.stop();
+                }
+            }
         }
 
         //create a 10ms timer with the callback "waitForTimer"

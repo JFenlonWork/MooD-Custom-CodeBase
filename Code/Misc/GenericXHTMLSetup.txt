@@ -22,7 +22,15 @@ moodButtonSetup="Name =(Name/text of button)| ID =(Numerical ID)| toEnable =(ID-
 	
 	if (typeof cEventListener != "undefined")
 	{
-		cEventListener.generic.addFunctionToWaitingForMessage("afterEventListenerCreation","setupTab()"));
+		cEventListener.generic.addFunctionToWaitingForMessage("afterEventListenerCreation",
+			{ 
+				setupFunction : 
+					function () 
+					{
+						setupTab();
+					}
+			}
+		);
 	}
 	else
 	{
@@ -63,7 +71,7 @@ function setupTab()
 	_elementData.extra = "insert extra data based on type";
 	_elementData.id = insert numerical ID;
 	_elementData.requiredToEnable = "insert number";
-	createElement(_elementData);
+	cElement.setup.createElement(_elementData);
 		
 	//create buttons
 	//elements to enable/disable setup as follows
@@ -85,7 +93,7 @@ function setupTab()
 		canDisableSelf : true or false,
 		onClick :  null or "xxxxxx"
 	};
-	createButton(_buttonData);
+	cButton.setup.createButton(_buttonData);
 	
 }
 

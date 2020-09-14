@@ -5,13 +5,13 @@
 ***********************************************************************************
 * These are the line numbers for the included files:
 * 16
-* 1025
-* 1932
-* 2558
-* 3189
-* 3363
-* 4226
-* 4627
+* 988
+* 2088
+* 2714
+* 3373
+* 3547
+* 4410
+* 4824
 ***********************************************************************************/
 
 /*
@@ -195,7 +195,7 @@ function cButtonSetupFunctions()
 				{
 					setupFunction : function ()
 					{
-						cButton.modify.toggleButtonClick(buttonGenerated.buttonElementID, _enabled);
+						cButton.modify.toggleButtonClick(buttonGenerated.buttonElementID, _buttonData.enabledOnDefault.toString());
 					}
 				}
 			);
@@ -215,7 +215,7 @@ function cButtonSetupFunctions()
 			}
 
 			//add on click to object
-			cButton.modify.addOnClickToElement(buttonGenerated.buttonElementID, _buttonData.onClick, true);
+			cElement.modify.addOnClickToElement(buttonGenerated.buttonElementID, _buttonData.onClick, true);
 	
 			//return succeeded
 			return true;
@@ -917,6 +917,16 @@ function cButtonModifyFunctions()
 			
 			//setup switch value to be toggle
 			var switchValue = htmlButton.buttonEnabled;
+
+			switch (switchValue)
+			{
+				case "true":
+					switchValue = "false";
+					break;
+				case "false":
+					switchValue = "true";
+					break;
+			}
 			
 			//set switch value to _setValue if not null
 			if (_setValue != null)
@@ -938,23 +948,24 @@ function cButtonModifyFunctions()
 			switch(switchValue)
 			{
 				case "true":
-					//if switch value is true and the button can disable itself then disable
-					if (htmlButton.canDisableSelf == true || htmlButton.canDisableSelf == "true")
+					//enable itself and disable element it disables
+					cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[0]);
+					cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[3]);
+					break;
+				case "false":
+					if ((htmlButton.canDisableSelf == true || htmlButton.canDisableSelf == "true") && htmlButton.buttonEnabled == "true")
 					{
+						//disable the button's elements and enable any elements it disables
 						cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[1]);
 						cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[2]);
 					}
 					break;
-				case "false":
-					//disable the button's elements and enable any elements it disables
-					cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[0]);
-					cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[3]);
-					break;
 				case "partially":
 					//if button can disable itself then disable 
-					if (htmlButton.canDisableSelf == true || htmlButton.canDisableSelf == "true")
+					if ((htmlButton.canDisableSelf == true || htmlButton.canDisableSelf == "true") && htmlButton.buttonEnabled == "true")
 					{
 						cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[1]);
+						cEventListener.message.sendMessageToType(htmlButton.elementOwned.eventListener,_messages[2]);
 					}
 					else
 					{
@@ -970,54 +981,6 @@ function cButtonModifyFunctions()
 		}
 		console.log("Button Connected With Button: " + htmlButton.buttonElementID + " Doesn't Exist");
 		return false;	
-	}
-
-	this.addOnClickToElement = function addOnClickToElement(_elementID, _function, _addOrCreate, _css)
-	{
-		
-		var _css = _css || null;
-		//find all html objects from ID
-		var elementObjs = cUtility.findHTMLObjects(cElement.search.getElementID(_elementID));
-		
-		if (elementObjs)
-		{
-			//loop through all objects
-			for (var e = 0; e < elementObjs.length; e++)
-			{
-				//add onto onclick
-				cButton.modify.addOnClickToHTML(elementObjs[e], _function, _addOrCreate);
-
-				if (_css)
-				{
-					//Add css based on button
-					elementObjs[e].classList.add(_css);
-				}
-			}
-		}
-	}
-
-	this.addOnClickToHTML = function addOnClickToHTML(_elementObj, _function, _addOrCreate)
-	{
-		//add onto onclick
-		if (_addOrCreate)
-		{
-			//check if onclick exists and is add
-			if (_elementObj.getAttribute("onclick"))
-			{
-				//add onto onclick
-				_elementObj.setAttribute("onclick", _elementObj.getAttribute("onclick") + ";" + _function);
-			}
-			else
-			{
-				//set onclick to be _function
-				_elementObj.setAttribute("onclick", _function);
-			}
-		}
-		else
-		{
-			//create on click to be _function
-			_elementObj.setAttribute("onclick", _function);
-		}
 	}
 
 }
@@ -1042,12 +1005,14 @@ window.cCss = window.cCss || new function customCss()
 	this.StyleModificationData = this.dataTypes.styleModificationData.prototype;
 	this.styleModificationData = this.dataTypes.styleModificationData;
 	
+	this.SeparatedListData = this.dataTypes.separatedListData.prototype;
+	this.separatedListData = this.dataTypes.separatedListData;
+	
 	//====FUNCTIONS====//
 	this.transform = new customCssTransformFunctions();
 	this.transition = new customCssTransitionFunctions();
 	this.style = new customCssStyleFunctions();
 	this.styleSheet = new customCssstyleSheetFunctions();
-	this.elementCss = new customCssElementCssFunctions();
 
 	//====RUN-TIME FUNCTIONS====//
 
@@ -1073,6 +1038,53 @@ function cCssDataTypes()
 		this.value = _value || "";
 		this.importance = _importance || "";
 		this.propertyIndex = _propertyIndex || 0;
+	}
+
+	//store split style data
+	this.separatedListData = function separatedListData(_prefix, _body, _commaSeparated)
+	{
+		this.prefix = _prefix || "";
+		this.body = _body || [];
+		this.commaSeparated = _commaSeparated || false;
+
+		var _this = this;
+
+		//combine prefix and body into single string
+		this.combineData = function combineData()
+		{
+			//setup initial body of style
+			var _ret = _prefix;
+
+			//loop through all data of body
+			for (var _body = 0; _body < _this.body.length; _body++)
+			{
+				//check if style was comma-separated
+				if (_commaSeparated)
+				{
+					//add body section onto style body
+					_ret += " " + _this.body[_body];
+				}
+				else
+				{
+					//check if body section needs to start/end with brackets
+					if (_body == 0)
+					{
+						_ret += "(";
+					}
+					
+					if (_body == _this.body.length - 1)
+					{
+						_ret += "," + _this.body[_body] + ")";
+					} 
+					else
+					{
+						_ret += "," + _this.body[_body];
+					}
+				}
+			}
+
+			return _ret;
+		}
 	}
 }
 
@@ -1186,7 +1198,7 @@ function customCssTransformFunctions()
 }
 
 //hold all transition functions
-function customCssTransitionFunctions()
+function customCssTransitionFunctions() 
 {
 	//add transition onto object
 	this.addTransition = function addTransition(_object, _transitionData)
@@ -1792,7 +1804,7 @@ function customCssstyleSheetFunctions()
 			_style = _style.replace(/[{}]/g, "");
 			
 			//split the string to individual styles
-			_ret = _style.split("; ");
+			_ret = _style.split(/(; )|(;)/g);
 		}
 		else if (typeof _style === "array")
 		{
@@ -1912,21 +1924,165 @@ function customCssstyleSheetFunctions()
 		
 	}
 
-}
-
-//hold all custom element Css functions
-function customCssElementCssFunctions()
-{
-	//
-	this.requestCustomCss = function requestCustomCss(_class, _object)
+	//return a style list separated 
+	this.separateStyleListAttribute = function separateStyleListAttribute(_attribute, _commaSeparated)
 	{
+		var _ret = [];
+		if (_commaSeparated)
+		{
+			//split based on comma-separated
+			var _attributes = _attribute.split(/,( |(?=[a-z]))/gi);
 
+			//loop through attributes after they are separated
+			for (var _attrs = 0; _attrs < _attributes.length; _attrs++)
+			{
+				var _attrSplit = _attributes[_attrs].split(" ");
+				var _attrPrefix = _attrSplit[0];
+				_attrSplit.splice(0,1);
+
+				//create a return entry 
+				_ret.push(new cCss.SeparatedListData(_attrPrefix,_attrSplit,true));
+			}
+		}
+		else
+		{
+			//split based on bracket-separated
+			var _attributes = _attribute.split(/\((.*?)\)(?=[a-z]| |$|;)/gi);
+			var _attributesData = _attribute.split(/((?=(\)|^))(.*?)\()|(\)$)/gi);
+			
+			//loop through attributes after they are separated
+			for (var _attrs = 0; _attrs < _attributes.length; _attrs++)
+			{
+				//split based on brackets (,)
+				var _attrSplitData = _attributesData[_attrs].split(",");
+				var _attrPrefix = _attributes[_attrs];
+
+				//create a return entry 
+				_ret.push(new cCss.SeparatedListData(_attrPrefix,_attrSplitData,false));
+			}
+		} 
 	}
 
-	this.addCustomCss = function addCustomCss()
+	/**
+	 * split up style into comma separated and then pick out _prefix from those
+	 * 
+	 * can ONLY search for one type of style at a time (can accept multiple prefix)
+	 * 
+	 * returns custom split data with: .prefix and
+	 * .body with function .combineData() to return one string
+	 * 
+	 * Return Types:
+	 * 
+	 * 0 -> return all
+	 * 
+	 * 1 -> return if the same style 
+	 * 
+	 * 2 -> return if not the same style
+	 */
+	this.getSeparatedAttributes = function getSeparatedAttributes(_sheet, _selector, _style, _stylePrefix, _commaSeparated, _returnType)
 	{
-		
+		//setup basic variables
+		var _ret = [];
+		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
+		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
+		var _styles = cCss.styleSheet.translateCssStyle(_style);
+		var _stylePrefix = _stylePrefix || [];
+
+		if (_selector && _commaSeparated != null)
+		{
+			//get the current _style 
+			var _currentStyles = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 1);
+
+			//loop through current style 
+			for (var _cs = 0; _cs < _currentStyles.length; _cs++)
+			{
+				//loop through all separated indexs
+				var _regexSeparated = cCss.styleSheet.separateStyleListAttribute(_currentStyles[_cs],_commaSeparated);
+
+				for (var _rs = 0; _rs < _regexSeparated.length; _rs++)
+				{
+					var _found = false;
+					//loop through style prefixes and see if similar
+					for (var _s = 0; _s < _stylePrefix.length; _s)
+					{
+						if (_stylePrefix[s] == _regexSeparated[_rs].prefix)
+						{
+							_found = true;
+							break;
+						}
+					}
+
+					//add to return based on return type
+					if (_returnType == 0)
+					{
+						//add because returning all
+						_ret.push(_regexSeparated[_rs])
+					}
+					if (_found && _returnType == 1)
+					{
+						//found
+						_ret.push(_regexSeparated[_rs]);
+					}
+					else if (!_found && _returnType == 2)
+					{
+						//not found
+						_ret.push(_regexSeparated[_rs]);
+					}
+				}
+			}
+		}
+
+		//return ret value if populated
+		if (_ret.length != 0)
+		{
+			return _ret;
+		}
+
+		//return null as something failed
+		return null;
 	}
+
+	//modify separated style attribute
+	this.translateSeparatedAttributePrefix = function translateSeparatedAttributePrefix(_stylePrefix)
+	{
+		//check style and stylePrefix is correct if not setup and return
+		if (typeof _stylePrefix == "string")
+		{
+			var _ret = [];
+			_ret.push(_stylePrefix);
+			return _ret;
+		}
+		else if (typeof _stylePrefix == "array")
+		{
+			return _stylePrefix;
+		}
+
+		//return null as something failed
+		return null;
+	}
+
+	//Add to separated style attribute
+	this.addSeparatedAttribute = function addSeparatedAttribute(_sheet, _selector, _style, _stylePrefix, _commaSeparated, _addOrReplace, _attributeIndexToEdit)
+	{
+		//setup basic variables
+		var _sheet = cCss.styleSheet.translateCssSheet(_sheet);
+		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
+		var _styles = cCss.styleSheet.translateCssStyle(_style) || [];
+		var _stylePrefix = cCss.styleSheet.translateSeparatedAttributePrefix(_stylePrefix) || [];
+		var _attributeIndexToEdit = _attributeIndexToEdit || 0;
+	}
+
+	//remove separated style attribute
+	this.removeSeparatedAttribute = function removeSeparatedAttribute(_sheet, _selector, _style, _stylePrefix, _commaSeparated, _removeOrErase, _attributeIndexToEdit)
+	{
+		//setup basic variables
+		var _sheet = cCss.styleSheet.translateCssSheet(_sheet);
+		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
+		var _styles = cCss.styleSheet.translateCssStyle(_style) || [];
+		var _stylePrefix = cCss.styleSheet.translateSeparatedAttributePrefix(_stylePrefix) || [];
+		var _attributeIndexToEdit = _attributeIndexToEdit || 0;
+	}
+
 }
 
 
@@ -3014,7 +3170,8 @@ function cElementModifyFunctions()
                     ((_messageData.opacityTime || 0) / 1000).toString() + "s",
                     _messageData.opacityTiming || "linear",
                     ((_messageData.opacityDelay || 0) / 1000).toString() + "s",
-                    );
+                    null
+                );
 
                 //add the transition data to the overylay panel
                 cCss.transition.addTransition(htmlOverlayPanel, _transData);
@@ -3028,6 +3185,7 @@ function cElementModifyFunctions()
                     "0s",
                     "linear",
                     "0s",
+                    null
                     );
 
                 //add the transition data to the overylay panel
@@ -3088,7 +3246,7 @@ function cElementModifyFunctions()
                 }
             }
             
-            new cTimer.realtimeTimer(new cTimer.callback(opacityChange, this), true, currentDelay + 1);
+            new cTimer.realtimeTimer(new cTimer.callback(opacityChange, this), true, currentDelay + 1, true);
         }
 
         //check if zIndex supplied and set to that if so
@@ -3155,6 +3313,7 @@ function cElementModifyFunctions()
                         ((_messageData.positionMoveTime || 0) / 1000).toString() + "s",
                         _messageData.positionTiming || "linear",
                         ((_messageData.positionDelay || 0) / 1000).toString() + "s",
+                        null
                         );
 
                 //add transition data to "left" 
@@ -3184,6 +3343,31 @@ function cElementModifyFunctions()
             htmlOverlayPanel.style.top = (_posY - parseInt(scrollOffsetY)) + "px";
         }
     }
+
+    //add onClick to element's html
+    this.addOnClickToElement = function addOnClickToElement(_elementID, _function, _addOrCreate, _css)
+	{
+		
+		var _css = _css || null;
+		//find all html objects from ID
+		var elementObjs = cUtility.findHTMLObjects(cElement.search.getElementID(_elementID));
+		
+		if (elementObjs)
+		{
+			//loop through all objects
+			for (var e = 0; e < elementObjs.length; e++)
+			{
+				//add onto onclick
+				cUtility.addOnClickToHTML(elementObjs[e], _function, _addOrCreate);
+
+				if (_css)
+				{
+					//Add css based on button
+					elementObjs[e].classList.add(_css);
+				}
+			}
+		}
+	}
 }
 
 
@@ -4438,7 +4622,7 @@ function cTimerDataTypes()
             if (this.running)
             {
                 //check timer should still be running
-                if (this.ticksRemaining < 0)
+                if (this.ticksRemaining - this.currentInterval < 0)
                 {
                     //destroy the timer if it should stop
                     this.destroy();
@@ -4556,10 +4740,11 @@ function cTimerDataTypes()
     }
 
     //holds specific real-time timer data (10ms fastest realtime due to ancient browser stuff)
-    this.realtimeTimer = function realtimeTimer(_callback, _startOnCreation, _runTime)
+    this.realtimeTimer = function realtimeTimer(_callback, _startOnCreation, _runTime, _destroyOnStop)
     {
         //setup timer for current scaled timer
         this.realtimeCallback = _callback;
+        this.destroyOnStop = _destroyOnStop || false;
 
         //wait and respond to timer
         this.waitForTimer = function waitForTimer()
@@ -4567,6 +4752,18 @@ function cTimerDataTypes()
             //update callback and test if continue
             this.realtimeCallback.args.ticksElapsed = this.ticksElapsed;
             var _cont = this.invokeCallback(this.realtimeCallback);
+
+            if (!_cont)
+            {
+                if (this.destroyOnStop)
+                {
+                    this.destroy();
+                }
+                else
+                {
+                    this.stop();
+                }
+            }
         }
 
         //create a 10ms timer with the callback "waitForTimer"
@@ -4637,7 +4834,7 @@ window.cUtility = window.cUtility || new function cUtility()
 {
     this.findHTMLObjectsFromName = function findHTMLObjectsFromName(name)
     {
-        var nameParsed = (name.replace(/[.,\/#!$%\^&\*;:{}=_`~()]/g,"-")).toLowerCase();
+        var nameParsed = (name.replace(/[.,\/#!$%\^&\*;:{}=_`~() ]/g,"-")).toLowerCase();
         return $("[class*=-" + nameParsed + "]");
     }
 
@@ -4667,7 +4864,7 @@ window.cUtility = window.cUtility || new function cUtility()
         if (_element.elementType == '')
         {
             //return the mood element
-            return window.cUtility.findHTMLObjectsFromName("mood-node-name-" + _element.elementName);
+            return window.cUtility.findHTMLObjectsFromName(_element.elementName);
         }
         
         //force values if element type is null/undefined
@@ -4715,5 +4912,65 @@ window.cUtility = window.cUtility || new function cUtility()
 		return $('[' + typePrefix + '="' + lowerCaseElementName + '"]');
 
     }
+
+    this.compareMooDValue = function compareMooDValue(_toCheckElement, _toCheckJQuery, _toCheckValue, _compareValue)
+    {
+        //setup basic variables
+        var _toCheckJQuery = _toCheckJQuery || "";
+        var _toCheckHTML;
+
+        //find the html that is supposed to be checked
+        if (_toCheckJQuery && _toCheckJQuery != "")
+        {
+            _toCheckHTML = window.cUtility.findHTMLObjects(_toCheckElement).find(_toCheckJQuery);
+        }
+        else
+        {
+            _toCheckHTML = window.cUtility.findHTMLObjects(_toCheckElement);
+        }
+        
+        //loop through all results found
+        for (var h = 0; h < _toCheckHTML.length; h++)
+        {
+            //check if value to check exists
+            if (_toCheckValue && _toCheckHTML[h][_toCheckValue])
+            {
+                //compare value to compare value
+                if (_toCheckHTML[h][_toCheckValue] == _compareValue)
+                {
+                    //return true if compared
+                    return true;
+                }
+            }
+        }
+
+        //return false because compare failed
+        return false;
+    }
+
+    //add onClick to HTML
+    this.addOnClickToHTML = function addOnClickToHTML(_htmlObj, _function, _addOrCreate)
+	{
+		//add onto onclick
+		if (_addOrCreate)
+		{
+			//check if onclick exists and is add
+			if (_htmlObj.getAttribute("onclick"))
+			{
+				//add onto onclick
+				_htmlObj.setAttribute("onclick", _htmlObj.getAttribute("onclick") + ";" + _function);
+			}
+			else
+			{
+				//set onclick to be _function
+				_htmlObj.setAttribute("onclick", _function);
+			}
+		}
+		else
+		{
+			//create on click to be _function
+			_htmlObj.setAttribute("onclick", _function);
+		}
+	}
 
 }

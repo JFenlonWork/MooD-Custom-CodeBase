@@ -456,7 +456,8 @@ function cElementModifyFunctions()
                     ((_messageData.opacityTime || 0) / 1000).toString() + "s",
                     _messageData.opacityTiming || "linear",
                     ((_messageData.opacityDelay || 0) / 1000).toString() + "s",
-                    );
+                    null
+                );
 
                 //add the transition data to the overylay panel
                 cCss.transition.addTransition(htmlOverlayPanel, _transData);
@@ -470,6 +471,7 @@ function cElementModifyFunctions()
                     "0s",
                     "linear",
                     "0s",
+                    null
                     );
 
                 //add the transition data to the overylay panel
@@ -530,7 +532,7 @@ function cElementModifyFunctions()
                 }
             }
             
-            new cTimer.realtimeTimer(new cTimer.callback(opacityChange, this), true, currentDelay + 1);
+            new cTimer.realtimeTimer(new cTimer.callback(opacityChange, this), true, currentDelay + 1, true);
         }
 
         //check if zIndex supplied and set to that if so
@@ -597,6 +599,7 @@ function cElementModifyFunctions()
                         ((_messageData.positionMoveTime || 0) / 1000).toString() + "s",
                         _messageData.positionTiming || "linear",
                         ((_messageData.positionDelay || 0) / 1000).toString() + "s",
+                        null
                         );
 
                 //add transition data to "left" 
@@ -626,4 +629,29 @@ function cElementModifyFunctions()
             htmlOverlayPanel.style.top = (_posY - parseInt(scrollOffsetY)) + "px";
         }
     }
+
+    //add onClick to element's html
+    this.addOnClickToElement = function addOnClickToElement(_elementID, _function, _addOrCreate, _css)
+	{
+		
+		var _css = _css || null;
+		//find all html objects from ID
+		var elementObjs = cUtility.findHTMLObjects(cElement.search.getElementID(_elementID));
+		
+		if (elementObjs)
+		{
+			//loop through all objects
+			for (var e = 0; e < elementObjs.length; e++)
+			{
+				//add onto onclick
+				cUtility.addOnClickToHTML(elementObjs[e], _function, _addOrCreate);
+
+				if (_css)
+				{
+					//Add css based on button
+					elementObjs[e].classList.add(_css);
+				}
+			}
+		}
+	}
 }
