@@ -39,6 +39,12 @@ window.cEventListener = window.cEventListener || new function customEventListene
     //store any messages to be broadcasted (change to priortiy queue list?)
     this.functionWaitingForMessageQueue = [];
 
+    //store any messages broadcasted and ready to be removed
+    this.functionWaitingInvoked = [];
+
+    //store if queue invoke process has started
+    this.functionQueueProcessStarted = 0;
+
     //====DATA TYPES====//
     this.dataTypes = new cEventListenerDataTypes();
     
@@ -481,7 +487,7 @@ function cEventListenerQueueFunctions()
     this.invokeMessageQueue = function invokeMessageQueue(_functionType)
     {
         //store any messages that have been invoked
-        var _messagesInvoked = [];
+        cEventListener.functionQueueProcessStarted += 1;
 
         //loop through all functions within the current message queue
         for (var l = 0; l < cEventListener.functionWaitingForMessageQueue.length; l++)
@@ -489,24 +495,51 @@ function cEventListenerQueueFunctions()
             //check if message type is the same as _functionType
             if (cEventListener.functionWaitingForMessageQueue[l].type == _functionType)
             {
-                //invoke the "setupFunction" of that message
-                cEventListener.functionWaitingForMessageQueue[l].evaluateMessage("setupFunction");
 
-                //add this individual to be removed
-                _messagesInvoked.push(
-                    new cEventListener.basicMessage(_functionType,
-                        cEventListener.functionWaitingForMessageQueue[l].evaluateMessage(
-                            "setupFunction", null, true)
-                    )
-                );
+                if (cEventListener.queue.checkMessageQueueInvoked(cEventListener.functionWaitingForMessageQueue[l]) == -1)
+                {
+                    //invoke the "setupFunction" of that message
+                    cEventListener.functionWaitingForMessageQueue[l].evaluateMessage("setupFunction");
+
+                    //add this individual to be removed
+                    cEventListener.functionWaitingInvoked.push(
+                        new cEventListener.basicMessage(_functionType,
+                            cEventListener.functionWaitingForMessageQueue[l].evaluateMessage(
+                                "setupFunction", null, true)
+                        )
+                    );
+
+                }
             }
         }
 
-        //loop through all messages that have been invoked and remove them
-        for (var m = 0; m < _messagesInvoked.length; m++)
+        cEventListener.functionQueueProcessStarted -= 1;
+
+        if (cEventListener.functionQueueProcessStarted == 0)
         {
-            cEventListener.queue.removeFromMessageQueue(_messagesInvoked[m]);
+            //loop through all messages that have been invoked and remove them
+            for (var m = 0; m < cEventListener.functionWaitingInvoked.length; m++)
+            {
+                cEventListener.queue.removeFromMessageQueue(cEventListener.functionWaitingInvoked[m]);
+                cEventListener.functionWaitingInvoked.splice(m,1);
+                m--;
+            }
         }
+    }
+
+    this.checkMessageQueueInvoked = function checkMessageQueueInvoked(_messageQueuer)
+    {
+        //loop through all messages that have been invoked and remove them
+        for (var m = 0; m < cEventListener.functionWaitingInvoked.length; m++)
+        {
+            if (cEventListener.functionWaitingInvoked[m] == _messageQueuer)
+            {
+                return m;
+            }
+        }
+
+        //otherwise return -1 because it doesn't exist
+        return -1;
     }
 
     this.removeFromMessageQueue = function removeFromMessageQueue(_message)
