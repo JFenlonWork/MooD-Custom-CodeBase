@@ -483,7 +483,14 @@ function cElementModifyFunctions()
         if (_enabled)
         {
             //change html style to be visiblie and set zIndex to default
-            htmlOverlayPanel.style.opacity = 100;
+            if (_messageData.opacity)
+            {
+                htmlOverlayPanel.style.opacity = _messageData.opacity;
+            }
+            else
+            {
+                htmlOverlayPanel.style.opacity = 100;
+            }
             htmlOverlayPanel.style.visibility = "visible";
             cCss.style.addStyleProperty(htmlOverlayPanel,
                 new cCss.styleModificationData("z-index",
@@ -494,7 +501,14 @@ function cElementModifyFunctions()
         else
         {
             //change html style to be visiblie and set zIndex to default
-            htmlOverlayPanel.style.opacity = 0;
+            if (_messageData.opacity)
+            {
+                htmlOverlayPanel.style.opacity = _messageData.opacity;
+            }
+            else
+            {
+                htmlOverlayPanel.style.opacity = 0;
+            }
             var currentDelay = (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0);
 
             //function for callback in timer
