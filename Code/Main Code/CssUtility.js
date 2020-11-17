@@ -52,6 +52,20 @@ function cCssDataTypes()
 		this.propertyIndex = _propertyIndex || 0;
 	}
 
+	//make value be array to indicate (x,y,z) etc...
+	this.styleModificationData2 = function styleModificationData(_property, _cssTextProperty, _canBeList, _splitType, _value, _propertyIndex, _importance)
+	{
+		this.property = _property || "";
+		this.cssTextProperty = _cssTextProperty || "";
+		this.canBeList = _canBeList || false;
+
+		//0 = none, 1 = brackets, 2 = commas
+		this.splitType = _splitType || 0;
+		this.value = _value || "";
+		this.importance = _importance || false;
+		this.propertyIndex = _propertyIndex !== null ? _propertyIndex : -1;
+	}
+
 	//store split style data
 	this.separatedListData = function separatedListData(_prefix, _body, _commaSeparated)
 	{
@@ -684,109 +698,191 @@ function customCssstyleSheetFunctions()
 		}
 	}
 
+	/**
+	 * return the property/values within a style 
+	 * 
+	 * Return Types:
+	 * 
+	 * 0 -> return all
+	 * 
+	 * 1 -> return if not the same style
+	 * 
+	 * 2 -> return if the same style 
+	 * 
+	 * 3 -> do not create style string store index
+	 */
+	this.getCssStyle = function getCssStyle(_style, _styleData, _returnType)
+	{
+		var _properties = [];
+		var _values = [];
+		var _styleProperty = _style[_styleData.property] || "";
+			
+		//split by 1 == "example(...) example2(...)"
+		if (_styleData.splitType === 1)
+		{
+			_properties = _styleProperty.split(/(?=\().*?(?=\)).*?(?=[a-z]|$)/gi)
+				.filter( 
+					function(value, index, arr)
+					{
+						return value !== "";
+					}
+				);
+			
+			_values = _styleProperty.split(/(?=(^|\))).*?(?=\()/gi)
+				.filter( 
+					function(_value, index, arr)
+					{
+						return _value !== "" && _value !== ")";
+					}
+				);
+					
+			_values.forEach(function (_value, _index, _array)
+			{
+				if (_value && _value.charAt(_value.length - 1) !== ")")
+				{
+					_array[_index] = _value + ")";
+				}
+			});
+		}
+		//split by 2 == test 1s ease-in-out, test2 1s ease-in-out
+		else if (_styleData.splitType === 2)
+		{
+			_styleProperty.split(",").forEach(function (prop) {
+				var _prop = prop.split(" ")[0];
+				_properties.push(_prop);
+			});
+
+			_styleProperty.split(",").forEach(function (value) {
+				var _value = value.split(" ");
+				_value[0] = "";
+				_values.push(_value.join(" "));
+			});
+		}
+		else
+		{
+			_properties = [_property];
+			_values = [_styleProperty];
+		}
+
+		var _combinedStyleText = "";
+		var _returnTypeIndex = -1;
+		var _propertyToTest = _styleData.cssTextProperty === null ? _styleData.property : _styleData.cssTextProperty;
+
+		for (var a = 0; a < _properties.length; a++)
+		{
+			if (_properties[a] !== _propertyToTest)
+			{
+				if (_returnType === 0 || _returnType === 1)
+				{	
+					_combinedStyleText += _properties[a] + _values[a] + " ";
+				}
+			} 
+			else
+			{
+				_returnTypeIndex = a;
+				if (_returnType === 0 || _returnType === 2)
+				{
+					_combinedStyleText += _properties[a] + _values[a] + " ";
+				}
+			}
+		}
+		
+		return {
+			properties: _properties,
+			values: _values,
+			returnTypeIndex: _returnTypeIndex,
+			returnTypeNewCss: _combinedStyleText
+		};
+		
+	}
+
+	this.replaceCssStyle = function replaceCssStyle(_style, _styleData)
+	{
+		if (_styleData.property)
+		{	
+			var _styleParsedData = cCss.styleSheet.getCssStyle(_style, _styleData, 1)
+
+			if (_styleData.propertyIndex === -1)
+			{
+				//replace entire property value
+				_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleData.value;
+			}
+			else if (_styleParsedData.returnTypeIndex !== -1)
+			{
+				//replace value at index of property
+				//replace(/((?<=^)\()|(\)(?=$))/gi, "")
+				var _valueSplit = "";
+				if (_styleData.splitType === 1)
+				{
+					_valueSplit = _styleParsedData.values[_styleParsedData.returnTypeIndex].substring(1, _styleParsedData.values[_styleParsedData.returnTypeIndex].length - 1).split(",");
+				}
+				else
+				{
+					_valueSplit = _styleParsedData.values[_styleParsedData.returnTypeIndex].split(" ").filter(function(_value) {
+						return _value !== "";
+					});
+				}
+
+				if (_valueSplit.length >= _styleData.propertyIndex && _valueSplit.length != 0 && _styleData.propertyIndex >= 0)
+				{
+					_valueSplit[_styleData.propertyIndex] = _styleData.value;
+
+					if (_styleData.splitType == 1)
+					{
+						_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleParsedData.properties[_styleParsedData.returnTypeIndex] + "(" + _valueSplit.join(",") + ")";
+					}
+					else
+					{
+						_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleParsedData.properties[_styleParsedData.returnTypeIndex] + " " + _valueSplit.join(" ");
+					}
+				}
+				else
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
+
+			//add importance to the property
+			if (_styleData.importance !== null)
+			{
+
+				if (_styleData.canBeList)
+				{
+					var _regex = "(^.*?(?=(" + _styleData.property + ")|$))|(?<=((" + _styleData.property + ").*?(?=;))).*";
+					var _newCssValue = _style.cssText.replace(new RegExp(_regex, "gi"), "").replace("!important", "");
+					var _newCssText = _style.cssText.replace(new RegExp("(" + _styleData.property + ").*?;"), "");
+					_style.cssText = _newCssText + _newCssValue + (_styleData.importance === true ? " !important;" : ";");
+				}
+				else
+				{
+					var _newCssText = _style.cssText.replace(new RegExp("(" + _styleData.cssTextProperty + ").*?;"), "");
+					_style.cssText = _newCssText + _styleData.cssTextProperty + ": " + _styleData.value + (_styleData.importance === true ? " !important;" : ";");
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
 	//add Css Selector Style To Style Sheet
 	this.addCssStyle = function addCssStyle(_sheet, _selector, _style, _replace)
 	{
 		//setup basic variables
 		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
 		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		var _styles = cCss.styleSheet.translateCssStyle(_style);
 		
 		//check selector exists
-		if (_selector && _styles)
-		{
-			var _currentStylesNotReplacing = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 2);
-			var _styleString = "";
-
-			//add all current style to style string
-			if (_currentStylesNotReplacing)
-			{
-				for (var cs = 0; cs < _currentStylesNotReplacing.length; cs++)
-				{
-					_styleString += _currentStylesNotReplacing[cs] + "; ";
-				}
-			}
-
-			//check if replacing style is true
-			if (_replace)
-			{
-				//append styles to the end of current style
-				for (var s = 0; s < _styles.length; s++)
-				{
-					_styleString += _styles[s] + "; ";
-				}
-			}
-			else
-			{
-				//loop through and find values to append based on current style
-				var _currentStylesNotReplacing = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 1) || [];
-				for (var s = 0; s < _styles.length; s++)
-				{
-					//store style substring
-					var _styleSubStr = _styles[s].substring(0, _styles[s].indexOf(":") || _styles[s].length);
-					var _found = false;
-					
-					//loop through all similar current styles
-					for (var cs = 0; cs < _currentStylesNotReplacing.length; cs++)
-					{
-						//check if style substring is the same as current style
-						if (_styleSubStr ==
-							 _currentStylesNotReplacing[cs].substring(
-								0,
-								_styles[s].indexOf(":") || _styles[s].length)
-							)
-						{
-							//set found to true and break
-							_found = true;
-							break;
-						}
-					}
-					
-					//if style hasn't been found
-					if (!_found)
-					{
-						//add style onto end of cssText
-						_styleString += _styles[s] + "; ";
-					}
-				}
-			}
-
-			//set the selector css to new css
-			_selector.style.cssText = _styleString;
-
-			//return true as suceeded
-			return true;
-		}
-
-		//return null as something failed
-		return null;
-
-	}
-
-	//remove Css Selector Style From Sheet
-	this.removeCssStyle = function removeCssStyle(_sheet, _selector, _style)
-	{
-		//setup basic variables
-		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
-		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		var _styles = cCss.styleSheet.translateCssStyle(_style);
-
 		if (_selector)
 		{
-			var _currentStylesToKeep = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 2);
-			var _styleString = "";
 
-			//add current style to keep to style string
-			if (_currentStylesToKeep)
+			for (var a = 0; a < _style.length; a++)
 			{
-				for (var cs = 0; cs < _currentStylesToKeep.length; cs++)
-				{
-					_styleString += _currentStylesToKeep[cs] + "; ";
-				}
+				cCss.styleSheet.replaceCssStyle(_selector.style, _style[a]);
 			}
-
-			//set the selector css to new css
-			_selector.style.cssText = _styleString;
 
 			//return true as suceeded
 			return true;
@@ -794,59 +890,7 @@ function customCssstyleSheetFunctions()
 
 		//return null as something failed
 		return null;
-	}
 
-	//return the correct format for _style to be inserted
-	this.translateCssStyle = function translateCssStyle(_style)
-	{
-		//setup return value
-		var _ret = [];
-
-		//check if _style exists
-		if (!_style)
-		{	
-			//return null because _style doesn't exist
-			return null;
-		}
-
-		//check what type _style is
-		if (typeof _style === "string")
-		{
-			//remove potential object specifiers
-			_style = _style.replace(/[{}]/g, "");
-			
-			//split the string to individual styles
-			_ret = _style.split(/(; )|(;)/g);
-		}
-		else if (typeof _style === "array")
-		{
-			//loop through all style array values
-			for (var s = 0; s < _style.length; s++)
-			{
-				//translate the current style array index
-				var _translated = cCss.styleSheets.translateCssStyle(_style[s]);
-
-				//check if style exists and add it to ret
-				if (_translated)
-				{
-					_ret.push(_translated);
-				}
-			}
-		}
-		else if (typeof _style === "object")
-		{
-			//translate based on string version of _style
-			_ret = cCss.styleSheet.translateCssStyle(_style.toString());
-		}
-
-		//return _ret or null
-		if (_ret.length != 0)
-		{
-			return _ret;
-		}
-
-		//return null as something failed
-		return null;
 	}
 
 	/**
@@ -860,6 +904,8 @@ function customCssstyleSheetFunctions()
 	 * 
 	 * 2 -> return if not the same style
 	 */
+	
+	 /*
 	this.getCssStyle = function getCssStyle(_sheet, _selector, _style, _returnType)
 	{
 		//setup basic variables
@@ -936,6 +982,98 @@ function customCssstyleSheetFunctions()
 		
 	}
 
+	*/
+
+	//remove Css Selector Style From Sheet
+	this.removeCssStyle = function removeCssStyle(_sheet, _selector, _style)
+	{
+		//setup basic variables
+		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
+		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
+		var _styles = cCss.styleSheet.translateCssStyle(_style);
+
+		if (_selector)
+		{
+			var _currentStylesToKeep = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 2);
+			var _styleString = "";
+
+			//add current style to keep to style string
+			if (_currentStylesToKeep)
+			{
+				for (var cs = 0; cs < _currentStylesToKeep.length; cs++)
+				{
+					_styleString += _currentStylesToKeep[cs] + "; ";
+				}
+			}
+
+			//set the selector css to new css
+			_selector.style.cssText = _styleString;
+
+			//return true as suceeded
+			return true;
+		}
+
+		//return null as something failed
+		return null;
+	}
+
+	//return the correct format for _style to be inserted
+	this.translateCssStyle = function translateCssStyle(_style)
+	{
+		//setup return value
+		var _ret = [];
+
+		//check if _style exists
+		if (!_style)
+		{	
+			//return null because _style doesn't exist
+			return null;
+		}
+
+		//check what type _style is
+		if (typeof _style === "string")
+		{
+			//remove potential object specifiers
+			_style = _style.replace(/[{}]/g, "");
+			
+			//split the string to individual styles
+			_ret = _style.split(/; */gi).filter(
+				function comp(value, index, arr) 
+				{
+					return ($.inArray(value, ['',' ',';',null,undefined]) == -1);
+				});
+		}
+		else if (typeof _style === "array")
+		{
+			//loop through all style array values
+			for (var s = 0; s < _style.length; s++)
+			{
+				//translate the current style array index
+				var _translated = cCss.styleSheets.translateCssStyle(_style[s]);
+
+				//check if style exists and add it to ret
+				if (_translated)
+				{
+					_ret.push(_translated);
+				}
+			}
+		}
+		else if (typeof _style === "object")
+		{
+			//translate based on string version of _style
+			_ret = cCss.styleSheet.translateCssStyle(_style.toString());
+		}
+
+		//return _ret or null
+		if (_ret.length != 0)
+		{
+			return _ret;
+		}
+
+		//return null as something failed
+		return null;
+	}
+
 	//return a style list separated 
 	this.separateStyleListAttribute = function separateStyleListAttribute(_attribute, _commaSeparated)
 	{
@@ -955,6 +1093,8 @@ function customCssstyleSheetFunctions()
 				//create a return entry 
 				_ret.push(new cCss.SeparatedListData(_attrPrefix,_attrSplit,true));
 			}
+
+			return _ret;
 		}
 		else
 		{
@@ -972,6 +1112,8 @@ function customCssstyleSheetFunctions()
 				//create a return entry 
 				_ret.push(new cCss.SeparatedListData(_attrPrefix,_attrSplitData,false));
 			}
+
+			return _ret;
 		} 
 	}
 

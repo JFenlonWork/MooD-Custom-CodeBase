@@ -6,12 +6,12 @@
 * These are the line numbers for the included files:
 * 16
 * 988
-* 2088
-* 2714
-* 3373
-* 3547
-* 4450
-* 4864
+* 2202
+* 2879
+* 3552
+* 3726
+* 4622
+* 5036
 ***********************************************************************************/
 
 /*
@@ -1040,6 +1040,20 @@ function cCssDataTypes()
 		this.propertyIndex = _propertyIndex || 0;
 	}
 
+	//make value be array to indicate (x,y,z) etc...
+	this.styleModificationData2 = function styleModificationData(_property, _cssTextProperty, _canBeList, _splitType, _value, _propertyIndex, _importance)
+	{
+		this.property = _property || "";
+		this.cssTextProperty = _cssTextProperty || "";
+		this.canBeList = _canBeList || false;
+
+		//0 = none, 1 = brackets, 2 = commas
+		this.splitType = _splitType || 0;
+		this.value = _value || "";
+		this.importance = _importance || false;
+		this.propertyIndex = _propertyIndex !== null ? _propertyIndex : -1;
+	}
+
 	//store split style data
 	this.separatedListData = function separatedListData(_prefix, _body, _commaSeparated)
 	{
@@ -1672,19 +1686,196 @@ function customCssstyleSheetFunctions()
 		}
 	}
 
+	/**
+	 * return the property/values within a style 
+	 * 
+	 * Return Types:
+	 * 
+	 * 0 -> return all
+	 * 
+	 * 1 -> return if not the same style
+	 * 
+	 * 2 -> return if the same style 
+	 * 
+	 * 3 -> do not create style string store index
+	 */
+	this.getCssStyle = function getCssStyle(_style, _styleData, _returnType)
+	{
+		var _properties = [];
+		var _values = [];
+		var _styleProperty = _style[_styleData.property] || "";
+			
+		//split by 1 == "example(...) example2(...)"
+		if (_styleData.splitType === 1)
+		{
+			_properties = _styleProperty.split(/(?=\().*?(?=\)).*?(?=[a-z]|$)/gi)
+				.filter( 
+					function(value, index, arr)
+					{
+						return value !== "";
+					}
+				);
+			
+			_values = _styleProperty.split(/(?=(^|\))).*?(?=\()/gi)
+				.filter( 
+					function(_value, index, arr)
+					{
+						return _value !== "" && _value !== ")";
+					}
+				);
+					
+			_values.forEach(function (_value, _index, _array)
+			{
+				if (_value && _value.charAt(_value.length - 1) !== ")")
+				{
+					_array[_index] = _value + ")";
+				}
+			});
+		}
+		//split by 2 == test 1s ease-in-out, test2 1s ease-in-out
+		else if (_styleData.splitType === 2)
+		{
+			_styleProperty.split(",").forEach(function (prop) {
+				var _prop = prop.split(" ")[0];
+				_properties.push(_prop);
+			});
+
+			_styleProperty.split(",").forEach(function (value) {
+				var _value = value.split(" ");
+				_value[0] = "";
+				_values.push(_value.join(" "));
+			});
+		}
+		else
+		{
+			_properties = [_property];
+			_values = [_styleProperty];
+		}
+
+		var _combinedStyleText = "";
+		var _returnTypeIndex = -1;
+		var _propertyToTest = _styleData.cssTextProperty === null ? _styleData.property : _styleData.cssTextProperty;
+
+		for (var a = 0; a < _properties.length; a++)
+		{
+			if (_properties[a] !== _propertyToTest)
+			{
+				if (_returnType === 0 || _returnType === 1)
+				{	
+					_combinedStyleText += _properties[a] + _values[a] + " ";
+				}
+			} 
+			else
+			{
+				_returnTypeIndex = a;
+				if (_returnType === 0 || _returnType === 2)
+				{
+					_combinedStyleText += _properties[a] + _values[a] + " ";
+				}
+			}
+		}
+		
+		return {
+			properties: _properties,
+			values: _values,
+			returnTypeIndex: _returnTypeIndex,
+			returnTypeNewCss: _combinedStyleText
+		};
+		
+	}
+
+	this.replaceCssStyle = function replaceCssStyle(_style, _styleData)
+	{
+		if (_styleData.property)
+		{	
+			var _styleParsedData = cCss.styleSheet.getCssStyle(_style, _styleData, 1)
+
+			if (_styleData.propertyIndex === -1)
+			{
+				//replace entire property value
+				_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleData.value;
+			}
+			else if (_styleParsedData.returnTypeIndex !== -1)
+			{
+				//replace value at index of property
+				//replace(/((?<=^)\()|(\)(?=$))/gi, "")
+				var _valueSplit = "";
+				if (_styleData.splitType === 1)
+				{
+					_valueSplit = _styleParsedData.values[_styleParsedData.returnTypeIndex].substring(1, _styleParsedData.values[_styleParsedData.returnTypeIndex].length - 1).split(",");
+				}
+				else
+				{
+					_valueSplit = _styleParsedData.values[_styleParsedData.returnTypeIndex].split(" ").filter(function(_value) {
+						return _value !== "";
+					});
+				}
+
+				if (_valueSplit.length >= _styleData.propertyIndex && _valueSplit.length != 0 && _styleData.propertyIndex >= 0)
+				{
+					_valueSplit[_styleData.propertyIndex] = _styleData.value;
+
+					if (_styleData.splitType == 1)
+					{
+						_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleParsedData.properties[_styleParsedData.returnTypeIndex] + "(" + _valueSplit.join(",") + ")";
+					}
+					else
+					{
+						_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleParsedData.properties[_styleParsedData.returnTypeIndex] + " " + _valueSplit.join(" ");
+					}
+				}
+				else
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
+
+			//add importance to the property
+			if (_styleData.importance !== null)
+			{
+
+				if (_styleData.canBeList)
+				{
+					var _regex = "(^.*?(?=(" + _styleData.property + ")|$))|(?<=((" + _styleData.property + ").*?(?=;))).*";
+					var _newCssValue = _style.cssText.replace(new RegExp(_regex, "gi"), "").replace("!important", "");
+					var _newCssText = _style.cssText.replace(new RegExp("(" + _styleData.property + ").*?;"), "");
+					_style.cssText = _newCssText + _newCssValue + (_styleData.importance === true ? " !important;" : ";");
+				}
+				else
+				{
+					var _newCssText = _style.cssText.replace(new RegExp("(" + _styleData.cssTextProperty + ").*?;"), "");
+					_style.cssText = _newCssText + _styleData.cssTextProperty + ": " + _styleData.value + (_styleData.importance === true ? " !important;" : ";");
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
 	//add Css Selector Style To Style Sheet
 	this.addCssStyle = function addCssStyle(_sheet, _selector, _style, _replace)
 	{
 		//setup basic variables
 		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
 		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		var _styles = cCss.styleSheet.translateCssStyle(_style);
+		//var _styles = cCss.styleSheet.translateCssStyle(_style);
 		
 		//check selector exists
-		if (_selector && _styles)
+		if (_selector)
 		{
-			var _currentStylesNotReplacing = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 2);
-			var _styleString = "";
+			//var _currentStylesNotReplacing = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 2);
+			//var _styleString = "";
+
+			for (var a = 0; a < _style.length; a++)
+			{
+				cCss.styleSheet.replaceCssStyle(_selector.style, _style[a]);
+			}
+
+			/*
 
 			//add all current style to style string
 			if (_currentStylesNotReplacing)
@@ -1741,6 +1932,8 @@ function customCssstyleSheetFunctions()
 
 			//set the selector css to new css
 			_selector.style.cssText = _styleString;
+
+			*/
 
 			//return true as suceeded
 			return true;
@@ -1804,7 +1997,11 @@ function customCssstyleSheetFunctions()
 			_style = _style.replace(/[{}]/g, "");
 			
 			//split the string to individual styles
-			_ret = _style.split(/(; )|(;)/g);
+			_ret = _style.split(/; */gi).filter(
+				function comp(value, index, arr) 
+				{
+					return ($.inArray(value, ['',' ',';',null,undefined]) == -1);
+				});
 		}
 		else if (typeof _style === "array")
 		{
@@ -1837,93 +2034,6 @@ function customCssstyleSheetFunctions()
 		return null;
 	}
 
-	/**
-	 * return the styles in a selector using the given _style
-	 * 
-	 * Return Types:
-	 * 
-	 * 0 -> return all
-	 * 
-	 * 1 -> return if the same style 
-	 * 
-	 * 2 -> return if not the same style
-	 */
-	this.getCssStyle = function getCssStyle(_sheet, _selector, _style, _returnType)
-	{
-		//setup basic variables
-		var _ret = [];
-		var _sheet = cCss.styleSheet.translateCssSheet(_sheet);
-		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		var _styles = cCss.styleSheet.translateCssStyle(_style) || [];
-		var _returnType = _returnType || 0;
-
-		//CHANGE TO HASH TABLE IF EFFICIENCY IS A PROBLEM (DOUBT IT)
-		//check selector exists
-		if (_selector)
-		{
-			//find current selector style and split them into comparable values
-			var _currentStyles = cCss.styleSheet.translateCssStyle(_selector.style.cssText) || [];
-
-			//if requesting all style split then return 
-			if (_returnType == 0)
-			{
-				return _currentStyles;
-			}
-			//check if return found and input empty
-			else if (_styles.length == 0 && _returnType == 1)
-			{
-				return null
-			}
-			//check if return not found and input empty
-			else if (_styles.length == 0 && _returnType == 2)
-			{
-				return _currentStyles;
-			}
-
-			//loop through input styles
-			for (var cs = 0; cs < _currentStyles.length; cs++)
-			{
-				//setup _style substring
-				var _currentStyleSubstr = _currentStyles[cs].substring(0, _currentStyles[cs].indexOf(":"));
-				var _found = false;
-
-				//loop through current styles
-				for (var s = 0; s < _styles.length; s++)
-				{
-					//check styles are the same
-					if (_currentStyleSubstr == _styles[s].substring(0, _styles[s].indexOf(":") || _styles[s].length))
-					{
-						//set found to true and break out of loop
-						_found = true;
-						break;
-					}
-				}
-
-				//add to return based on return type
-				if (_found && _returnType == 1)
-				{
-					//found
-					_ret.push(_currentStyles[cs]);
-				}
-				else if (!_found && _returnType == 2)
-				{
-					//not found
-					_ret.push(_currentStyles[cs]);
-				}
-			}
-		}
-		
-		//return the calculated value if valid
-		if (_ret.length != 0)
-		{
-			return _ret;
-		}
-
-		//return null as something failed
-		return null;
-		
-	}
-
 	//return a style list separated 
 	this.separateStyleListAttribute = function separateStyleListAttribute(_attribute, _commaSeparated)
 	{
@@ -1943,6 +2053,8 @@ function customCssstyleSheetFunctions()
 				//create a return entry 
 				_ret.push(new cCss.SeparatedListData(_attrPrefix,_attrSplit,true));
 			}
+
+			return _ret;
 		}
 		else
 		{
@@ -1960,6 +2072,8 @@ function customCssstyleSheetFunctions()
 				//create a return entry 
 				_ret.push(new cCss.SeparatedListData(_attrPrefix,_attrSplitData,false));
 			}
+
+			return _ret;
 		} 
 	}
 
@@ -2098,12 +2212,13 @@ function customCssstyleSheetFunctions()
 window.cMaths = new function customMathFunctions()
 {
     //functions/classes
-    this.lineMaths = new lineMathFunctions();
-    this.collision = new collisionFunctions();
-    this.maths = new mathFunctions();
+    this.lineMaths = new customMathLineMathFunctions();
+    this.collision = new customMathCollisionFunctions();
+    this.maths = new customMathGenericFunctions();
+    this.position = new customMathPositioningFunctions();
 
     //data types
-    this.dataTypes = new customTypeData();
+    this.dataTypes = new customMathTypeData();
     
     this.Vector2 = this.dataTypes.vector2.prototype;
     this.vector2 = this.dataTypes.vector2;
@@ -2123,7 +2238,7 @@ window.cMaths = new function customMathFunctions()
 }
 
 //hold data types
-function customTypeData()
+function customMathTypeData()
 {
 
     function vector2(_x, _y)
@@ -2362,35 +2477,36 @@ function customTypeData()
             }
 
             //setup relative
-            var _relative = _relative || "document";
+            var _relative = _relative || document;
 
             //setup JQuery object and add css class
             var _objectJQuery = $(_object);
             _objectJQuery[0].classList.add("notransition");
 
             //get object bounds based on relative
-            if (_relative == "document")
+            if (_relative !== null)
             {
-                //get bounds with global position
-                _objectBounds.left = _objectJQuery.offset().left;
-                _objectBounds.top = _objectJQuery.offset().top;
+                var _position = cMaths.position.getCoords(_objectJQuery[0], _relaitve);
 
-                _objectBounds.right = _objectBounds.left + _objectJQuery.outerWidth();
-                _objectBounds.bottom = _objectBounds.top + _objectJQuery.outerHeight();
-            }
-            else if (_relative == "parent")
-            {
-                //get bounds with local position
-                _objectBounds.left = _objectJQuery.position().left;
-                _objectBounds.top = _objectJQuery.position().top;
+                var computedStyle = _object.currentStyle || window.getComputedStyle(_object);
+                var height = _object.clientHeight;
+                
+                height += parseInt(computedStyle.marginTop, 10);
+                height += parseInt(computedStyle.marginBottom, 10);
+                height += parseInt(computedStyle.borderTopWidth, 10);
+                height += parseInt(computedStyle.borderBottomWidth, 10);
+            
+                var width = _object.clientWidth;
+                
+                width += parseInt(computedStyle.marginLeft, 10);
+                width += parseInt(computedStyle.marginRight, 10);
+                width += parseInt(computedStyle.borderLeftWidth, 10);
+                width += parseInt(computedStyle.borderRightWidth, 10);
 
-                _objectBounds.right = _objectBounds.left + _objectJQuery.outerWidth();
-                _objectBounds.bottom = _objectBounds.top + _objectJQuery.outerHeight();
-            }
-            else if (_relative == "screen")
-            {
-                //get bounds with screen position
-                _objectBounds = _object.getBoundingClientRect();
+                _objectBounds.left = _position.x;
+                _objectBounds.top = _position.y;
+                _objectBounds.right = _objectBounds.left + width;
+                _objectBounds.down = _objectBounds.top + height;
             }
             else
             {
@@ -2404,10 +2520,10 @@ function customTypeData()
             if (_includeChildren)
             {
                 //loop through all children and find largest bounds
-                $(_object).find(_includeChildren).each(function() {
+                _objectJQuery.find(_includeChildren).each(function() {
 
                     //get child bounds and check if child bounds are outside parent bounds
-                    var _tempBounds = cMaths.Bounds.fromObject(this, "document");
+                    var _tempBounds = cMaths.Bounds.fromObject(this, null);
 
                     if (_tempBounds.x1 < _objectBounds.left)
                     {
@@ -2476,7 +2592,7 @@ function customTypeData()
 }
 
 //hold collision/bounds testing functions
-function collisionFunctions()
+function customMathCollisionFunctions()
 {
 
     //return any objects from _objects where object's bounds are within _areaBounds
@@ -2615,7 +2731,7 @@ function collisionFunctions()
 }
 
 //Holds line functions
-function lineMathFunctions()
+function customMathLineMathFunctions()
 {
 
     //find and return intersection point of lines if result is
@@ -2699,7 +2815,7 @@ function lineMathFunctions()
 }
 
 //Holds math functions
-function mathFunctions()
+function customMathGenericFunctions()
 {
 
     //check if value between min/max with epsilon accuracy
@@ -2708,7 +2824,56 @@ function mathFunctions()
         var _eps = _eps || 0;
         return (_min - _eps < _val  && _val < _max + _eps);
     }
+    
+}
 
+function customMathPositioningFunctions()
+{
+    this.getCoords = function getCoords(_object, _relativeTo) {
+
+        var _objectPosition = new cMaths.vector2();
+
+        if (_relativeTo === "screen")
+        {
+            var box = _object.getBoundingClientRect();
+
+            _objectPosition.x = box.left;
+            _objectPosition.y = box.top;
+        }
+        if (_relativeTo === _object.offsetParent)
+        {
+            _objectPosition.x = _object.offsetLeft;
+            _objectPosition.y = _object.offsetTop;
+        }
+        else 
+        {
+            //calculate position offset from viewport 
+            var box = elem.getBoundingClientRect();
+    
+            var body = document.body;
+            var docEl = document.documentElement;
+        
+            var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+            var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+        
+            var clientTop = docEl.clientTop || body.clientTop || 0;
+            var clientLeft = docEl.clientLeft || body.clientLeft || 0;
+
+            _objectPosition.x = box.left + scrollLeft - clientLeft;
+            _objectPosition.y = box.top +  scrollTop - clientTop;
+
+            //if relative to exists then calculate offset from that
+            if (_relativeTo !== null && _relativeTo !== document)
+            {
+                var _otherBox = _relativeTo.getBoundingClientRect();
+
+                _objectPosition.x -= box.left + scrollLeft - clientLeft;
+                _objectPosition.y -= box.top +  scrollTop - clientTop;
+            }
+        }
+
+        return _objectPosition;
+    }
 }
 
 
@@ -3197,7 +3362,14 @@ function cElementModifyFunctions()
         if (_enabled)
         {
             //change html style to be visiblie and set zIndex to default
-            htmlOverlayPanel.style.opacity = 100;
+            if (_messageData.opacity)
+            {
+                htmlOverlayPanel.style.opacity = _messageData.opacity;
+            }
+            else
+            {
+                htmlOverlayPanel.style.opacity = 100;
+            }
             htmlOverlayPanel.style.visibility = "visible";
             cCss.style.addStyleProperty(htmlOverlayPanel,
                 new cCss.styleModificationData("z-index",
@@ -3208,7 +3380,14 @@ function cElementModifyFunctions()
         else
         {
             //change html style to be visiblie and set zIndex to default
-            htmlOverlayPanel.style.opacity = 0;
+            if (_messageData.opacity)
+            {
+                htmlOverlayPanel.style.opacity = _messageData.opacity;
+            }
+            else
+            {
+                htmlOverlayPanel.style.opacity = 0;
+            }
             var currentDelay = (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0);
 
             //function for callback in timer
@@ -4049,15 +4228,12 @@ function cEventListenerQueueFunctions()
                     cEventListener.functionWaitingForMessageQueue[l].evaluateMessage("setupFunction");
 
                     //add this individual to be removed
-                    /*
                     cEventListener.functionWaitingInvoked.push(
                         new cEventListener.basicMessage(_functionType,
                             cEventListener.functionWaitingForMessageQueue[l].evaluateMessage(
                                 "setupFunction", null, true)
                         )
                     );
-                    */
-                   cEventListener.functionWaitingInvoked.push(l);
 
                 }
             }
@@ -4067,14 +4243,10 @@ function cEventListenerQueueFunctions()
 
         if (cEventListener.functionQueueProcessStarted == 0)
         {
-            cEventListener.functionWaitingInvoked.sort();
-            cEventListener.functionWaitingInvoked.reverse();
-            
             //loop through all messages that have been invoked and remove them
             for (var m = 0; m < cEventListener.functionWaitingInvoked.length; m++)
             {
-                //cEventListener.queue.removeFromMessageQueue(cEventListener.functionWaitingInvoked[m]);
-                cEventListener.functionWaitingForMessageQueue.splice(cEventListener.functionWaitingInvoked[m],1);
+                cEventListener.queue.removeFromMessageQueue(cEventListener.functionWaitingInvoked[m]);
                 cEventListener.functionWaitingInvoked.splice(m,1);
                 m--;
             }

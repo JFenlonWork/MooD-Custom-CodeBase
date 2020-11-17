@@ -10,12 +10,13 @@
 window.cMaths = new function customMathFunctions()
 {
     //functions/classes
-    this.lineMaths = new lineMathFunctions();
-    this.collision = new collisionFunctions();
-    this.maths = new mathFunctions();
+    this.lineMaths = new customMathLineMathFunctions();
+    this.collision = new customMathCollisionFunctions();
+    this.maths = new customMathGenericFunctions();
+    this.position = new customMathPositioningFunctions();
 
     //data types
-    this.dataTypes = new customTypeData();
+    this.dataTypes = new customMathTypeData();
     
     this.Vector2 = this.dataTypes.vector2.prototype;
     this.vector2 = this.dataTypes.vector2;
@@ -35,7 +36,7 @@ window.cMaths = new function customMathFunctions()
 }
 
 //hold data types
-function customTypeData()
+function customMathTypeData()
 {
 
     function vector2(_x, _y)
@@ -274,35 +275,36 @@ function customTypeData()
             }
 
             //setup relative
-            var _relative = _relative || "document";
+            var _relative = _relative || document;
 
             //setup JQuery object and add css class
             var _objectJQuery = $(_object);
             _objectJQuery[0].classList.add("notransition");
 
             //get object bounds based on relative
-            if (_relative == "document")
+            if (_relative !== null)
             {
-                //get bounds with global position
-                _objectBounds.left = _objectJQuery.offset().left;
-                _objectBounds.top = _objectJQuery.offset().top;
+                var _position = cMaths.position.getCoords(_objectJQuery[0], _relaitve);
 
-                _objectBounds.right = _objectBounds.left + _objectJQuery.outerWidth();
-                _objectBounds.bottom = _objectBounds.top + _objectJQuery.outerHeight();
-            }
-            else if (_relative == "parent")
-            {
-                //get bounds with local position
-                _objectBounds.left = _objectJQuery.position().left;
-                _objectBounds.top = _objectJQuery.position().top;
+                var computedStyle = _object.currentStyle || window.getComputedStyle(_object);
+                var height = _object.clientHeight;
+                
+                height += parseInt(computedStyle.marginTop, 10);
+                height += parseInt(computedStyle.marginBottom, 10);
+                height += parseInt(computedStyle.borderTopWidth, 10);
+                height += parseInt(computedStyle.borderBottomWidth, 10);
+            
+                var width = _object.clientWidth;
+                
+                width += parseInt(computedStyle.marginLeft, 10);
+                width += parseInt(computedStyle.marginRight, 10);
+                width += parseInt(computedStyle.borderLeftWidth, 10);
+                width += parseInt(computedStyle.borderRightWidth, 10);
 
-                _objectBounds.right = _objectBounds.left + _objectJQuery.outerWidth();
-                _objectBounds.bottom = _objectBounds.top + _objectJQuery.outerHeight();
-            }
-            else if (_relative == "screen")
-            {
-                //get bounds with screen position
-                _objectBounds = _object.getBoundingClientRect();
+                _objectBounds.left = _position.x;
+                _objectBounds.top = _position.y;
+                _objectBounds.right = _objectBounds.left + width;
+                _objectBounds.down = _objectBounds.top + height;
             }
             else
             {
@@ -316,10 +318,10 @@ function customTypeData()
             if (_includeChildren)
             {
                 //loop through all children and find largest bounds
-                $(_object).find(_includeChildren).each(function() {
+                _objectJQuery.find(_includeChildren).each(function() {
 
                     //get child bounds and check if child bounds are outside parent bounds
-                    var _tempBounds = cMaths.Bounds.fromObject(this, "document");
+                    var _tempBounds = cMaths.Bounds.fromObject(this, null);
 
                     if (_tempBounds.x1 < _objectBounds.left)
                     {
@@ -388,7 +390,7 @@ function customTypeData()
 }
 
 //hold collision/bounds testing functions
-function collisionFunctions()
+function customMathCollisionFunctions()
 {
 
     //return any objects from _objects where object's bounds are within _areaBounds
@@ -527,7 +529,7 @@ function collisionFunctions()
 }
 
 //Holds line functions
-function lineMathFunctions()
+function customMathLineMathFunctions()
 {
 
     //find and return intersection point of lines if result is
@@ -611,7 +613,7 @@ function lineMathFunctions()
 }
 
 //Holds math functions
-function mathFunctions()
+function customMathGenericFunctions()
 {
 
     //check if value between min/max with epsilon accuracy
@@ -620,5 +622,54 @@ function mathFunctions()
         var _eps = _eps || 0;
         return (_min - _eps < _val  && _val < _max + _eps);
     }
+    
+}
 
+function customMathPositioningFunctions()
+{
+    this.getCoords = function getCoords(_object, _relativeTo) {
+
+        var _objectPosition = new cMaths.vector2();
+
+        if (_relativeTo === "screen")
+        {
+            var box = _object.getBoundingClientRect();
+
+            _objectPosition.x = box.left;
+            _objectPosition.y = box.top;
+        }
+        if (_relativeTo === _object.offsetParent)
+        {
+            _objectPosition.x = _object.offsetLeft;
+            _objectPosition.y = _object.offsetTop;
+        }
+        else 
+        {
+            //calculate position offset from viewport 
+            var box = elem.getBoundingClientRect();
+    
+            var body = document.body;
+            var docEl = document.documentElement;
+        
+            var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
+            var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
+        
+            var clientTop = docEl.clientTop || body.clientTop || 0;
+            var clientLeft = docEl.clientLeft || body.clientLeft || 0;
+
+            _objectPosition.x = box.left + scrollLeft - clientLeft;
+            _objectPosition.y = box.top +  scrollTop - clientTop;
+
+            //if relative to exists then calculate offset from that
+            if (_relativeTo !== null && _relativeTo !== document)
+            {
+                var _otherBox = _relativeTo.getBoundingClientRect();
+
+                _objectPosition.x -= box.left + scrollLeft - clientLeft;
+                _objectPosition.y -= box.top +  scrollTop - clientTop;
+            }
+        }
+
+        return _objectPosition;
+    }
 }
