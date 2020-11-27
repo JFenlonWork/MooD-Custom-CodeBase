@@ -6,12 +6,12 @@
 * These are the line numbers for the included files:
 * 16
 * 988
-* 2202
-* 2879
-* 3552
-* 3726
-* 4622
-* 5036
+* 2230
+* 2922
+* 3595
+* 3769
+* 4665
+* 5079
 ***********************************************************************************/
 
 /*
@@ -1862,78 +1862,15 @@ function customCssstyleSheetFunctions()
 		//setup basic variables
 		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
 		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		//var _styles = cCss.styleSheet.translateCssStyle(_style);
 		
 		//check selector exists
 		if (_selector)
 		{
-			//var _currentStylesNotReplacing = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 2);
-			//var _styleString = "";
 
 			for (var a = 0; a < _style.length; a++)
 			{
 				cCss.styleSheet.replaceCssStyle(_selector.style, _style[a]);
 			}
-
-			/*
-
-			//add all current style to style string
-			if (_currentStylesNotReplacing)
-			{
-				for (var cs = 0; cs < _currentStylesNotReplacing.length; cs++)
-				{
-					_styleString += _currentStylesNotReplacing[cs] + "; ";
-				}
-			}
-
-			//check if replacing style is true
-			if (_replace)
-			{
-				//append styles to the end of current style
-				for (var s = 0; s < _styles.length; s++)
-				{
-					_styleString += _styles[s] + "; ";
-				}
-			}
-			else
-			{
-				//loop through and find values to append based on current style
-				var _currentStylesNotReplacing = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 1) || [];
-				for (var s = 0; s < _styles.length; s++)
-				{
-					//store style substring
-					var _styleSubStr = _styles[s].substring(0, _styles[s].indexOf(":") || _styles[s].length);
-					var _found = false;
-					
-					//loop through all similar current styles
-					for (var cs = 0; cs < _currentStylesNotReplacing.length; cs++)
-					{
-						//check if style substring is the same as current style
-						if (_styleSubStr ==
-							 _currentStylesNotReplacing[cs].substring(
-								0,
-								_styles[s].indexOf(":") || _styles[s].length)
-							)
-						{
-							//set found to true and break
-							_found = true;
-							break;
-						}
-					}
-					
-					//if style hasn't been found
-					if (!_found)
-					{
-						//add style onto end of cssText
-						_styleString += _styles[s] + "; ";
-					}
-				}
-			}
-
-			//set the selector css to new css
-			_selector.style.cssText = _styleString;
-
-			*/
 
 			//return true as suceeded
 			return true;
@@ -1943,6 +1880,97 @@ function customCssstyleSheetFunctions()
 		return null;
 
 	}
+
+	/**
+	 * return the styles in a selector using the given _style
+	 * 
+	 * Return Types:
+	 * 
+	 * 0 -> return all
+	 * 
+	 * 1 -> return if the same style 
+	 * 
+	 * 2 -> return if not the same style
+	 */
+	
+	 /*
+	this.getCssStyle = function getCssStyle(_sheet, _selector, _style, _returnType)
+	{
+		//setup basic variables
+		var _ret = [];
+		var _sheet = cCss.styleSheet.translateCssSheet(_sheet);
+		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
+		var _styles = cCss.styleSheet.translateCssStyle(_style) || [];
+		var _returnType = _returnType || 0;
+
+		//CHANGE TO HASH TABLE IF EFFICIENCY IS A PROBLEM (DOUBT IT)
+		//check selector exists
+		if (_selector)
+		{
+			//find current selector style and split them into comparable values
+			var _currentStyles = cCss.styleSheet.translateCssStyle(_selector.style.cssText) || [];
+
+			//if requesting all style split then return 
+			if (_returnType == 0)
+			{
+				return _currentStyles;
+			}
+			//check if return found and input empty
+			else if (_styles.length == 0 && _returnType == 1)
+			{
+				return null
+			}
+			//check if return not found and input empty
+			else if (_styles.length == 0 && _returnType == 2)
+			{
+				return _currentStyles;
+			}
+
+			//loop through input styles
+			for (var cs = 0; cs < _currentStyles.length; cs++)
+			{
+				//setup _style substring
+				var _currentStyleSubstr = _currentStyles[cs].substring(0, _currentStyles[cs].indexOf(":"));
+				var _found = false;
+
+				//loop through current styles
+				for (var s = 0; s < _styles.length; s++)
+				{
+					//check styles are the same
+					if (_currentStyleSubstr == _styles[s].substring(0, _styles[s].indexOf(":") || _styles[s].length))
+					{
+						//set found to true and break out of loop
+						_found = true;
+						break;
+					}
+				}
+
+				//add to return based on return type
+				if (_found && _returnType == 1)
+				{
+					//found
+					_ret.push(_currentStyles[cs]);
+				}
+				else if (!_found && _returnType == 2)
+				{
+					//not found
+					_ret.push(_currentStyles[cs]);
+				}
+			}
+		}
+		
+		//return the calculated value if valid
+		if (_ret.length != 0)
+		{
+			return _ret;
+		}
+
+		//return null as something failed
+		return null;
+		
+	}
+
+	*/
 
 	//remove Css Selector Style From Sheet
 	this.removeCssStyle = function removeCssStyle(_sheet, _selector, _style)
@@ -2481,7 +2509,6 @@ function customMathTypeData()
 
             //setup JQuery object and add css class
             var _objectJQuery = $(_object);
-            _objectJQuery[0].classList.add("notransition");
 
             //get object bounds based on relative
             if (_relative !== null)
@@ -2491,17 +2518,17 @@ function customMathTypeData()
                 var computedStyle = _object.currentStyle || window.getComputedStyle(_object);
                 var height = _object.clientHeight;
                 
-                height += parseInt(computedStyle.marginTop, 10);
-                height += parseInt(computedStyle.marginBottom, 10);
-                height += parseInt(computedStyle.borderTopWidth, 10);
-                height += parseInt(computedStyle.borderBottomWidth, 10);
+                height += cMaths.position.translateCssSizes(computedStyle.marginTop);
+                height += cMaths.position.translateCssSizes(computedStyle.marginBottom);
+                height += cMaths.position.translateCssSizes(computedStyle.borderTopWidth);
+                height += cMaths.position.translateCssSizes(computedStyle.borderBottomWidth);
             
                 var width = _object.clientWidth;
                 
-                width += parseInt(computedStyle.marginLeft, 10);
-                width += parseInt(computedStyle.marginRight, 10);
-                width += parseInt(computedStyle.borderLeftWidth, 10);
-                width += parseInt(computedStyle.borderRightWidth, 10);
+                width += cMaths.position.translateCssSizes(computedStyle.marginLeft);
+                width += parcMaths.position.translateCssSizes(computedStyle.marginRight);
+                width += cMaths.position.translateCssSizes(computedStyle.borderLeftWidth);
+                width += cMaths.position.translateCssSizes(computedStyle.borderRightWidth);
 
                 _objectBounds.left = _position.x;
                 _objectBounds.top = _position.y;
@@ -2513,9 +2540,6 @@ function customMathTypeData()
                 console.warn("Bounds relative: " + _relative + " is not an option");
                 return null;
             }
-
-            //remove css class and check children
-            _objectJQuery[0].classList.remove("notransition");
 
             if (_includeChildren)
             {
@@ -2603,7 +2627,7 @@ function customMathCollisionFunctions()
         for (var i = 0; i < _objects.length; i++)
         {
             //get object's bounds
-            var _otherBounds = cMaths.Bounds.fromObject(_objects[i], false);
+            var _otherBounds = cMaths.Bounds.fromObject(_objects[i]);
 
             //check if object bounds is within _areaBounds
             if (this.checkAreaWithinArea(_areaBounds, _otherBounds))
@@ -2623,7 +2647,7 @@ function customMathCollisionFunctions()
         for (var i = 0; i < _objects.length; i++)
         {
             //get object's bounds
-            var _otherBounds = cMaths.Bounds.fromObject(_objects[i], false);
+            var _otherBounds = cMaths.Bounds.fromObject(_objects[i]);
 
             //check if object bounds intersects _areaBounds
             if (this.checkAreaIntersectsArea(_areaBounds, _otherBounds))
@@ -2829,7 +2853,8 @@ function customMathGenericFunctions()
 
 function customMathPositioningFunctions()
 {
-    this.getCoords = function getCoords(_object, _relativeTo) {
+    this.getCoords = function getCoords(_object, _relativeTo) 
+    {
 
         var _objectPosition = new cMaths.vector2();
 
@@ -2848,7 +2873,7 @@ function customMathPositioningFunctions()
         else 
         {
             //calculate position offset from viewport 
-            var box = elem.getBoundingClientRect();
+            var box = _object.getBoundingClientRect();
     
             var body = document.body;
             var docEl = document.documentElement;
@@ -2859,20 +2884,38 @@ function customMathPositioningFunctions()
             var clientTop = docEl.clientTop || body.clientTop || 0;
             var clientLeft = docEl.clientLeft || body.clientLeft || 0;
 
-            _objectPosition.x = box.left + scrollLeft - clientLeft;
-            _objectPosition.y = box.top +  scrollTop - clientTop;
+            _objectPosition.x = box.left + (scrollLeft - clientLeft);
+            _objectPosition.y = box.top +  (scrollTop - clientTop);
 
             //if relative to exists then calculate offset from that
             if (_relativeTo !== null && _relativeTo !== document)
             {
                 var _otherBox = _relativeTo.getBoundingClientRect();
 
-                _objectPosition.x -= box.left + scrollLeft - clientLeft;
-                _objectPosition.y -= box.top +  scrollTop - clientTop;
+                _objectPosition.x -= _otherBox.left + (scrollLeft - clientLeft);
+                _objectPosition.y -= _otherBox.top +  (scrollTop - clientTop);
             }
         }
 
         return _objectPosition;
+    }
+
+    this.translateCssSizes = function translateCssSizes(_css)
+    {
+        switch(_css)
+        {
+            case "thin":
+                return 1;
+            case "medium":
+                return 2.5;
+            case "thick":
+                return 5;
+            case "auto":
+            case "inherit":
+                return 0;
+            case "default":
+                return parseInt(_css, 10);
+        }
     }
 }
 
@@ -5186,3 +5229,5 @@ window.cUtility = window.cUtility || new function cUtility()
 	}
 
 }
+
+

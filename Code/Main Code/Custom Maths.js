@@ -279,28 +279,27 @@ function customMathTypeData()
 
             //setup JQuery object and add css class
             var _objectJQuery = $(_object);
-            _objectJQuery[0].classList.add("notransition");
 
             //get object bounds based on relative
             if (_relative !== null)
             {
                 var _position = cMaths.position.getCoords(_objectJQuery[0], _relaitve);
 
-                var computedStyle = _object.currentStyle || window.getComputedStyle(_object);
+                var _computedStyle = _object.currentStyle || window.getComputedStyle(_object);
                 var height = _object.clientHeight;
                 
-                height += parseInt(computedStyle.marginTop, 10);
-                height += parseInt(computedStyle.marginBottom, 10);
-                height += parseInt(computedStyle.borderTopWidth, 10);
-                height += parseInt(computedStyle.borderBottomWidth, 10);
-            
+                height += cMaths.position.translateCssSizes(_object, "marginTop", _computedStyle);
+                height += cMaths.position.translateCssSizes(_object, "marginBottom", _computedStyle);
+                height += cMaths.position.translateCssSizes(_object, "borderTopWidth", _computedStyle);
+                height += cMaths.position.translateCssSizes(_object, "borderBottomWidth", _computedStyle);
+                
                 var width = _object.clientWidth;
                 
-                width += parseInt(computedStyle.marginLeft, 10);
-                width += parseInt(computedStyle.marginRight, 10);
-                width += parseInt(computedStyle.borderLeftWidth, 10);
-                width += parseInt(computedStyle.borderRightWidth, 10);
-
+                width += cMaths.position.translateCssSizes(_object, "marginLeft", _computedStyle);
+                width += cMaths.position.translateCssSizes(_object, "marginRight", _computedStyle);
+                width += cMaths.position.translateCssSizes(_object, "borderLeftWidth", _computedStyle);
+                width += cMaths.position.translateCssSizes(_object, "borderRightWidth", _computedStyle);
+                
                 _objectBounds.left = _position.x;
                 _objectBounds.top = _position.y;
                 _objectBounds.right = _objectBounds.left + width;
@@ -312,16 +311,13 @@ function customMathTypeData()
                 return null;
             }
 
-            //remove css class and check children
-            _objectJQuery[0].classList.remove("notransition");
-
             if (_includeChildren)
             {
                 //loop through all children and find largest bounds
                 _objectJQuery.find(_includeChildren).each(function() {
 
                     //get child bounds and check if child bounds are outside parent bounds
-                    var _tempBounds = cMaths.Bounds.fromObject(this, null);
+                    var _tempBounds = cMaths.Bounds.fromObject(this);
 
                     if (_tempBounds.x1 < _objectBounds.left)
                     {
@@ -401,7 +397,7 @@ function customMathCollisionFunctions()
         for (var i = 0; i < _objects.length; i++)
         {
             //get object's bounds
-            var _otherBounds = cMaths.Bounds.fromObject(_objects[i], false);
+            var _otherBounds = cMaths.Bounds.fromObject(_objects[i]);
 
             //check if object bounds is within _areaBounds
             if (this.checkAreaWithinArea(_areaBounds, _otherBounds))
@@ -421,7 +417,7 @@ function customMathCollisionFunctions()
         for (var i = 0; i < _objects.length; i++)
         {
             //get object's bounds
-            var _otherBounds = cMaths.Bounds.fromObject(_objects[i], false);
+            var _otherBounds = cMaths.Bounds.fromObject(_objects[i]);
 
             //check if object bounds intersects _areaBounds
             if (this.checkAreaIntersectsArea(_areaBounds, _otherBounds))
@@ -627,7 +623,8 @@ function customMathGenericFunctions()
 
 function customMathPositioningFunctions()
 {
-    this.getCoords = function getCoords(_object, _relativeTo) {
+    this.getCoords = function getCoords(_object, _relativeTo) 
+    {
 
         var _objectPosition = new cMaths.vector2();
 
@@ -646,7 +643,7 @@ function customMathPositioningFunctions()
         else 
         {
             //calculate position offset from viewport 
-            var box = elem.getBoundingClientRect();
+            var box = _object.getBoundingClientRect();
     
             var body = document.body;
             var docEl = document.documentElement;
@@ -657,19 +654,44 @@ function customMathPositioningFunctions()
             var clientTop = docEl.clientTop || body.clientTop || 0;
             var clientLeft = docEl.clientLeft || body.clientLeft || 0;
 
-            _objectPosition.x = box.left + scrollLeft - clientLeft;
-            _objectPosition.y = box.top +  scrollTop - clientTop;
+            _objectPosition.x = box.left + (scrollLeft - clientLeft);
+            _objectPosition.y = box.top +  (scrollTop - clientTop);
 
             //if relative to exists then calculate offset from that
             if (_relativeTo !== null && _relativeTo !== document)
             {
                 var _otherBox = _relativeTo.getBoundingClientRect();
 
-                _objectPosition.x -= box.left + scrollLeft - clientLeft;
-                _objectPosition.y -= box.top +  scrollTop - clientTop;
+                _objectPosition.x -= _otherBox.left + (scrollLeft - clientLeft);
+                _objectPosition.y -= _otherBox.top +  (scrollTop - clientTop);
             }
         }
 
         return _objectPosition;
+    }
+
+    this.translateCssSizes = function translateCssSizes(_object, _css, _computedStyle)
+    {
+
+        var _computedStyle = _computedStyle || _object.currentStyle || window.getComputedStyle(_object);
+
+        switch(_computedStyle[_css])
+        {
+            case "thin":
+                return 1;
+            case "medium":
+                return 2.5;
+            case "thick":
+                return 5;
+            case "auto":
+                return 0;
+            case "inherit":
+                if (_object)
+                {
+                    return translateCssSizes(_object.offsetParent, _css, null)
+                }
+            case "default":
+                return parseInt(_computedStyle[_css], 10);
+        }
     }
 }
