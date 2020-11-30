@@ -16,6 +16,9 @@ window.cCss = window.cCss || new function customCss()
 
 	this.StyleModificationData = this.dataTypes.styleModificationData.prototype;
 	this.styleModificationData = this.dataTypes.styleModificationData;
+
+	this.StyleModificationData2 = this.dataTypes.styleModificationData2.prototype;
+	this.styleModificationData2 = this.dataTypes.styleModificationData2;
 	
 	this.SeparatedListData = this.dataTypes.separatedListData.prototype;
 	this.separatedListData = this.dataTypes.separatedListData;
@@ -709,7 +712,7 @@ function customCssstyleSheetFunctions()
 	 * 
 	 * 2 -> return if the same style 
 	 * 
-	 * 3 -> do not create style string store index
+	 * 3 -> do not create style string or store index
 	 */
 	this.getCssStyle = function getCssStyle(_style, _styleData, _returnType)
 	{
@@ -760,32 +763,38 @@ function customCssstyleSheetFunctions()
 		}
 		else
 		{
-			_properties = [_property];
-			_values = [_styleProperty];
+			return {
+				properties: [_styleData.property],
+				values: [_styleProperty],
+				_returnTypeIndex: -1,
+				returnTypeNewCss: ""
+			}
 		}
 
 		var _combinedStyleText = "";
 		var _returnTypeIndex = -1;
 		var _propertyToTest = _styleData.cssTextProperty === null ? _styleData.property : _styleData.cssTextProperty;
 
-		for (var a = 0; a < _properties.length; a++)
-		{
-			if (_properties[a] !== _propertyToTest)
+		_properties.forEach(function(_currentProperty, _index) {
+			if (_currentProperty && _currentProperty !== "" && _currentProperty !== " ")
 			{
-				if (_returnType === 0 || _returnType === 1)
-				{	
-					_combinedStyleText += _properties[a] + _values[a] + " ";
-				}
-			} 
-			else
-			{
-				_returnTypeIndex = a;
-				if (_returnType === 0 || _returnType === 2)
+				if (_currentProperty !== _propertyToTest)
 				{
-					_combinedStyleText += _properties[a] + _values[a] + " ";
+					if (_returnType === 0 || _returnType === 1)
+					{	
+						_combinedStyleText += _currentProperty + _values[_index] + " ";
+					}
+				} 
+				else
+				{
+					_returnTypeIndex = _index;
+					if (_returnType === 0 || _returnType === 2)
+					{
+						_combinedStyleText += _currentProperty + _values[_index] + " ";
+					}
 				}
 			}
-		}
+		});
 		
 		return {
 			properties: _properties,
@@ -796,8 +805,13 @@ function customCssstyleSheetFunctions()
 		
 	}
 
-	this.replaceCssStyle = function replaceCssStyle(_style, _styleData)
+	this.replaceCssStyle = function replaceCssStyle(_sheet, _selector, _styleData)
 	{
+		//setup basic variables
+		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
+		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
+		var _style = _selector.style;
+
 		if (_styleData.property)
 		{	
 			var _styleParsedData = cCss.styleSheet.getCssStyle(_style, _styleData, 1)
@@ -810,7 +824,6 @@ function customCssstyleSheetFunctions()
 			else if (_styleParsedData.returnTypeIndex !== -1)
 			{
 				//replace value at index of property
-				//replace(/((?<=^)\()|(\)(?=$))/gi, "")
 				var _valueSplit = "";
 				if (_styleData.splitType === 1)
 				{
@@ -850,391 +863,19 @@ function customCssstyleSheetFunctions()
 			if (_styleData.importance !== null)
 			{
 
-				if (_styleData.canBeList)
-				{
-					var _regex = "(^.*?(?=(" + _styleData.property + ")|$))|(?<=((" + _styleData.property + ").*?(?=;))).*";
-					var _newCssValue = _style.cssText.replace(new RegExp(_regex, "gi"), "").replace("!important", "");
-					var _newCssText = _style.cssText.replace(new RegExp("(" + _styleData.property + ").*?;"), "");
-					_style.cssText = _newCssText + _newCssValue + (_styleData.importance === true ? " !important;" : ";");
-				}
-				else
-				{
-					var _newCssText = _style.cssText.replace(new RegExp("(" + _styleData.cssTextProperty + ").*?;"), "");
-					_style.cssText = _newCssText + _styleData.cssTextProperty + ": " + _styleData.value + (_styleData.importance === true ? " !important;" : ";");
-				}
+				var _stylePropertyToUse = ((_styleData.canBeList === false && _styleData.cssTextProperty !== "") ? _styleData.cssTextProperty : _styleData.property);
+				var _regexWithoutNewStyle = "(^|.)(" + _stylePropertyToUse + (_styleData.canBeList === true ? ").*?(?=;)." : ")(?=:).*?(?=;).");
+				var _regexWithStyle = "(^|;).*?(?=(" + _stylePropertyToUse + (_styleData.canBeList === true ? "|$))" : "(?=:)|$))");
+
+				var _cssWithoutStyleChange = _style.cssText.replace(new RegExp(_regexWithoutNewStyle, "gi"), "");
+				var _cssOnlyStyleChange = _style.cssText.replace(new RegExp(_regexWithStyle, "gi"), "");
+
+				_style.cssText = _cssWithoutStyleChange + " " + _cssOnlyStyleChange + " " + (_styleData.importance === true ? " !important;" : ";");
+
 			}
 			return true;
 		}
 		return false;
-	}
-
-	//add Css Selector Style To Style Sheet
-	this.addCssStyle = function addCssStyle(_sheet, _selector, _style, _replace)
-	{
-		//setup basic variables
-		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
-		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		
-		//check selector exists
-		if (_selector)
-		{
-
-			for (var a = 0; a < _style.length; a++)
-			{
-				cCss.styleSheet.replaceCssStyle(_selector.style, _style[a]);
-			}
-
-			//return true as suceeded
-			return true;
-		}
-
-		//return null as something failed
-		return null;
-
-	}
-
-	/**
-	 * return the styles in a selector using the given _style
-	 * 
-	 * Return Types:
-	 * 
-	 * 0 -> return all
-	 * 
-	 * 1 -> return if the same style 
-	 * 
-	 * 2 -> return if not the same style
-	 */
-	
-	 /*
-	this.getCssStyle = function getCssStyle(_sheet, _selector, _style, _returnType)
-	{
-		//setup basic variables
-		var _ret = [];
-		var _sheet = cCss.styleSheet.translateCssSheet(_sheet);
-		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		var _styles = cCss.styleSheet.translateCssStyle(_style) || [];
-		var _returnType = _returnType || 0;
-
-		//CHANGE TO HASH TABLE IF EFFICIENCY IS A PROBLEM (DOUBT IT)
-		//check selector exists
-		if (_selector)
-		{
-			//find current selector style and split them into comparable values
-			var _currentStyles = cCss.styleSheet.translateCssStyle(_selector.style.cssText) || [];
-
-			//if requesting all style split then return 
-			if (_returnType == 0)
-			{
-				return _currentStyles;
-			}
-			//check if return found and input empty
-			else if (_styles.length == 0 && _returnType == 1)
-			{
-				return null
-			}
-			//check if return not found and input empty
-			else if (_styles.length == 0 && _returnType == 2)
-			{
-				return _currentStyles;
-			}
-
-			//loop through input styles
-			for (var cs = 0; cs < _currentStyles.length; cs++)
-			{
-				//setup _style substring
-				var _currentStyleSubstr = _currentStyles[cs].substring(0, _currentStyles[cs].indexOf(":"));
-				var _found = false;
-
-				//loop through current styles
-				for (var s = 0; s < _styles.length; s++)
-				{
-					//check styles are the same
-					if (_currentStyleSubstr == _styles[s].substring(0, _styles[s].indexOf(":") || _styles[s].length))
-					{
-						//set found to true and break out of loop
-						_found = true;
-						break;
-					}
-				}
-
-				//add to return based on return type
-				if (_found && _returnType == 1)
-				{
-					//found
-					_ret.push(_currentStyles[cs]);
-				}
-				else if (!_found && _returnType == 2)
-				{
-					//not found
-					_ret.push(_currentStyles[cs]);
-				}
-			}
-		}
-		
-		//return the calculated value if valid
-		if (_ret.length != 0)
-		{
-			return _ret;
-		}
-
-		//return null as something failed
-		return null;
-		
-	}
-
-	*/
-
-	//remove Css Selector Style From Sheet
-	this.removeCssStyle = function removeCssStyle(_sheet, _selector, _style)
-	{
-		//setup basic variables
-		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
-		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		var _styles = cCss.styleSheet.translateCssStyle(_style);
-
-		if (_selector)
-		{
-			var _currentStylesToKeep = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 2);
-			var _styleString = "";
-
-			//add current style to keep to style string
-			if (_currentStylesToKeep)
-			{
-				for (var cs = 0; cs < _currentStylesToKeep.length; cs++)
-				{
-					_styleString += _currentStylesToKeep[cs] + "; ";
-				}
-			}
-
-			//set the selector css to new css
-			_selector.style.cssText = _styleString;
-
-			//return true as suceeded
-			return true;
-		}
-
-		//return null as something failed
-		return null;
-	}
-
-	//return the correct format for _style to be inserted
-	this.translateCssStyle = function translateCssStyle(_style)
-	{
-		//setup return value
-		var _ret = [];
-
-		//check if _style exists
-		if (!_style)
-		{	
-			//return null because _style doesn't exist
-			return null;
-		}
-
-		//check what type _style is
-		if (typeof _style === "string")
-		{
-			//remove potential object specifiers
-			_style = _style.replace(/[{}]/g, "");
-			
-			//split the string to individual styles
-			_ret = _style.split(/; */gi).filter(
-				function comp(value, index, arr) 
-				{
-					return ($.inArray(value, ['',' ',';',null,undefined]) == -1);
-				});
-		}
-		else if (typeof _style === "array")
-		{
-			//loop through all style array values
-			for (var s = 0; s < _style.length; s++)
-			{
-				//translate the current style array index
-				var _translated = cCss.styleSheets.translateCssStyle(_style[s]);
-
-				//check if style exists and add it to ret
-				if (_translated)
-				{
-					_ret.push(_translated);
-				}
-			}
-		}
-		else if (typeof _style === "object")
-		{
-			//translate based on string version of _style
-			_ret = cCss.styleSheet.translateCssStyle(_style.toString());
-		}
-
-		//return _ret or null
-		if (_ret.length != 0)
-		{
-			return _ret;
-		}
-
-		//return null as something failed
-		return null;
-	}
-
-	//return a style list separated 
-	this.separateStyleListAttribute = function separateStyleListAttribute(_attribute, _commaSeparated)
-	{
-		var _ret = [];
-		if (_commaSeparated)
-		{
-			//split based on comma-separated
-			var _attributes = _attribute.split(/,( |(?=[a-z]))/gi);
-
-			//loop through attributes after they are separated
-			for (var _attrs = 0; _attrs < _attributes.length; _attrs++)
-			{
-				var _attrSplit = _attributes[_attrs].split(" ");
-				var _attrPrefix = _attrSplit[0];
-				_attrSplit.splice(0,1);
-
-				//create a return entry 
-				_ret.push(new cCss.SeparatedListData(_attrPrefix,_attrSplit,true));
-			}
-
-			return _ret;
-		}
-		else
-		{
-			//split based on bracket-separated
-			var _attributes = _attribute.split(/\((.*?)\)(?=[a-z]| |$|;)/gi);
-			var _attributesData = _attribute.split(/((?=(\)|^))(.*?)\()|(\)$)/gi);
-			
-			//loop through attributes after they are separated
-			for (var _attrs = 0; _attrs < _attributes.length; _attrs++)
-			{
-				//split based on brackets (,)
-				var _attrSplitData = _attributesData[_attrs].split(",");
-				var _attrPrefix = _attributes[_attrs];
-
-				//create a return entry 
-				_ret.push(new cCss.SeparatedListData(_attrPrefix,_attrSplitData,false));
-			}
-
-			return _ret;
-		} 
-	}
-
-	/**
-	 * split up style into comma separated and then pick out _prefix from those
-	 * 
-	 * can ONLY search for one type of style at a time (can accept multiple prefix)
-	 * 
-	 * returns custom split data with: .prefix and
-	 * .body with function .combineData() to return one string
-	 * 
-	 * Return Types:
-	 * 
-	 * 0 -> return all
-	 * 
-	 * 1 -> return if the same style 
-	 * 
-	 * 2 -> return if not the same style
-	 */
-	this.getSeparatedAttributes = function getSeparatedAttributes(_sheet, _selector, _style, _stylePrefix, _commaSeparated, _returnType)
-	{
-		//setup basic variables
-		var _ret = [];
-		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
-		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		var _styles = cCss.styleSheet.translateCssStyle(_style);
-		var _stylePrefix = _stylePrefix || [];
-
-		if (_selector && _commaSeparated != null)
-		{
-			//get the current _style 
-			var _currentStyles = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 1);
-
-			//loop through current style 
-			for (var _cs = 0; _cs < _currentStyles.length; _cs++)
-			{
-				//loop through all separated indexs
-				var _regexSeparated = cCss.styleSheet.separateStyleListAttribute(_currentStyles[_cs],_commaSeparated);
-
-				for (var _rs = 0; _rs < _regexSeparated.length; _rs++)
-				{
-					var _found = false;
-					//loop through style prefixes and see if similar
-					for (var _s = 0; _s < _stylePrefix.length; _s)
-					{
-						if (_stylePrefix[s] == _regexSeparated[_rs].prefix)
-						{
-							_found = true;
-							break;
-						}
-					}
-
-					//add to return based on return type
-					if (_returnType == 0)
-					{
-						//add because returning all
-						_ret.push(_regexSeparated[_rs])
-					}
-					if (_found && _returnType == 1)
-					{
-						//found
-						_ret.push(_regexSeparated[_rs]);
-					}
-					else if (!_found && _returnType == 2)
-					{
-						//not found
-						_ret.push(_regexSeparated[_rs]);
-					}
-				}
-			}
-		}
-
-		//return ret value if populated
-		if (_ret.length != 0)
-		{
-			return _ret;
-		}
-
-		//return null as something failed
-		return null;
-	}
-
-	//modify separated style attribute
-	this.translateSeparatedAttributePrefix = function translateSeparatedAttributePrefix(_stylePrefix)
-	{
-		//check style and stylePrefix is correct if not setup and return
-		if (typeof _stylePrefix == "string")
-		{
-			var _ret = [];
-			_ret.push(_stylePrefix);
-			return _ret;
-		}
-		else if (typeof _stylePrefix == "array")
-		{
-			return _stylePrefix;
-		}
-
-		//return null as something failed
-		return null;
-	}
-
-	//Add to separated style attribute
-	this.addSeparatedAttribute = function addSeparatedAttribute(_sheet, _selector, _style, _stylePrefix, _commaSeparated, _addOrReplace, _attributeIndexToEdit)
-	{
-		//setup basic variables
-		var _sheet = cCss.styleSheet.translateCssSheet(_sheet);
-		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		var _styles = cCss.styleSheet.translateCssStyle(_style) || [];
-		var _stylePrefix = cCss.styleSheet.translateSeparatedAttributePrefix(_stylePrefix) || [];
-		var _attributeIndexToEdit = _attributeIndexToEdit || 0;
-	}
-
-	//remove separated style attribute
-	this.removeSeparatedAttribute = function removeSeparatedAttribute(_sheet, _selector, _style, _stylePrefix, _commaSeparated, _removeOrErase, _attributeIndexToEdit)
-	{
-		//setup basic variables
-		var _sheet = cCss.styleSheet.translateCssSheet(_sheet);
-		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		var _styles = cCss.styleSheet.translateCssStyle(_style) || [];
-		var _stylePrefix = cCss.styleSheet.translateSeparatedAttributePrefix(_stylePrefix) || [];
-		var _attributeIndexToEdit = _attributeIndexToEdit || 0;
 	}
 
 }

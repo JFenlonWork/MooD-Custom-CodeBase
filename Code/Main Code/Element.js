@@ -201,15 +201,10 @@ function cElementGenericFunctions()
             //add the element to the array
             cElement.elementArray.push(_customElement);
 
-            var removeZIndex = cUtility.findHTMLObjects(_customElement);
+            var _styleData = new cCss.styleModificationData2("zIndex", null, false, null, "unset", -1, true);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _ID, _styleData);
 
-            for (var obj = 0; obj < removeZIndex.length; obj++)
-            {
-                cCss.style.addStyleProperty($(
-                    removeZIndex[obj]).closest(".WebPanelOverlay")[0],
-                    new cCss.styleModificationData("z-index", "unset")
-                );
-            }
+            cUtility.findHTMLObjects(_customElement).closest(".WebPanelOverlay").addClass("Element" + _ID);
 
             //return the newly created element
             console.log("Created Element with name: " + _elementName);
@@ -449,33 +444,22 @@ function cElementModifyFunctions()
         {
             if (_messageData.opacityTime)
             {
-                //setup opacity transition data
-                var _transData = 
-                new cCss.cssTransitionData(
-                    "opacity",
-                    ((_messageData.opacityTime || 0) / 1000).toString() + "s",
-                    _messageData.opacityTiming || "linear",
-                    ((_messageData.opacityDelay || 0) / 1000).toString() + "s",
-                    null
-                );
 
-                //add the transition data to the overylay panel
-                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+                var _transitionData = "opacity " + ((_messageData.opacityTime || 0) / 1000).toString() + "s";
+                _transitionData += " " + (_messageData.opacityTiming || "linear");
+                _transitionData += " " + ((_messageData.opacityDelay || 0) / 1000).toString() + "s";
+                  
+                var _styleData = new cCss.styleModificationData2("transition", "opacity", true, 2, _transitionData, -1, false);
+                cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
             }
             else
             {
-                //setup opacity transition data
-                var _transData = 
-                new cCss.cssTransitionData(
-                    "opacity",
-                    "0s",
-                    "linear",
-                    "0s",
-                    null
-                    );
 
-                //add the transition data to the overylay panel
-                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+                var _transitionData = "opacity 0s linear 0s";    
+                var _styleData = new cCss.styleModificationData2("transition", "opacity", true, 2, _transitionData, -1, false);
+                cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
             }
         }
 
@@ -483,32 +467,26 @@ function cElementModifyFunctions()
         if (_enabled)
         {
             //change html style to be visiblie and set zIndex to default
-            if (_messageData.opacity)
-            {
-                htmlOverlayPanel.style.opacity = _messageData.opacity;
-            }
-            else
-            {
-                htmlOverlayPanel.style.opacity = 100;
-            }
-            htmlOverlayPanel.style.visibility = "visible";
-            cCss.style.addStyleProperty(htmlOverlayPanel,
-                new cCss.styleModificationData("z-index",
-                    10000
-                )
-            );
+            var _opacityToSet = (_messageData.opacity === null || _messageData.opacity === undefined) ? 100 : _messageData.opacity;
+            var _styleData = new cCss.styleModificationData2("opacity", null, false, null, _opacityToSet.toString(), -1, false);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
+            _styleData = new cCss.styleModificationData2("visibility", null, false, null, "visible", -1, false);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
+            var _zIndexToSet = ((_messageData.zIndex === null || _messageData.zIndex === undefined)  ? "10000" : _messageData.zIndex);
+            var _zIndexImportanceToSet = ((_messageData.zIndexImportance === null || _messageData.zIndexImportance === undefined)  ? true : _messageData.zIndexImportance);
+            _styleData = new cCss.styleModificationData2("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
         }
         else
         {
             //change html style to be visiblie and set zIndex to default
-            if (_messageData.opacity)
-            {
-                htmlOverlayPanel.style.opacity = _messageData.opacity;
-            }
-            else
-            {
-                htmlOverlayPanel.style.opacity = 0;
-            }
+            var _opacityToSet = (_messageData.opacity === null || _messageData.opacity === undefined) ? 0 : _messageData.opacity;
+            var _styleData = new cCss.styleModificationData2("opacity", null, false, null, _opacityToSet.toString(), -1, false);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
             var currentDelay = (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0);
 
             //function for callback in timer
@@ -533,12 +511,14 @@ function cElementModifyFunctions()
                     if (element.elementEnabled == false)
                     {
                         //set element to be hidden and set z-index to 0
-                        htmlOverlayPanel.style.visibility = "hidden";
-                        cCss.style.addStyleProperty(htmlOverlayPanel,
-                            new cCss.styleModificationData("z-index",
-                                0
-                            )
-                        );
+                        _styleData = new cCss.styleModificationData2("visibility", null, false, null, "hidden", -1, false);
+                        cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);            
+                        
+                        var _zIndexToSet = ((_messageData.zIndex === null || _messageData.zIndex === undefined)  ? "0" : _messageData.zIndex);
+                        var _zIndexImportanceToSet = ((_messageData.zIndexImportance === null || _messageData.zIndexImportance === undefined)  ? true : _messageData.zIndexImportance);
+                        _styleData = new cCss.styleModificationData2("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+                        cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+        
                     }
 
                     //then stop the timer
@@ -550,15 +530,11 @@ function cElementModifyFunctions()
         }
 
         //check if zIndex supplied and set to that if so
-        if (_messageData.zIndex)
-        {
-            cCss.style.addStyleProperty(htmlOverlayPanel,
-                new cCss.styleModificationData("z-index",
-                    _messageData.zIndex, 
-                    _messageData.zIndexImportance || ""
-                )
-            );
-        }
+        // if (_messageData.zIndex)
+        // {
+        //     var _styleData = new cCss.styleModificationData2("zIndex", null, false, null, _messageData.zIndex, -1,  _messageData.zIndexImportance);
+        //     cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+        // }
 
         //setup position variables
         var _posX = _messageData.posX || "undefined", _posY = _messageData.posY || "undefined";
@@ -606,22 +582,17 @@ function cElementModifyFunctions()
             //has a custom position transition
             if (cCss && _messageData.positionMoveTime)
             {
-                //setup position transition data
-                var _transData = 
-                    new cCss.cssTransitionData(
-                        "left",
-                        ((_messageData.positionMoveTime || 0) / 1000).toString() + "s",
-                        _messageData.positionTiming || "linear",
-                        ((_messageData.positionDelay || 0) / 1000).toString() + "s",
-                        null
-                        );
 
-                //add transition data to "left" 
-                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+                var _transitionData = ((_messageData.positionMoveTime || 0) / 1000).toString() + "s";
+                _transitionData + " " + (_messageData.positionTiming || "linear");
+                _transitionData + " " + ((_messageData.positionDelay || 0) / 1000).toString() + "s";
 
-                //add same transition data to "top"
-                _transData.transitionProperty = "top";
-                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+                var _styleData = new cCss.styleModificationData2("transition", "left", true, 2, _transitionData, -1, false);
+                cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
+                _styleData.cssTextProperty = "top";
+                cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
             }
             
             //class scroll seems to be the object itself vs the surrounding div

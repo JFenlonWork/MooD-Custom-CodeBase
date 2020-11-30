@@ -33,6 +33,17 @@ window.cMaths = new function customMathFunctions()
     this.Bounds = this.dataTypes.bounds.prototype;
     this.bounds = this.dataTypes.bounds;
 
+    //realtime data
+    this.viewportOffset = new this.vector2();
+
+    function updateViewportOffset()
+    {
+        cMaths.viewportOffset = cMaths.position.getPageViewportOffsetFromPage();
+    }
+
+    window.addEventListener("scroll", updateViewportOffset);
+    window.addEventListener("resize", updateViewportOffset)
+
 }
 
 //hold data types
@@ -276,6 +287,8 @@ function customMathTypeData()
 
             //setup relative
             var _relative = _relative || document;
+            
+            var _includeChildren = _includeChildren || null;
 
             //setup JQuery object and add css class
             var _objectJQuery = $(_object);
@@ -283,27 +296,37 @@ function customMathTypeData()
             //get object bounds based on relative
             if (_relative !== null)
             {
-                var _position = cMaths.position.getCoords(_objectJQuery[0], _relaitve);
 
-                var _computedStyle = _object.currentStyle || window.getComputedStyle(_object);
-                var height = _object.clientHeight;
-                
-                height += cMaths.position.translateCssSizes(_object, "marginTop", _computedStyle);
-                height += cMaths.position.translateCssSizes(_object, "marginBottom", _computedStyle);
-                height += cMaths.position.translateCssSizes(_object, "borderTopWidth", _computedStyle);
-                height += cMaths.position.translateCssSizes(_object, "borderBottomWidth", _computedStyle);
-                
-                var width = _object.clientWidth;
-                
-                width += cMaths.position.translateCssSizes(_object, "marginLeft", _computedStyle);
-                width += cMaths.position.translateCssSizes(_object, "marginRight", _computedStyle);
-                width += cMaths.position.translateCssSizes(_object, "borderLeftWidth", _computedStyle);
-                width += cMaths.position.translateCssSizes(_object, "borderRightWidth", _computedStyle);
-                
-                _objectBounds.left = _position.x;
-                _objectBounds.top = _position.y;
-                _objectBounds.right = _objectBounds.left + width;
-                _objectBounds.down = _objectBounds.top + height;
+                if (_objectJQuery.attr("type") !== "hidden" && _objectJQuery.attr("display") !== "hidden")
+                {
+
+                    var _position = cMaths.position.getCoords(_objectJQuery[0], _relative);
+
+                    var _computedStyle = _object.currentStyle || window.getComputedStyle(_object);
+                    var height = _object.clientHeight;
+                    
+                    height += cMaths.position.translateCssSizes(_object, "marginTop", _computedStyle);
+                    height += cMaths.position.translateCssSizes(_object, "marginBottom", _computedStyle);
+                    height += cMaths.position.translateCssSizes(_object, "borderTopWidth", _computedStyle);
+                    height += cMaths.position.translateCssSizes(_object, "borderBottomWidth", _computedStyle);
+                    
+                    var width = _object.clientWidth;
+                    
+                    width += cMaths.position.translateCssSizes(_object, "marginLeft", _computedStyle);
+                    width += cMaths.position.translateCssSizes(_object, "marginRight", _computedStyle);
+                    width += cMaths.position.translateCssSizes(_object, "borderLeftWidth", _computedStyle);
+                    width += cMaths.position.translateCssSizes(_object, "borderRightWidth", _computedStyle);
+                    
+                    _objectBounds.left = _position.x;
+                    _objectBounds.top = _position.y;
+                    _objectBounds.right = _objectBounds.left + width;
+                    _objectBounds.bottom = _objectBounds.top + height;
+
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {
@@ -311,34 +334,48 @@ function customMathTypeData()
                 return null;
             }
 
-            if (_includeChildren)
-            {
-                //loop through all children and find largest bounds
-                _objectJQuery.find(_includeChildren).each(function() {
+            if (_includeChildren !== null && _includeChildren.length > 0)
+            {                
+                
+                for (var l = 0; l < _includeChildren.length; l++)
+                {
 
-                    //get child bounds and check if child bounds are outside parent bounds
-                    var _tempBounds = cMaths.Bounds.fromObject(this);
-
-                    if (_tempBounds.x1 < _objectBounds.left)
+                    var _childrenJQuery = _objectJQuery.find(_includeChildren[l]);
+                    if (_childrenJQuery.length > 0)
                     {
-                        _objectBounds.left = _tempBounds.x1;
-                    }
+                        //loop through all children and find largest bounds
+                        _childrenJQuery.each(function() {
 
-                    if (_tempBounds.y1 < _objectBounds.top)
-                    {
-                        _objectBounds.top = _tempBounds.y1;
-                    }
+                            //get child bounds and check if child bounds are outside parent bounds
+                            var _tempBounds = cMaths.Bounds.fromObject(this);
 
-                    if (_tempBounds.x2 < _objectBounds.right)
-                    {
-                        _objectBounds.right = _tempBounds.x2;
-                    }
+                            if (_tempBounds !== null)
+                            {
+                                if (_tempBounds.x1 < _objectBounds.left)
+                                {
+                                    _objectBounds.left = _tempBounds.x1;
+                                }
 
-                    if (_tempBounds.y2 < _objectBounds.bottom)
-                    {
-                        _objectBounds.bottom = _tempBounds.y2;
+                                if (_tempBounds.y1 < _objectBounds.top)
+                                {
+                                    _objectBounds.top = _tempBounds.y1;
+                                }
+
+                                if (_tempBounds.x2 > _objectBounds.right)
+                                {
+                                    _objectBounds.right = _tempBounds.x2;
+                                }
+
+                                if (_tempBounds.y2 > _objectBounds.bottom)
+                                {
+                                    _objectBounds.bottom = _tempBounds.y2;
+                                }
+                            }
+                        });
+
+                        break;
                     }
-                });
+                }
             }
 
             return new bounds(_objectBounds.left,
@@ -623,6 +660,17 @@ function customMathGenericFunctions()
 
 function customMathPositioningFunctions()
 {
+
+    this.getPageViewportOffsetFromPage = function getPageViewportOffsetFromPage()
+    {
+        var body = document.body;
+        var docEl = document.documentElement;
+
+        return new cMaths.vector2(
+            (window.pageXOffset || docEl.scrollLeft || body.scrollLeft) - (docEl.clientLeft || body.clientLeft || 0)
+            , (window.pageYOffset || docEl.scrollTop || body.scrollTop) - (docEl.clientTop || body.clientTop || 0));
+    }
+
     this.getCoords = function getCoords(_object, _relativeTo) 
     {
 
@@ -635,36 +683,34 @@ function customMathPositioningFunctions()
             _objectPosition.x = box.left;
             _objectPosition.y = box.top;
         }
-        if (_relativeTo === _object.offsetParent)
+        else
         {
-            _objectPosition.x = _object.offsetLeft;
-            _objectPosition.y = _object.offsetTop;
-        }
-        else 
-        {
-            //calculate position offset from viewport 
-            var box = _object.getBoundingClientRect();
-    
-            var body = document.body;
-            var docEl = document.documentElement;
-        
-            var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-            var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
-        
-            var clientTop = docEl.clientTop || body.clientTop || 0;
-            var clientLeft = docEl.clientLeft || body.clientLeft || 0;
 
-            _objectPosition.x = box.left + (scrollLeft - clientLeft);
-            _objectPosition.y = box.top +  (scrollTop - clientTop);
-
-            //if relative to exists then calculate offset from that
-            if (_relativeTo !== null && _relativeTo !== document)
+            if (_relativeTo === _object.offsetParent)
             {
-                var _otherBox = _relativeTo.getBoundingClientRect();
-
-                _objectPosition.x -= _otherBox.left + (scrollLeft - clientLeft);
-                _objectPosition.y -= _otherBox.top +  (scrollTop - clientTop);
+                _objectPosition.x = _object.offsetLeft;
+                _objectPosition.y = _object.offsetTop;
             }
+            else 
+            {
+                //calculate position offset from viewport 
+                var box = _object.getBoundingClientRect();
+        
+                _objectPosition.x = box.left;
+                _objectPosition.y = box.top;
+
+                //if relative to exists then calculate offset from that
+                if (_relativeTo !== null && _relativeTo !== document)
+                {
+                    var _otherBox = _relativeTo.getBoundingClientRect();
+
+                    _objectPosition.x -= _otherBox.left;
+                    _objectPosition.y -= _otherBox.top;
+                }
+
+                _objectPosition.add(cMaths.viewportOffset);
+            }
+
         }
 
         return _objectPosition;
@@ -690,7 +736,8 @@ function customMathPositioningFunctions()
                 {
                     return translateCssSizes(_object.offsetParent, _css, null)
                 }
-            case "default":
+                return 0;
+            default:
                 return parseInt(_computedStyle[_css], 10);
         }
     }

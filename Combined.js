@@ -6,12 +6,12 @@
 * These are the line numbers for the included files:
 * 16
 * 988
-* 2230
-* 2922
-* 3595
-* 3769
-* 4665
-* 5079
+* 1871
+* 2617
+* 3261
+* 3435
+* 4331
+* 4745
 ***********************************************************************************/
 
 /*
@@ -1004,6 +1004,9 @@ window.cCss = window.cCss || new function customCss()
 
 	this.StyleModificationData = this.dataTypes.styleModificationData.prototype;
 	this.styleModificationData = this.dataTypes.styleModificationData;
+
+	this.StyleModificationData2 = this.dataTypes.styleModificationData2.prototype;
+	this.styleModificationData2 = this.dataTypes.styleModificationData2;
 	
 	this.SeparatedListData = this.dataTypes.separatedListData.prototype;
 	this.separatedListData = this.dataTypes.separatedListData;
@@ -1697,7 +1700,7 @@ function customCssstyleSheetFunctions()
 	 * 
 	 * 2 -> return if the same style 
 	 * 
-	 * 3 -> do not create style string store index
+	 * 3 -> do not create style string or store index
 	 */
 	this.getCssStyle = function getCssStyle(_style, _styleData, _returnType)
 	{
@@ -1748,32 +1751,38 @@ function customCssstyleSheetFunctions()
 		}
 		else
 		{
-			_properties = [_property];
-			_values = [_styleProperty];
+			return {
+				properties: [_styleData.property],
+				values: [_styleProperty],
+				_returnTypeIndex: -1,
+				returnTypeNewCss: ""
+			}
 		}
 
 		var _combinedStyleText = "";
 		var _returnTypeIndex = -1;
 		var _propertyToTest = _styleData.cssTextProperty === null ? _styleData.property : _styleData.cssTextProperty;
 
-		for (var a = 0; a < _properties.length; a++)
-		{
-			if (_properties[a] !== _propertyToTest)
+		_properties.forEach(function(_currentProperty, _index) {
+			if (_currentProperty && _currentProperty !== "" && _currentProperty !== " ")
 			{
-				if (_returnType === 0 || _returnType === 1)
-				{	
-					_combinedStyleText += _properties[a] + _values[a] + " ";
-				}
-			} 
-			else
-			{
-				_returnTypeIndex = a;
-				if (_returnType === 0 || _returnType === 2)
+				if (_currentProperty !== _propertyToTest)
 				{
-					_combinedStyleText += _properties[a] + _values[a] + " ";
+					if (_returnType === 0 || _returnType === 1)
+					{	
+						_combinedStyleText += _currentProperty + _values[_index] + " ";
+					}
+				} 
+				else
+				{
+					_returnTypeIndex = _index;
+					if (_returnType === 0 || _returnType === 2)
+					{
+						_combinedStyleText += _currentProperty + _values[_index] + " ";
+					}
 				}
 			}
-		}
+		});
 		
 		return {
 			properties: _properties,
@@ -1784,8 +1793,13 @@ function customCssstyleSheetFunctions()
 		
 	}
 
-	this.replaceCssStyle = function replaceCssStyle(_style, _styleData)
+	this.replaceCssStyle = function replaceCssStyle(_sheet, _selector, _styleData)
 	{
+		//setup basic variables
+		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
+		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
+		var _style = _selector.style;
+
 		if (_styleData.property)
 		{	
 			var _styleParsedData = cCss.styleSheet.getCssStyle(_style, _styleData, 1)
@@ -1798,7 +1812,6 @@ function customCssstyleSheetFunctions()
 			else if (_styleParsedData.returnTypeIndex !== -1)
 			{
 				//replace value at index of property
-				//replace(/((?<=^)\()|(\)(?=$))/gi, "")
 				var _valueSplit = "";
 				if (_styleData.splitType === 1)
 				{
@@ -1838,391 +1851,19 @@ function customCssstyleSheetFunctions()
 			if (_styleData.importance !== null)
 			{
 
-				if (_styleData.canBeList)
-				{
-					var _regex = "(^.*?(?=(" + _styleData.property + ")|$))|(?<=((" + _styleData.property + ").*?(?=;))).*";
-					var _newCssValue = _style.cssText.replace(new RegExp(_regex, "gi"), "").replace("!important", "");
-					var _newCssText = _style.cssText.replace(new RegExp("(" + _styleData.property + ").*?;"), "");
-					_style.cssText = _newCssText + _newCssValue + (_styleData.importance === true ? " !important;" : ";");
-				}
-				else
-				{
-					var _newCssText = _style.cssText.replace(new RegExp("(" + _styleData.cssTextProperty + ").*?;"), "");
-					_style.cssText = _newCssText + _styleData.cssTextProperty + ": " + _styleData.value + (_styleData.importance === true ? " !important;" : ";");
-				}
+				var _stylePropertyToUse = ((_styleData.canBeList === false && _styleData.cssTextProperty !== "") ? _styleData.cssTextProperty : _styleData.property);
+				var _regexWithoutNewStyle = "(^|.)(" + _stylePropertyToUse + (_styleData.canBeList === true ? ").*?(?=;)." : ")(?=:).*?(?=;).");
+				var _regexWithStyle = "(^|;).*?(?=(" + _stylePropertyToUse + (_styleData.canBeList === true ? "|$))" : "(?=:)|$))");
+
+				var _cssWithoutStyleChange = _style.cssText.replace(new RegExp(_regexWithoutNewStyle, "gi"), "");
+				var _cssOnlyStyleChange = _style.cssText.replace(new RegExp(_regexWithStyle, "gi"), "");
+
+				_style.cssText = _cssWithoutStyleChange + " " + _cssOnlyStyleChange + " " + (_styleData.importance === true ? " !important;" : ";");
+
 			}
 			return true;
 		}
 		return false;
-	}
-
-	//add Css Selector Style To Style Sheet
-	this.addCssStyle = function addCssStyle(_sheet, _selector, _style, _replace)
-	{
-		//setup basic variables
-		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
-		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		
-		//check selector exists
-		if (_selector)
-		{
-
-			for (var a = 0; a < _style.length; a++)
-			{
-				cCss.styleSheet.replaceCssStyle(_selector.style, _style[a]);
-			}
-
-			//return true as suceeded
-			return true;
-		}
-
-		//return null as something failed
-		return null;
-
-	}
-
-	/**
-	 * return the styles in a selector using the given _style
-	 * 
-	 * Return Types:
-	 * 
-	 * 0 -> return all
-	 * 
-	 * 1 -> return if the same style 
-	 * 
-	 * 2 -> return if not the same style
-	 */
-	
-	 /*
-	this.getCssStyle = function getCssStyle(_sheet, _selector, _style, _returnType)
-	{
-		//setup basic variables
-		var _ret = [];
-		var _sheet = cCss.styleSheet.translateCssSheet(_sheet);
-		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		var _styles = cCss.styleSheet.translateCssStyle(_style) || [];
-		var _returnType = _returnType || 0;
-
-		//CHANGE TO HASH TABLE IF EFFICIENCY IS A PROBLEM (DOUBT IT)
-		//check selector exists
-		if (_selector)
-		{
-			//find current selector style and split them into comparable values
-			var _currentStyles = cCss.styleSheet.translateCssStyle(_selector.style.cssText) || [];
-
-			//if requesting all style split then return 
-			if (_returnType == 0)
-			{
-				return _currentStyles;
-			}
-			//check if return found and input empty
-			else if (_styles.length == 0 && _returnType == 1)
-			{
-				return null
-			}
-			//check if return not found and input empty
-			else if (_styles.length == 0 && _returnType == 2)
-			{
-				return _currentStyles;
-			}
-
-			//loop through input styles
-			for (var cs = 0; cs < _currentStyles.length; cs++)
-			{
-				//setup _style substring
-				var _currentStyleSubstr = _currentStyles[cs].substring(0, _currentStyles[cs].indexOf(":"));
-				var _found = false;
-
-				//loop through current styles
-				for (var s = 0; s < _styles.length; s++)
-				{
-					//check styles are the same
-					if (_currentStyleSubstr == _styles[s].substring(0, _styles[s].indexOf(":") || _styles[s].length))
-					{
-						//set found to true and break out of loop
-						_found = true;
-						break;
-					}
-				}
-
-				//add to return based on return type
-				if (_found && _returnType == 1)
-				{
-					//found
-					_ret.push(_currentStyles[cs]);
-				}
-				else if (!_found && _returnType == 2)
-				{
-					//not found
-					_ret.push(_currentStyles[cs]);
-				}
-			}
-		}
-		
-		//return the calculated value if valid
-		if (_ret.length != 0)
-		{
-			return _ret;
-		}
-
-		//return null as something failed
-		return null;
-		
-	}
-
-	*/
-
-	//remove Css Selector Style From Sheet
-	this.removeCssStyle = function removeCssStyle(_sheet, _selector, _style)
-	{
-		//setup basic variables
-		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
-		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		var _styles = cCss.styleSheet.translateCssStyle(_style);
-
-		if (_selector)
-		{
-			var _currentStylesToKeep = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 2);
-			var _styleString = "";
-
-			//add current style to keep to style string
-			if (_currentStylesToKeep)
-			{
-				for (var cs = 0; cs < _currentStylesToKeep.length; cs++)
-				{
-					_styleString += _currentStylesToKeep[cs] + "; ";
-				}
-			}
-
-			//set the selector css to new css
-			_selector.style.cssText = _styleString;
-
-			//return true as suceeded
-			return true;
-		}
-
-		//return null as something failed
-		return null;
-	}
-
-	//return the correct format for _style to be inserted
-	this.translateCssStyle = function translateCssStyle(_style)
-	{
-		//setup return value
-		var _ret = [];
-
-		//check if _style exists
-		if (!_style)
-		{	
-			//return null because _style doesn't exist
-			return null;
-		}
-
-		//check what type _style is
-		if (typeof _style === "string")
-		{
-			//remove potential object specifiers
-			_style = _style.replace(/[{}]/g, "");
-			
-			//split the string to individual styles
-			_ret = _style.split(/; */gi).filter(
-				function comp(value, index, arr) 
-				{
-					return ($.inArray(value, ['',' ',';',null,undefined]) == -1);
-				});
-		}
-		else if (typeof _style === "array")
-		{
-			//loop through all style array values
-			for (var s = 0; s < _style.length; s++)
-			{
-				//translate the current style array index
-				var _translated = cCss.styleSheets.translateCssStyle(_style[s]);
-
-				//check if style exists and add it to ret
-				if (_translated)
-				{
-					_ret.push(_translated);
-				}
-			}
-		}
-		else if (typeof _style === "object")
-		{
-			//translate based on string version of _style
-			_ret = cCss.styleSheet.translateCssStyle(_style.toString());
-		}
-
-		//return _ret or null
-		if (_ret.length != 0)
-		{
-			return _ret;
-		}
-
-		//return null as something failed
-		return null;
-	}
-
-	//return a style list separated 
-	this.separateStyleListAttribute = function separateStyleListAttribute(_attribute, _commaSeparated)
-	{
-		var _ret = [];
-		if (_commaSeparated)
-		{
-			//split based on comma-separated
-			var _attributes = _attribute.split(/,( |(?=[a-z]))/gi);
-
-			//loop through attributes after they are separated
-			for (var _attrs = 0; _attrs < _attributes.length; _attrs++)
-			{
-				var _attrSplit = _attributes[_attrs].split(" ");
-				var _attrPrefix = _attrSplit[0];
-				_attrSplit.splice(0,1);
-
-				//create a return entry 
-				_ret.push(new cCss.SeparatedListData(_attrPrefix,_attrSplit,true));
-			}
-
-			return _ret;
-		}
-		else
-		{
-			//split based on bracket-separated
-			var _attributes = _attribute.split(/\((.*?)\)(?=[a-z]| |$|;)/gi);
-			var _attributesData = _attribute.split(/((?=(\)|^))(.*?)\()|(\)$)/gi);
-			
-			//loop through attributes after they are separated
-			for (var _attrs = 0; _attrs < _attributes.length; _attrs++)
-			{
-				//split based on brackets (,)
-				var _attrSplitData = _attributesData[_attrs].split(",");
-				var _attrPrefix = _attributes[_attrs];
-
-				//create a return entry 
-				_ret.push(new cCss.SeparatedListData(_attrPrefix,_attrSplitData,false));
-			}
-
-			return _ret;
-		} 
-	}
-
-	/**
-	 * split up style into comma separated and then pick out _prefix from those
-	 * 
-	 * can ONLY search for one type of style at a time (can accept multiple prefix)
-	 * 
-	 * returns custom split data with: .prefix and
-	 * .body with function .combineData() to return one string
-	 * 
-	 * Return Types:
-	 * 
-	 * 0 -> return all
-	 * 
-	 * 1 -> return if the same style 
-	 * 
-	 * 2 -> return if not the same style
-	 */
-	this.getSeparatedAttributes = function getSeparatedAttributes(_sheet, _selector, _style, _stylePrefix, _commaSeparated, _returnType)
-	{
-		//setup basic variables
-		var _ret = [];
-		var _sheet = cCss.styleSheet.translateCssSheet(_sheet, true);
-		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		var _styles = cCss.styleSheet.translateCssStyle(_style);
-		var _stylePrefix = _stylePrefix || [];
-
-		if (_selector && _commaSeparated != null)
-		{
-			//get the current _style 
-			var _currentStyles = cCss.styleSheet.getCssStyle(_sheet, _selector, _styles, 1);
-
-			//loop through current style 
-			for (var _cs = 0; _cs < _currentStyles.length; _cs++)
-			{
-				//loop through all separated indexs
-				var _regexSeparated = cCss.styleSheet.separateStyleListAttribute(_currentStyles[_cs],_commaSeparated);
-
-				for (var _rs = 0; _rs < _regexSeparated.length; _rs++)
-				{
-					var _found = false;
-					//loop through style prefixes and see if similar
-					for (var _s = 0; _s < _stylePrefix.length; _s)
-					{
-						if (_stylePrefix[s] == _regexSeparated[_rs].prefix)
-						{
-							_found = true;
-							break;
-						}
-					}
-
-					//add to return based on return type
-					if (_returnType == 0)
-					{
-						//add because returning all
-						_ret.push(_regexSeparated[_rs])
-					}
-					if (_found && _returnType == 1)
-					{
-						//found
-						_ret.push(_regexSeparated[_rs]);
-					}
-					else if (!_found && _returnType == 2)
-					{
-						//not found
-						_ret.push(_regexSeparated[_rs]);
-					}
-				}
-			}
-		}
-
-		//return ret value if populated
-		if (_ret.length != 0)
-		{
-			return _ret;
-		}
-
-		//return null as something failed
-		return null;
-	}
-
-	//modify separated style attribute
-	this.translateSeparatedAttributePrefix = function translateSeparatedAttributePrefix(_stylePrefix)
-	{
-		//check style and stylePrefix is correct if not setup and return
-		if (typeof _stylePrefix == "string")
-		{
-			var _ret = [];
-			_ret.push(_stylePrefix);
-			return _ret;
-		}
-		else if (typeof _stylePrefix == "array")
-		{
-			return _stylePrefix;
-		}
-
-		//return null as something failed
-		return null;
-	}
-
-	//Add to separated style attribute
-	this.addSeparatedAttribute = function addSeparatedAttribute(_sheet, _selector, _style, _stylePrefix, _commaSeparated, _addOrReplace, _attributeIndexToEdit)
-	{
-		//setup basic variables
-		var _sheet = cCss.styleSheet.translateCssSheet(_sheet);
-		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		var _styles = cCss.styleSheet.translateCssStyle(_style) || [];
-		var _stylePrefix = cCss.styleSheet.translateSeparatedAttributePrefix(_stylePrefix) || [];
-		var _attributeIndexToEdit = _attributeIndexToEdit || 0;
-	}
-
-	//remove separated style attribute
-	this.removeSeparatedAttribute = function removeSeparatedAttribute(_sheet, _selector, _style, _stylePrefix, _commaSeparated, _removeOrErase, _attributeIndexToEdit)
-	{
-		//setup basic variables
-		var _sheet = cCss.styleSheet.translateCssSheet(_sheet);
-		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
-		var _styles = cCss.styleSheet.translateCssStyle(_style) || [];
-		var _stylePrefix = cCss.styleSheet.translateSeparatedAttributePrefix(_stylePrefix) || [];
-		var _attributeIndexToEdit = _attributeIndexToEdit || 0;
 	}
 
 }
@@ -2262,6 +1903,17 @@ window.cMaths = new function customMathFunctions()
 
     this.Bounds = this.dataTypes.bounds.prototype;
     this.bounds = this.dataTypes.bounds;
+
+    //realtime data
+    this.viewportOffset = new this.vector2();
+
+    function updateViewportOffset()
+    {
+        cMaths.viewportOffset = cMaths.position.getPageViewportOffsetFromPage();
+    }
+
+    window.addEventListener("scroll", updateViewportOffset);
+    window.addEventListener("resize", updateViewportOffset)
 
 }
 
@@ -2506,6 +2158,8 @@ function customMathTypeData()
 
             //setup relative
             var _relative = _relative || document;
+            
+            var _includeChildren = _includeChildren || null;
 
             //setup JQuery object and add css class
             var _objectJQuery = $(_object);
@@ -2513,27 +2167,37 @@ function customMathTypeData()
             //get object bounds based on relative
             if (_relative !== null)
             {
-                var _position = cMaths.position.getCoords(_objectJQuery[0], _relaitve);
 
-                var computedStyle = _object.currentStyle || window.getComputedStyle(_object);
-                var height = _object.clientHeight;
-                
-                height += cMaths.position.translateCssSizes(computedStyle.marginTop);
-                height += cMaths.position.translateCssSizes(computedStyle.marginBottom);
-                height += cMaths.position.translateCssSizes(computedStyle.borderTopWidth);
-                height += cMaths.position.translateCssSizes(computedStyle.borderBottomWidth);
-            
-                var width = _object.clientWidth;
-                
-                width += cMaths.position.translateCssSizes(computedStyle.marginLeft);
-                width += parcMaths.position.translateCssSizes(computedStyle.marginRight);
-                width += cMaths.position.translateCssSizes(computedStyle.borderLeftWidth);
-                width += cMaths.position.translateCssSizes(computedStyle.borderRightWidth);
+                if (_objectJQuery.attr("type") !== "hidden" && _objectJQuery.attr("display") !== "hidden")
+                {
 
-                _objectBounds.left = _position.x;
-                _objectBounds.top = _position.y;
-                _objectBounds.right = _objectBounds.left + width;
-                _objectBounds.down = _objectBounds.top + height;
+                    var _position = cMaths.position.getCoords(_objectJQuery[0], _relative);
+
+                    var _computedStyle = _object.currentStyle || window.getComputedStyle(_object);
+                    var height = _object.clientHeight;
+                    
+                    height += cMaths.position.translateCssSizes(_object, "marginTop", _computedStyle);
+                    height += cMaths.position.translateCssSizes(_object, "marginBottom", _computedStyle);
+                    height += cMaths.position.translateCssSizes(_object, "borderTopWidth", _computedStyle);
+                    height += cMaths.position.translateCssSizes(_object, "borderBottomWidth", _computedStyle);
+                    
+                    var width = _object.clientWidth;
+                    
+                    width += cMaths.position.translateCssSizes(_object, "marginLeft", _computedStyle);
+                    width += cMaths.position.translateCssSizes(_object, "marginRight", _computedStyle);
+                    width += cMaths.position.translateCssSizes(_object, "borderLeftWidth", _computedStyle);
+                    width += cMaths.position.translateCssSizes(_object, "borderRightWidth", _computedStyle);
+                    
+                    _objectBounds.left = _position.x;
+                    _objectBounds.top = _position.y;
+                    _objectBounds.right = _objectBounds.left + width;
+                    _objectBounds.bottom = _objectBounds.top + height;
+
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {
@@ -2541,34 +2205,48 @@ function customMathTypeData()
                 return null;
             }
 
-            if (_includeChildren)
-            {
-                //loop through all children and find largest bounds
-                _objectJQuery.find(_includeChildren).each(function() {
+            if (_includeChildren !== null && _includeChildren.length > 0)
+            {                
+                
+                for (var l = 0; l < _includeChildren.length; l++)
+                {
 
-                    //get child bounds and check if child bounds are outside parent bounds
-                    var _tempBounds = cMaths.Bounds.fromObject(this, null);
-
-                    if (_tempBounds.x1 < _objectBounds.left)
+                    var _childrenJQuery = _objectJQuery.find(_includeChildren[l]);
+                    if (_childrenJQuery.length > 0)
                     {
-                        _objectBounds.left = _tempBounds.x1;
-                    }
+                        //loop through all children and find largest bounds
+                        _childrenJQuery.each(function() {
 
-                    if (_tempBounds.y1 < _objectBounds.top)
-                    {
-                        _objectBounds.top = _tempBounds.y1;
-                    }
+                            //get child bounds and check if child bounds are outside parent bounds
+                            var _tempBounds = cMaths.Bounds.fromObject(this);
 
-                    if (_tempBounds.x2 < _objectBounds.right)
-                    {
-                        _objectBounds.right = _tempBounds.x2;
-                    }
+                            if (_tempBounds !== null)
+                            {
+                                if (_tempBounds.x1 < _objectBounds.left)
+                                {
+                                    _objectBounds.left = _tempBounds.x1;
+                                }
 
-                    if (_tempBounds.y2 < _objectBounds.bottom)
-                    {
-                        _objectBounds.bottom = _tempBounds.y2;
+                                if (_tempBounds.y1 < _objectBounds.top)
+                                {
+                                    _objectBounds.top = _tempBounds.y1;
+                                }
+
+                                if (_tempBounds.x2 > _objectBounds.right)
+                                {
+                                    _objectBounds.right = _tempBounds.x2;
+                                }
+
+                                if (_tempBounds.y2 > _objectBounds.bottom)
+                                {
+                                    _objectBounds.bottom = _tempBounds.y2;
+                                }
+                            }
+                        });
+
+                        break;
                     }
-                });
+                }
             }
 
             return new bounds(_objectBounds.left,
@@ -2853,6 +2531,17 @@ function customMathGenericFunctions()
 
 function customMathPositioningFunctions()
 {
+
+    this.getPageViewportOffsetFromPage = function getPageViewportOffsetFromPage()
+    {
+        var body = document.body;
+        var docEl = document.documentElement;
+
+        return new cMaths.vector2(
+            (window.pageXOffset || docEl.scrollLeft || body.scrollLeft) - (docEl.clientLeft || body.clientLeft || 0)
+            , (window.pageYOffset || docEl.scrollTop || body.scrollTop) - (docEl.clientTop || body.clientTop || 0));
+    }
+
     this.getCoords = function getCoords(_object, _relativeTo) 
     {
 
@@ -2865,44 +2554,45 @@ function customMathPositioningFunctions()
             _objectPosition.x = box.left;
             _objectPosition.y = box.top;
         }
-        if (_relativeTo === _object.offsetParent)
+        else
         {
-            _objectPosition.x = _object.offsetLeft;
-            _objectPosition.y = _object.offsetTop;
-        }
-        else 
-        {
-            //calculate position offset from viewport 
-            var box = _object.getBoundingClientRect();
-    
-            var body = document.body;
-            var docEl = document.documentElement;
-        
-            var scrollTop = window.pageYOffset || docEl.scrollTop || body.scrollTop;
-            var scrollLeft = window.pageXOffset || docEl.scrollLeft || body.scrollLeft;
-        
-            var clientTop = docEl.clientTop || body.clientTop || 0;
-            var clientLeft = docEl.clientLeft || body.clientLeft || 0;
 
-            _objectPosition.x = box.left + (scrollLeft - clientLeft);
-            _objectPosition.y = box.top +  (scrollTop - clientTop);
-
-            //if relative to exists then calculate offset from that
-            if (_relativeTo !== null && _relativeTo !== document)
+            if (_relativeTo === _object.offsetParent)
             {
-                var _otherBox = _relativeTo.getBoundingClientRect();
-
-                _objectPosition.x -= _otherBox.left + (scrollLeft - clientLeft);
-                _objectPosition.y -= _otherBox.top +  (scrollTop - clientTop);
+                _objectPosition.x = _object.offsetLeft;
+                _objectPosition.y = _object.offsetTop;
             }
+            else 
+            {
+                //calculate position offset from viewport 
+                var box = _object.getBoundingClientRect();
+        
+                _objectPosition.x = box.left;
+                _objectPosition.y = box.top;
+
+                //if relative to exists then calculate offset from that
+                if (_relativeTo !== null && _relativeTo !== document)
+                {
+                    var _otherBox = _relativeTo.getBoundingClientRect();
+
+                    _objectPosition.x -= _otherBox.left;
+                    _objectPosition.y -= _otherBox.top;
+                }
+
+                _objectPosition.add(cMaths.viewportOffset);
+            }
+
         }
 
         return _objectPosition;
     }
 
-    this.translateCssSizes = function translateCssSizes(_css)
+    this.translateCssSizes = function translateCssSizes(_object, _css, _computedStyle)
     {
-        switch(_css)
+
+        var _computedStyle = _computedStyle || _object.currentStyle || window.getComputedStyle(_object);
+
+        switch(_computedStyle[_css])
         {
             case "thin":
                 return 1;
@@ -2911,10 +2601,15 @@ function customMathPositioningFunctions()
             case "thick":
                 return 5;
             case "auto":
-            case "inherit":
                 return 0;
-            case "default":
-                return parseInt(_css, 10);
+            case "inherit":
+                if (_object)
+                {
+                    return translateCssSizes(_object.offsetParent, _css, null)
+                }
+                return 0;
+            default:
+                return parseInt(_computedStyle[_css], 10);
         }
     }
 }
@@ -3123,15 +2818,10 @@ function cElementGenericFunctions()
             //add the element to the array
             cElement.elementArray.push(_customElement);
 
-            var removeZIndex = cUtility.findHTMLObjects(_customElement);
+            var _styleData = new cCss.styleModificationData2("zIndex", null, false, null, "unset", -1, true);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _ID, _styleData);
 
-            for (var obj = 0; obj < removeZIndex.length; obj++)
-            {
-                cCss.style.addStyleProperty($(
-                    removeZIndex[obj]).closest(".WebPanelOverlay")[0],
-                    new cCss.styleModificationData("z-index", "unset")
-                );
-            }
+            cUtility.findHTMLObjects(_customElement).closest(".WebPanelOverlay").addClass("Element" + _ID);
 
             //return the newly created element
             console.log("Created Element with name: " + _elementName);
@@ -3371,33 +3061,22 @@ function cElementModifyFunctions()
         {
             if (_messageData.opacityTime)
             {
-                //setup opacity transition data
-                var _transData = 
-                new cCss.cssTransitionData(
-                    "opacity",
-                    ((_messageData.opacityTime || 0) / 1000).toString() + "s",
-                    _messageData.opacityTiming || "linear",
-                    ((_messageData.opacityDelay || 0) / 1000).toString() + "s",
-                    null
-                );
 
-                //add the transition data to the overylay panel
-                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+                var _transitionData = "opacity " + ((_messageData.opacityTime || 0) / 1000).toString() + "s";
+                _transitionData += " " + (_messageData.opacityTiming || "linear");
+                _transitionData += " " + ((_messageData.opacityDelay || 0) / 1000).toString() + "s";
+                  
+                var _styleData = new cCss.styleModificationData2("transition", "opacity", true, 2, _transitionData, -1, false);
+                cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
             }
             else
             {
-                //setup opacity transition data
-                var _transData = 
-                new cCss.cssTransitionData(
-                    "opacity",
-                    "0s",
-                    "linear",
-                    "0s",
-                    null
-                    );
 
-                //add the transition data to the overylay panel
-                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+                var _transitionData = "opacity 0s linear 0s";    
+                var _styleData = new cCss.styleModificationData2("transition", "opacity", true, 2, _transitionData, -1, false);
+                cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
             }
         }
 
@@ -3405,32 +3084,26 @@ function cElementModifyFunctions()
         if (_enabled)
         {
             //change html style to be visiblie and set zIndex to default
-            if (_messageData.opacity)
-            {
-                htmlOverlayPanel.style.opacity = _messageData.opacity;
-            }
-            else
-            {
-                htmlOverlayPanel.style.opacity = 100;
-            }
-            htmlOverlayPanel.style.visibility = "visible";
-            cCss.style.addStyleProperty(htmlOverlayPanel,
-                new cCss.styleModificationData("z-index",
-                    10000
-                )
-            );
+            var _opacityToSet = (_messageData.opacity === null || _messageData.opacity === undefined) ? 100 : _messageData.opacity;
+            var _styleData = new cCss.styleModificationData2("opacity", null, false, null, _opacityToSet.toString(), -1, false);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
+            _styleData = new cCss.styleModificationData2("visibility", null, false, null, "visible", -1, false);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
+            var _zIndexToSet = ((_messageData.zIndex === null || _messageData.zIndex === undefined)  ? "10000" : _messageData.zIndex);
+            var _zIndexImportanceToSet = ((_messageData.zIndexImportance === null || _messageData.zIndexImportance === undefined)  ? true : _messageData.zIndexImportance);
+            _styleData = new cCss.styleModificationData2("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
         }
         else
         {
             //change html style to be visiblie and set zIndex to default
-            if (_messageData.opacity)
-            {
-                htmlOverlayPanel.style.opacity = _messageData.opacity;
-            }
-            else
-            {
-                htmlOverlayPanel.style.opacity = 0;
-            }
+            var _opacityToSet = (_messageData.opacity === null || _messageData.opacity === undefined) ? 0 : _messageData.opacity;
+            var _styleData = new cCss.styleModificationData2("opacity", null, false, null, _opacityToSet.toString(), -1, false);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
             var currentDelay = (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0);
 
             //function for callback in timer
@@ -3455,12 +3128,14 @@ function cElementModifyFunctions()
                     if (element.elementEnabled == false)
                     {
                         //set element to be hidden and set z-index to 0
-                        htmlOverlayPanel.style.visibility = "hidden";
-                        cCss.style.addStyleProperty(htmlOverlayPanel,
-                            new cCss.styleModificationData("z-index",
-                                0
-                            )
-                        );
+                        _styleData = new cCss.styleModificationData2("visibility", null, false, null, "hidden", -1, false);
+                        cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);            
+                        
+                        var _zIndexToSet = ((_messageData.zIndex === null || _messageData.zIndex === undefined)  ? "0" : _messageData.zIndex);
+                        var _zIndexImportanceToSet = ((_messageData.zIndexImportance === null || _messageData.zIndexImportance === undefined)  ? true : _messageData.zIndexImportance);
+                        _styleData = new cCss.styleModificationData2("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+                        cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+        
                     }
 
                     //then stop the timer
@@ -3472,15 +3147,11 @@ function cElementModifyFunctions()
         }
 
         //check if zIndex supplied and set to that if so
-        if (_messageData.zIndex)
-        {
-            cCss.style.addStyleProperty(htmlOverlayPanel,
-                new cCss.styleModificationData("z-index",
-                    _messageData.zIndex, 
-                    _messageData.zIndexImportance || ""
-                )
-            );
-        }
+        // if (_messageData.zIndex)
+        // {
+        //     var _styleData = new cCss.styleModificationData2("zIndex", null, false, null, _messageData.zIndex, -1,  _messageData.zIndexImportance);
+        //     cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+        // }
 
         //setup position variables
         var _posX = _messageData.posX || "undefined", _posY = _messageData.posY || "undefined";
@@ -3528,22 +3199,17 @@ function cElementModifyFunctions()
             //has a custom position transition
             if (cCss && _messageData.positionMoveTime)
             {
-                //setup position transition data
-                var _transData = 
-                    new cCss.cssTransitionData(
-                        "left",
-                        ((_messageData.positionMoveTime || 0) / 1000).toString() + "s",
-                        _messageData.positionTiming || "linear",
-                        ((_messageData.positionDelay || 0) / 1000).toString() + "s",
-                        null
-                        );
 
-                //add transition data to "left" 
-                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+                var _transitionData = ((_messageData.positionMoveTime || 0) / 1000).toString() + "s";
+                _transitionData + " " + (_messageData.positionTiming || "linear");
+                _transitionData + " " + ((_messageData.positionDelay || 0) / 1000).toString() + "s";
 
-                //add same transition data to "top"
-                _transData.transitionProperty = "top";
-                cCss.transition.addTransition(htmlOverlayPanel, _transData);
+                var _styleData = new cCss.styleModificationData2("transition", "left", true, 2, _transitionData, -1, false);
+                cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
+                _styleData.cssTextProperty = "top";
+                cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
+
             }
             
             //class scroll seems to be the object itself vs the surrounding div
@@ -5229,5 +4895,3 @@ window.cUtility = window.cUtility || new function cUtility()
 	}
 
 }
-
-
