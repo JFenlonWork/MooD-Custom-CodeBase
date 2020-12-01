@@ -11,21 +11,16 @@ window.cCss = window.cCss || new function customCss()
 	//====DATA TYPES====//
 	this.dataTypes = new cCssDataTypes();
 
-	this.cssTransitionData = this.dataTypes.cssTransitionData.prototype;
+	this.CssTransitionData = this.dataTypes.cssTransitionData.prototype;
 	this.cssTransitionData = this.dataTypes.cssTransitionData;
 
 	this.StyleModificationData = this.dataTypes.styleModificationData.prototype;
 	this.styleModificationData = this.dataTypes.styleModificationData;
 
-	this.StyleModificationData2 = this.dataTypes.styleModificationData2.prototype;
-	this.styleModificationData2 = this.dataTypes.styleModificationData2;
-	
-	this.SeparatedListData = this.dataTypes.separatedListData.prototype;
-	this.separatedListData = this.dataTypes.separatedListData;
+	this.StyleSheetModificationData = this.dataTypes.styleSheetModificationData.prototype;
+	this.styleSheetModificationData = this.dataTypes.styleSheetModificationData;
 	
 	//====FUNCTIONS====//
-	this.transform = new customCssTransformFunctions();
-	this.transition = new customCssTransitionFunctions();
 	this.style = new customCssStyleFunctions();
 	this.styleSheet = new customCssstyleSheetFunctions();
 
@@ -56,7 +51,7 @@ function cCssDataTypes()
 	}
 
 	//make value be array to indicate (x,y,z) etc...
-	this.styleModificationData2 = function styleModificationData(_property, _cssTextProperty, _canBeList, _splitType, _value, _propertyIndex, _importance)
+	this.styleSheetModificationData = function styleSheetModificationData(_property, _cssTextProperty, _canBeList, _splitType, _value, _propertyIndex, _importance)
 	{
 		this.property = _property || "";
 		this.cssTextProperty = _cssTextProperty || "";
@@ -69,275 +64,6 @@ function cCssDataTypes()
 		this.propertyIndex = _propertyIndex !== null ? _propertyIndex : -1;
 	}
 
-	//store split style data
-	this.separatedListData = function separatedListData(_prefix, _body, _commaSeparated)
-	{
-		this.prefix = _prefix || "";
-		this.body = _body || [];
-		this.commaSeparated = _commaSeparated || false;
-
-		var _this = this;
-
-		//combine prefix and body into single string
-		this.combineData = function combineData()
-		{
-			//setup initial body of style
-			var _ret = _prefix;
-
-			//loop through all data of body
-			for (var _body = 0; _body < _this.body.length; _body++)
-			{
-				//check if style was comma-separated
-				if (_commaSeparated)
-				{
-					//add body section onto style body
-					_ret += " " + _this.body[_body];
-				}
-				else
-				{
-					//check if body section needs to start/end with brackets
-					if (_body == 0)
-					{
-						_ret += "(";
-					}
-					
-					if (_body == _this.body.length - 1)
-					{
-						_ret += "," + _this.body[_body] + ")";
-					} 
-					else
-					{
-						_ret += "," + _this.body[_body];
-					}
-				}
-			}
-
-			return _ret;
-		}
-	}
-}
-
-//hold all transform functions
-function customCssTransformFunctions()
-{
-	//get current transform and add onto it
-	this.modifyTransformVariables = function modifyTransformVariables(_object, _type, _values)
-	{
-		//check object style exists
-		if (_object)
-		{
-			if (_object.style)
-			{
-
-				//make sure variables are set
-				var _values = _values || [];
-
-				//grab previous transform variables
-				var _prevTransformVars = cCss.transform.returnTransformVariables(_object, _type);
-				
-				//setup transform variables
-				var _transform = _prevTransformVars.previous + _type + "(";
-
-				//calculate loop count
-				var _transformLoop = _prevTransformVars.values.length;
-				if (_prevTransformVars.values.length < _values.length)
-				{
-					_transformLoop = _values.length;
-				}
-
-				//loop through all transform potential variables
-				for (var i = 0; i < _transformLoop; i++)
-				{
-					var _transformValue = 0
-
-					//setup tranform variable based
-					if (i < _prevTransformVars.values.length)
-					{
-						_transformValue = _prevTransformVars.values[i];
-					}
-
-					if (i < _values.length)
-					{
-						_transformValue += _values[i];
-					}
-					
-					//check if start of transform variable
-					if (i == 0)
-					{
-						_transform += _transformValue + "px";
-					}
-					else
-					{
-						_transform += ", " + _transformValue + "px";
-					}
-
-				}
-
-				_transform += ")" + _prevTransformVars.after;
-
-				//set transform to new transform
-				_object.style.transform = _transform;
-			}
-		}
-	}
-
-	//get current transform on object
-	this.returnTransformVariables = function returnTransformVariables(_object, _type)
-	{
-		//store variables
-		var _ret = {
-			values: [],
-			previous: "",
-			after: ""
-		}
-
-		//check object transform exists
-		if (_object)
-		{
-			if (_object.style)
-			{
-				if (_object.style.transform != '')
-				{
-					//get transform and remove excess characters
-					var _tempTransform = _object.style.transform;
-
-					//grab previous transform
-					_ret.previous = _tempTransform.slice(0, _tempTransform.indexOf(_type));
-					_tempTransform = _tempTransform.slice(_tempTransform.indexOf(_type), _tempTransform.length);
-
-					//grab all transform variables
-					var _transformVars = _tempTransform.slice(_tempTransform.indexOf("(") + 1, _tempTransform.indexOf(")"));
-					_tempTransform = _tempTransform.slice(_tempTransform.indexOf(")") + 1, _tempTransform.length);
-					_transformVars = _transformVars.split(",");
-
-					//setup transform variables
-					for (var i = 0; i < _transformVars.length; i++)
-					{
-						_ret.values.push(parseInt(_transformVars[i]));
-					}
-
-					//grab after transform
-					_ret.after = _tempTransform.slice(0, _tempTransform.length);
-				}
-			}
-		}
-
-		return _ret;
-	}
-}
-
-//hold all transition functions
-function customCssTransitionFunctions() 
-{
-	//add transition onto object
-	this.addTransition = function addTransition(_object, _transitionData)
-	{
-		if (_transitionData)
-		{
-			//remove previous transition of same type
-			cCss.transition.removeTransition(_object, _transitionData.transitionProperty);
-
-			//check object transform exists
-			if (_object)
-			{
-				if (_object.style)
-				{
-					if (_object.style.transition != "")
-					{
-						//add transition onto end of transitions
-						_object.style.transitionProperty += ", " + _transitionData.transitionProperty;
-						_object.style.transitionDuration += ", " + _transitionData.transitionDuration;
-						_object.style.transitionTimingFunction += ", " + _transitionData.transitionTiming;
-						_object.style.transitionDelay += ", " + _transitionData.transitionDelay;					
-					}
-					else
-					{
-						//set transitions to transition
-						_object.style.transitionProperty = _transitionData.transitionProperty;
-						_object.style.transitionDuration = _transitionData.transitionDuration;
-						_object.style.transitionTimingFunction = _transitionData.transitionTiming;
-						_object.style.transitionDelay = _transitionData.transitionDelay;	
-					}
-				}
-			}
-		}
-	}
-
-	//remove transition on object
-	this.removeTransition = function removeTransition(_object, _transitionType)
-	{
-		var transIndex = cCss.transition.getTransition(_object, _transitionType)
-		
-		//check transition exists
-		if (transIndex != null)
-		{
-			//store all transition data
-			var _transitionProperty = _object.style.transitionProperty.split(",");
-			var _transitionDuration = _object.style.transitionDuration.split(",");
-			var _transitionTiming = _object.style.transitionTimingFunction.split(",");
-			var _transitionDelay = _object.style.transitionDelay.split(",");
-
-			//reset object transition to nothing
-			_object.style.transitionProperty = '';
-			_object.style.transitionDuration = '';
-			_object.style.transitionTimingFunction = '';
-			_object.style.transitionDelay = '';
-
-			//loop through all transitions
-			for (var i = 0; i < _transitionProperty.length; i++)
-			{
-				var _endString = ', ';
-
-				//check if index is end index
-				if (i == _transitionProperty.length)
-				{
-					_endString = '';
-				}
-
-				//check if index is not equal to transition being removed
-				if (i != transIndex.transitionIndex)
-				{
-					//add object onto end of transition variable
-					_object.style.transitionProperty += _transitionProperty[i] + _endString;
-					_object.style.transitionDuration += _transitionDuration[i] + _endString;
-					_object.style.transitionTimingFunction += _transitionTiming[i] + _endString;
-					_object.style.transitionDelay += _transitionDelay[i] + _endString;
-				}
-			}
-		}
-	}
-
-	//get index of transition property
-	this.getTransition = function getTransition(_object, _transitionType)
-	{
-		//check object transform exists
-		if (_object)
-		{
-			if (_object.style)
-			{
-				if (_object.style.transition != '')
-				{
-					//split all transitions up into _allTrans variable
-					var _allTrans = _object.style.transitionProperty.split(",");
-
-					//loop through all transitions and return _transitionType
-					for (var i = 0; i < _allTrans.length; i++)
-					{
-						if (_allTrans[i] == _transitionType)
-						{
-							return new cCss.cssTransitionData(_allTrans[i],
-								_object.style.transitionDuration.split(",")[i],
-								_object.style.transitionTimingFunction.split(",")[i],
-								_object.style.transitionDelay.split(",")[i],
-								i);
-						}
-					}
-				}
-			}
-		}
-
-		return null;
-	}
 }
 
 //hold all style functions
@@ -427,6 +153,232 @@ function customCssStyleFunctions()
 
 		return -1;
 	}
+
+	//get current transform and add onto it
+	this.modifyTransformVariables = function modifyTransformVariables(_object, _type, _values, _addOrSet)
+	{
+		//check object style exists
+		if (_object)
+		{
+			if (_object.style)
+			{
+
+				//make sure variables are set
+				var _values = _values || [];
+
+				//grab previous transform variables
+				var _prevTransformVars = cCss.style.returnTransformVariables(_object, _type);
+				
+				//setup transform variables
+				var _transform = _prevTransformVars.previous + _type + "(";
+
+				//calculate loop count
+				var _transformLoop = _prevTransformVars.values.length;
+				if (_prevTransformVars.values.length < _values.length)
+				{
+					_transformLoop = _values.length;
+				}
+
+				//loop through all transform potential variables
+				for (var i = 0; i < _transformLoop; i++)
+				{
+					var _transformValue = 0
+
+					//setup tranform variable based
+					if (i < _prevTransformVars.values.length)
+					{
+						_transformValue = _prevTransformVars.values[i];
+					}
+
+					if (i < _values.length)
+					{
+						if (_addOrSet)
+						{
+							_transformValue += _values[i];
+						}
+						else
+						{
+							if (_values[i] !== null)
+							{
+								_transformValue = _values[i];
+							}
+						}
+					}
+					
+					//check if start of transform variable
+					if (i == 0)
+					{
+						_transform += _transformValue + "px";
+					}
+					else
+					{
+						_transform += ", " + _transformValue + "px";
+					}
+
+				}
+
+				_transform += ")" + _prevTransformVars.after;
+
+				//set transform to new transform
+				_object.style.transform = _transform;
+			}
+		}
+	}
+
+	//get current transform on object
+	this.returnTransformVariables = function returnTransformVariables(_object, _type)
+	{
+		//store variables
+		var _ret = {
+			values: [],
+			previous: "",
+			after: ""
+		}
+
+		//check object transform exists
+		if (_object)
+		{
+			if (_object.style)
+			{
+				if (_object.style.transform != '')
+				{
+					//get transform and remove excess characters
+					var _tempTransform = _object.style.transform;
+
+					//grab previous transform
+					_ret.previous = _tempTransform.slice(0, _tempTransform.indexOf(_type));
+					_tempTransform = _tempTransform.slice(_tempTransform.indexOf(_type), _tempTransform.length);
+
+					//grab all transform variables
+					var _transformVars = _tempTransform.slice(_tempTransform.indexOf("(") + 1, _tempTransform.indexOf(")"));
+					_tempTransform = _tempTransform.slice(_tempTransform.indexOf(")") + 1, _tempTransform.length);
+					_transformVars = _transformVars.split(",");
+
+					//setup transform variables
+					for (var i = 0; i < _transformVars.length; i++)
+					{
+						_ret.values.push(parseInt(_transformVars[i]));
+					}
+
+					//grab after transform
+					_ret.after = _tempTransform.slice(0, _tempTransform.length);
+				}
+			}
+		}
+
+		return _ret;
+	}
+
+	//add transition onto object
+	this.addTransition = function addTransition(_object, _transitionData)
+	{
+		if (_transitionData)
+		{
+			//remove previous transition of same type
+			cCss.style.removeTransition(_object, _transitionData.transitionProperty);
+
+			//check object transform exists
+			if (_object)
+			{
+				if (_object.style)
+				{
+					if (_object.style.transition != "")
+					{
+						//add transition onto end of transitions
+						_object.style.transitionProperty += ", " + _transitionData.transitionProperty;
+						_object.style.transitionDuration += ", " + _transitionData.transitionDuration;
+						_object.style.transitionTimingFunction += ", " + _transitionData.transitionTiming;
+						_object.style.transitionDelay += ", " + _transitionData.transitionDelay;					
+					}
+					else
+					{
+						//set transitions to transition
+						_object.style.transitionProperty = _transitionData.transitionProperty;
+						_object.style.transitionDuration = _transitionData.transitionDuration;
+						_object.style.transitionTimingFunction = _transitionData.transitionTiming;
+						_object.style.transitionDelay = _transitionData.transitionDelay;	
+					}
+				}
+			}
+		}
+	}
+
+	//remove transition on object
+	this.removeTransition = function removeTransition(_object, _transitionType)
+	{
+		var transIndex = cCss.style.getTransition(_object, _transitionType)
+		
+		//check transition exists
+		if (transIndex != null)
+		{
+			//store all transition data
+			var _transitionProperty = _object.style.transitionProperty.split(",");
+			var _transitionDuration = _object.style.transitionDuration.split(",");
+			var _transitionTiming = _object.style.transitionTimingFunction.split(",");
+			var _transitionDelay = _object.style.transitionDelay.split(",");
+
+			//reset object transition to nothing
+			_object.style.transitionProperty = '';
+			_object.style.transitionDuration = '';
+			_object.style.transitionTimingFunction = '';
+			_object.style.transitionDelay = '';
+
+			//loop through all transitions
+			for (var i = 0; i < _transitionProperty.length; i++)
+			{
+				var _endString = ', ';
+
+				//check if index is end index
+				if (i == _transitionProperty.length)
+				{
+					_endString = '';
+				}
+
+				//check if index is not equal to transition being removed
+				if (i != transIndex.transitionIndex)
+				{
+					//add object onto end of transition variable
+					_object.style.transitionProperty += _transitionProperty[i] + _endString;
+					_object.style.transitionDuration += _transitionDuration[i] + _endString;
+					_object.style.transitionTimingFunction += _transitionTiming[i] + _endString;
+					_object.style.transitionDelay += _transitionDelay[i] + _endString;
+				}
+			}
+		}
+	}
+
+	//get index of transition property
+	this.getTransition = function getTransition(_object, _transitionType)
+	{
+		//check object transform exists
+		if (_object)
+		{
+			if (_object.style)
+			{
+				if (_object.style.transition != '')
+				{
+					//split all transitions up into _allTrans variable
+					var _allTrans = _object.style.transitionProperty.split(",");
+
+					//loop through all transitions and return _transitionType
+					for (var i = 0; i < _allTrans.length; i++)
+					{
+						if (_allTrans[i] == _transitionType)
+						{
+							return new cCss.cssTransitionData(_allTrans[i],
+								_object.style.transitionDuration.split(",")[i],
+								_object.style.transitionTimingFunction.split(",")[i],
+								_object.style.transitionDelay.split(",")[i],
+								i);
+						}
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+
 }
 
 //hold all style sheet functions

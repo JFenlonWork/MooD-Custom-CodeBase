@@ -201,7 +201,7 @@ function cElementGenericFunctions()
             //add the element to the array
             cElement.elementArray.push(_customElement);
 
-            var _styleData = new cCss.styleModificationData2("zIndex", null, false, null, "unset", -1, true);
+            var _styleData = new cCss.styleSheetModificationData("zIndex", null, false, null, "unset", -1, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _ID, _styleData);
 
             cUtility.findHTMLObjects(_customElement).closest(".WebPanelOverlay").addClass("Element" + _ID);
@@ -449,7 +449,7 @@ function cElementModifyFunctions()
                 _transitionData += " " + (_messageData.opacityTiming || "linear");
                 _transitionData += " " + ((_messageData.opacityDelay || 0) / 1000).toString() + "s";
                   
-                var _styleData = new cCss.styleModificationData2("transition", "opacity", true, 2, _transitionData, -1, false);
+                var _styleData = new cCss.styleSheetModificationData("transition", "opacity", true, 2, _transitionData, -1, false);
                 cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
 
             }
@@ -457,7 +457,7 @@ function cElementModifyFunctions()
             {
 
                 var _transitionData = "opacity 0s linear 0s";    
-                var _styleData = new cCss.styleModificationData2("transition", "opacity", true, 2, _transitionData, -1, false);
+                var _styleData = new cCss.styleSheetModificationData("transition", "opacity", true, 2, _transitionData, -1, false);
                 cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
 
             }
@@ -468,15 +468,15 @@ function cElementModifyFunctions()
         {
             //change html style to be visiblie and set zIndex to default
             var _opacityToSet = (_messageData.opacity === null || _messageData.opacity === undefined) ? 100 : _messageData.opacity;
-            var _styleData = new cCss.styleModificationData2("opacity", null, false, null, _opacityToSet.toString(), -1, false);
+            var _styleData = new cCss.styleSheetModificationData("opacity", null, false, null, _opacityToSet.toString(), -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
 
-            _styleData = new cCss.styleModificationData2("visibility", null, false, null, "visible", -1, false);
+            _styleData = new cCss.styleSheetModificationData("visibility", null, false, null, "visible", -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
 
             var _zIndexToSet = ((_messageData.zIndex === null || _messageData.zIndex === undefined)  ? "10000" : _messageData.zIndex);
             var _zIndexImportanceToSet = ((_messageData.zIndexImportance === null || _messageData.zIndexImportance === undefined)  ? true : _messageData.zIndexImportance);
-            _styleData = new cCss.styleModificationData2("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+            _styleData = new cCss.styleSheetModificationData("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
 
         }
@@ -484,7 +484,7 @@ function cElementModifyFunctions()
         {
             //change html style to be visiblie and set zIndex to default
             var _opacityToSet = (_messageData.opacity === null || _messageData.opacity === undefined) ? 0 : _messageData.opacity;
-            var _styleData = new cCss.styleModificationData2("opacity", null, false, null, _opacityToSet.toString(), -1, false);
+            var _styleData = new cCss.styleSheetModificationData("opacity", null, false, null, _opacityToSet.toString(), -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
 
             var currentDelay = (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0);
@@ -511,12 +511,12 @@ function cElementModifyFunctions()
                     if (element.elementEnabled == false)
                     {
                         //set element to be hidden and set z-index to 0
-                        _styleData = new cCss.styleModificationData2("visibility", null, false, null, "hidden", -1, false);
+                        _styleData = new cCss.styleSheetModificationData("visibility", null, false, null, "hidden", -1, false);
                         cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);            
                         
                         var _zIndexToSet = ((_messageData.zIndex === null || _messageData.zIndex === undefined)  ? "0" : _messageData.zIndex);
                         var _zIndexImportanceToSet = ((_messageData.zIndexImportance === null || _messageData.zIndexImportance === undefined)  ? true : _messageData.zIndexImportance);
-                        _styleData = new cCss.styleModificationData2("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+                        _styleData = new cCss.styleSheetModificationData("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
                         cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
         
                     }
@@ -528,13 +528,6 @@ function cElementModifyFunctions()
             
             new cTimer.realtimeTimer(new cTimer.callback(opacityChange, this), true, currentDelay + 1, true);
         }
-
-        //check if zIndex supplied and set to that if so
-        // if (_messageData.zIndex)
-        // {
-        //     var _styleData = new cCss.styleModificationData2("zIndex", null, false, null, _messageData.zIndex, -1,  _messageData.zIndexImportance);
-        //     cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
-        // }
 
         //setup position variables
         var _posX = _messageData.posX || "undefined", _posY = _messageData.posY || "undefined";
@@ -587,7 +580,7 @@ function cElementModifyFunctions()
                 _transitionData + " " + (_messageData.positionTiming || "linear");
                 _transitionData + " " + ((_messageData.positionDelay || 0) / 1000).toString() + "s";
 
-                var _styleData = new cCss.styleModificationData2("transition", "left", true, 2, _transitionData, -1, false);
+                var _styleData = new cCss.styleSheetModificationData("transition", "left", true, 2, _transitionData, -1, false);
                 cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
 
                 _styleData.cssTextProperty = "top";

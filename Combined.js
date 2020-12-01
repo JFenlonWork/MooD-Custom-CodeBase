@@ -6,12 +6,12 @@
 * These are the line numbers for the included files:
 * 16
 * 988
-* 1871
-* 2617
-* 3261
-* 3435
-* 4331
-* 4745
+* 1823
+* 2577
+* 3214
+* 3388
+* 4284
+* 4698
 ***********************************************************************************/
 
 /*
@@ -999,21 +999,16 @@ window.cCss = window.cCss || new function customCss()
 	//====DATA TYPES====//
 	this.dataTypes = new cCssDataTypes();
 
-	this.cssTransitionData = this.dataTypes.cssTransitionData.prototype;
+	this.CssTransitionData = this.dataTypes.cssTransitionData.prototype;
 	this.cssTransitionData = this.dataTypes.cssTransitionData;
 
 	this.StyleModificationData = this.dataTypes.styleModificationData.prototype;
 	this.styleModificationData = this.dataTypes.styleModificationData;
 
-	this.StyleModificationData2 = this.dataTypes.styleModificationData2.prototype;
-	this.styleModificationData2 = this.dataTypes.styleModificationData2;
-	
-	this.SeparatedListData = this.dataTypes.separatedListData.prototype;
-	this.separatedListData = this.dataTypes.separatedListData;
+	this.StyleSheetModificationData = this.dataTypes.styleSheetModificationData.prototype;
+	this.styleSheetModificationData = this.dataTypes.styleSheetModificationData;
 	
 	//====FUNCTIONS====//
-	this.transform = new customCssTransformFunctions();
-	this.transition = new customCssTransitionFunctions();
 	this.style = new customCssStyleFunctions();
 	this.styleSheet = new customCssstyleSheetFunctions();
 
@@ -1044,7 +1039,7 @@ function cCssDataTypes()
 	}
 
 	//make value be array to indicate (x,y,z) etc...
-	this.styleModificationData2 = function styleModificationData(_property, _cssTextProperty, _canBeList, _splitType, _value, _propertyIndex, _importance)
+	this.styleSheetModificationData = function styleSheetModificationData(_property, _cssTextProperty, _canBeList, _splitType, _value, _propertyIndex, _importance)
 	{
 		this.property = _property || "";
 		this.cssTextProperty = _cssTextProperty || "";
@@ -1057,275 +1052,6 @@ function cCssDataTypes()
 		this.propertyIndex = _propertyIndex !== null ? _propertyIndex : -1;
 	}
 
-	//store split style data
-	this.separatedListData = function separatedListData(_prefix, _body, _commaSeparated)
-	{
-		this.prefix = _prefix || "";
-		this.body = _body || [];
-		this.commaSeparated = _commaSeparated || false;
-
-		var _this = this;
-
-		//combine prefix and body into single string
-		this.combineData = function combineData()
-		{
-			//setup initial body of style
-			var _ret = _prefix;
-
-			//loop through all data of body
-			for (var _body = 0; _body < _this.body.length; _body++)
-			{
-				//check if style was comma-separated
-				if (_commaSeparated)
-				{
-					//add body section onto style body
-					_ret += " " + _this.body[_body];
-				}
-				else
-				{
-					//check if body section needs to start/end with brackets
-					if (_body == 0)
-					{
-						_ret += "(";
-					}
-					
-					if (_body == _this.body.length - 1)
-					{
-						_ret += "," + _this.body[_body] + ")";
-					} 
-					else
-					{
-						_ret += "," + _this.body[_body];
-					}
-				}
-			}
-
-			return _ret;
-		}
-	}
-}
-
-//hold all transform functions
-function customCssTransformFunctions()
-{
-	//get current transform and add onto it
-	this.modifyTransformVariables = function modifyTransformVariables(_object, _type, _values)
-	{
-		//check object style exists
-		if (_object)
-		{
-			if (_object.style)
-			{
-
-				//make sure variables are set
-				var _values = _values || [];
-
-				//grab previous transform variables
-				var _prevTransformVars = cCss.transform.returnTransformVariables(_object, _type);
-				
-				//setup transform variables
-				var _transform = _prevTransformVars.previous + _type + "(";
-
-				//calculate loop count
-				var _transformLoop = _prevTransformVars.values.length;
-				if (_prevTransformVars.values.length < _values.length)
-				{
-					_transformLoop = _values.length;
-				}
-
-				//loop through all transform potential variables
-				for (var i = 0; i < _transformLoop; i++)
-				{
-					var _transformValue = 0
-
-					//setup tranform variable based
-					if (i < _prevTransformVars.values.length)
-					{
-						_transformValue = _prevTransformVars.values[i];
-					}
-
-					if (i < _values.length)
-					{
-						_transformValue += _values[i];
-					}
-					
-					//check if start of transform variable
-					if (i == 0)
-					{
-						_transform += _transformValue + "px";
-					}
-					else
-					{
-						_transform += ", " + _transformValue + "px";
-					}
-
-				}
-
-				_transform += ")" + _prevTransformVars.after;
-
-				//set transform to new transform
-				_object.style.transform = _transform;
-			}
-		}
-	}
-
-	//get current transform on object
-	this.returnTransformVariables = function returnTransformVariables(_object, _type)
-	{
-		//store variables
-		var _ret = {
-			values: [],
-			previous: "",
-			after: ""
-		}
-
-		//check object transform exists
-		if (_object)
-		{
-			if (_object.style)
-			{
-				if (_object.style.transform != '')
-				{
-					//get transform and remove excess characters
-					var _tempTransform = _object.style.transform;
-
-					//grab previous transform
-					_ret.previous = _tempTransform.slice(0, _tempTransform.indexOf(_type));
-					_tempTransform = _tempTransform.slice(_tempTransform.indexOf(_type), _tempTransform.length);
-
-					//grab all transform variables
-					var _transformVars = _tempTransform.slice(_tempTransform.indexOf("(") + 1, _tempTransform.indexOf(")"));
-					_tempTransform = _tempTransform.slice(_tempTransform.indexOf(")") + 1, _tempTransform.length);
-					_transformVars = _transformVars.split(",");
-
-					//setup transform variables
-					for (var i = 0; i < _transformVars.length; i++)
-					{
-						_ret.values.push(parseInt(_transformVars[i]));
-					}
-
-					//grab after transform
-					_ret.after = _tempTransform.slice(0, _tempTransform.length);
-				}
-			}
-		}
-
-		return _ret;
-	}
-}
-
-//hold all transition functions
-function customCssTransitionFunctions() 
-{
-	//add transition onto object
-	this.addTransition = function addTransition(_object, _transitionData)
-	{
-		if (_transitionData)
-		{
-			//remove previous transition of same type
-			cCss.transition.removeTransition(_object, _transitionData.transitionProperty);
-
-			//check object transform exists
-			if (_object)
-			{
-				if (_object.style)
-				{
-					if (_object.style.transition != "")
-					{
-						//add transition onto end of transitions
-						_object.style.transitionProperty += ", " + _transitionData.transitionProperty;
-						_object.style.transitionDuration += ", " + _transitionData.transitionDuration;
-						_object.style.transitionTimingFunction += ", " + _transitionData.transitionTiming;
-						_object.style.transitionDelay += ", " + _transitionData.transitionDelay;					
-					}
-					else
-					{
-						//set transitions to transition
-						_object.style.transitionProperty = _transitionData.transitionProperty;
-						_object.style.transitionDuration = _transitionData.transitionDuration;
-						_object.style.transitionTimingFunction = _transitionData.transitionTiming;
-						_object.style.transitionDelay = _transitionData.transitionDelay;	
-					}
-				}
-			}
-		}
-	}
-
-	//remove transition on object
-	this.removeTransition = function removeTransition(_object, _transitionType)
-	{
-		var transIndex = cCss.transition.getTransition(_object, _transitionType)
-		
-		//check transition exists
-		if (transIndex != null)
-		{
-			//store all transition data
-			var _transitionProperty = _object.style.transitionProperty.split(",");
-			var _transitionDuration = _object.style.transitionDuration.split(",");
-			var _transitionTiming = _object.style.transitionTimingFunction.split(",");
-			var _transitionDelay = _object.style.transitionDelay.split(",");
-
-			//reset object transition to nothing
-			_object.style.transitionProperty = '';
-			_object.style.transitionDuration = '';
-			_object.style.transitionTimingFunction = '';
-			_object.style.transitionDelay = '';
-
-			//loop through all transitions
-			for (var i = 0; i < _transitionProperty.length; i++)
-			{
-				var _endString = ', ';
-
-				//check if index is end index
-				if (i == _transitionProperty.length)
-				{
-					_endString = '';
-				}
-
-				//check if index is not equal to transition being removed
-				if (i != transIndex.transitionIndex)
-				{
-					//add object onto end of transition variable
-					_object.style.transitionProperty += _transitionProperty[i] + _endString;
-					_object.style.transitionDuration += _transitionDuration[i] + _endString;
-					_object.style.transitionTimingFunction += _transitionTiming[i] + _endString;
-					_object.style.transitionDelay += _transitionDelay[i] + _endString;
-				}
-			}
-		}
-	}
-
-	//get index of transition property
-	this.getTransition = function getTransition(_object, _transitionType)
-	{
-		//check object transform exists
-		if (_object)
-		{
-			if (_object.style)
-			{
-				if (_object.style.transition != '')
-				{
-					//split all transitions up into _allTrans variable
-					var _allTrans = _object.style.transitionProperty.split(",");
-
-					//loop through all transitions and return _transitionType
-					for (var i = 0; i < _allTrans.length; i++)
-					{
-						if (_allTrans[i] == _transitionType)
-						{
-							return new cCss.cssTransitionData(_allTrans[i],
-								_object.style.transitionDuration.split(",")[i],
-								_object.style.transitionTimingFunction.split(",")[i],
-								_object.style.transitionDelay.split(",")[i],
-								i);
-						}
-					}
-				}
-			}
-		}
-
-		return null;
-	}
 }
 
 //hold all style functions
@@ -1415,6 +1141,232 @@ function customCssStyleFunctions()
 
 		return -1;
 	}
+
+	//get current transform and add onto it
+	this.modifyTransformVariables = function modifyTransformVariables(_object, _type, _values, _addOrSet)
+	{
+		//check object style exists
+		if (_object)
+		{
+			if (_object.style)
+			{
+
+				//make sure variables are set
+				var _values = _values || [];
+
+				//grab previous transform variables
+				var _prevTransformVars = cCss.style.returnTransformVariables(_object, _type);
+				
+				//setup transform variables
+				var _transform = _prevTransformVars.previous + _type + "(";
+
+				//calculate loop count
+				var _transformLoop = _prevTransformVars.values.length;
+				if (_prevTransformVars.values.length < _values.length)
+				{
+					_transformLoop = _values.length;
+				}
+
+				//loop through all transform potential variables
+				for (var i = 0; i < _transformLoop; i++)
+				{
+					var _transformValue = 0
+
+					//setup tranform variable based
+					if (i < _prevTransformVars.values.length)
+					{
+						_transformValue = _prevTransformVars.values[i];
+					}
+
+					if (i < _values.length)
+					{
+						if (_addOrSet)
+						{
+							_transformValue += _values[i];
+						}
+						else
+						{
+							if (_values[i] !== null)
+							{
+								_transformValue = _values[i];
+							}
+						}
+					}
+					
+					//check if start of transform variable
+					if (i == 0)
+					{
+						_transform += _transformValue + "px";
+					}
+					else
+					{
+						_transform += ", " + _transformValue + "px";
+					}
+
+				}
+
+				_transform += ")" + _prevTransformVars.after;
+
+				//set transform to new transform
+				_object.style.transform = _transform;
+			}
+		}
+	}
+
+	//get current transform on object
+	this.returnTransformVariables = function returnTransformVariables(_object, _type)
+	{
+		//store variables
+		var _ret = {
+			values: [],
+			previous: "",
+			after: ""
+		}
+
+		//check object transform exists
+		if (_object)
+		{
+			if (_object.style)
+			{
+				if (_object.style.transform != '')
+				{
+					//get transform and remove excess characters
+					var _tempTransform = _object.style.transform;
+
+					//grab previous transform
+					_ret.previous = _tempTransform.slice(0, _tempTransform.indexOf(_type));
+					_tempTransform = _tempTransform.slice(_tempTransform.indexOf(_type), _tempTransform.length);
+
+					//grab all transform variables
+					var _transformVars = _tempTransform.slice(_tempTransform.indexOf("(") + 1, _tempTransform.indexOf(")"));
+					_tempTransform = _tempTransform.slice(_tempTransform.indexOf(")") + 1, _tempTransform.length);
+					_transformVars = _transformVars.split(",");
+
+					//setup transform variables
+					for (var i = 0; i < _transformVars.length; i++)
+					{
+						_ret.values.push(parseInt(_transformVars[i]));
+					}
+
+					//grab after transform
+					_ret.after = _tempTransform.slice(0, _tempTransform.length);
+				}
+			}
+		}
+
+		return _ret;
+	}
+
+	//add transition onto object
+	this.addTransition = function addTransition(_object, _transitionData)
+	{
+		if (_transitionData)
+		{
+			//remove previous transition of same type
+			cCss.style.removeTransition(_object, _transitionData.transitionProperty);
+
+			//check object transform exists
+			if (_object)
+			{
+				if (_object.style)
+				{
+					if (_object.style.transition != "")
+					{
+						//add transition onto end of transitions
+						_object.style.transitionProperty += ", " + _transitionData.transitionProperty;
+						_object.style.transitionDuration += ", " + _transitionData.transitionDuration;
+						_object.style.transitionTimingFunction += ", " + _transitionData.transitionTiming;
+						_object.style.transitionDelay += ", " + _transitionData.transitionDelay;					
+					}
+					else
+					{
+						//set transitions to transition
+						_object.style.transitionProperty = _transitionData.transitionProperty;
+						_object.style.transitionDuration = _transitionData.transitionDuration;
+						_object.style.transitionTimingFunction = _transitionData.transitionTiming;
+						_object.style.transitionDelay = _transitionData.transitionDelay;	
+					}
+				}
+			}
+		}
+	}
+
+	//remove transition on object
+	this.removeTransition = function removeTransition(_object, _transitionType)
+	{
+		var transIndex = cCss.style.getTransition(_object, _transitionType)
+		
+		//check transition exists
+		if (transIndex != null)
+		{
+			//store all transition data
+			var _transitionProperty = _object.style.transitionProperty.split(",");
+			var _transitionDuration = _object.style.transitionDuration.split(",");
+			var _transitionTiming = _object.style.transitionTimingFunction.split(",");
+			var _transitionDelay = _object.style.transitionDelay.split(",");
+
+			//reset object transition to nothing
+			_object.style.transitionProperty = '';
+			_object.style.transitionDuration = '';
+			_object.style.transitionTimingFunction = '';
+			_object.style.transitionDelay = '';
+
+			//loop through all transitions
+			for (var i = 0; i < _transitionProperty.length; i++)
+			{
+				var _endString = ', ';
+
+				//check if index is end index
+				if (i == _transitionProperty.length)
+				{
+					_endString = '';
+				}
+
+				//check if index is not equal to transition being removed
+				if (i != transIndex.transitionIndex)
+				{
+					//add object onto end of transition variable
+					_object.style.transitionProperty += _transitionProperty[i] + _endString;
+					_object.style.transitionDuration += _transitionDuration[i] + _endString;
+					_object.style.transitionTimingFunction += _transitionTiming[i] + _endString;
+					_object.style.transitionDelay += _transitionDelay[i] + _endString;
+				}
+			}
+		}
+	}
+
+	//get index of transition property
+	this.getTransition = function getTransition(_object, _transitionType)
+	{
+		//check object transform exists
+		if (_object)
+		{
+			if (_object.style)
+			{
+				if (_object.style.transition != '')
+				{
+					//split all transitions up into _allTrans variable
+					var _allTrans = _object.style.transitionProperty.split(",");
+
+					//loop through all transitions and return _transitionType
+					for (var i = 0; i < _allTrans.length; i++)
+					{
+						if (_allTrans[i] == _transitionType)
+						{
+							return new cCss.cssTransitionData(_allTrans[i],
+								_object.style.transitionDuration.split(",")[i],
+								_object.style.transitionTimingFunction.split(",")[i],
+								_object.style.transitionDelay.split(",")[i],
+								i);
+						}
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+
 }
 
 //hold all style sheet functions
@@ -2099,6 +2051,7 @@ function customMathTypeData()
         this.topRight = new vector2(_x2, _y1);
         this.bottomRight = new vector2(_x2, _y2);
         this.bottomLeft = new vector2(_x1, _y2);
+        this.size = new vector2(_x2 - _x1, _y2 - _y1);
     }
 
     bounds.prototype =
@@ -2113,6 +2066,7 @@ function customMathTypeData()
             this.topRight.set(_x2, _y1);
             this.bottomRight.set(_x2, _y2);
             this.bottomLeft.set(_x1, _y2);
+            this.size.set(_x2 - _x1, _y2 - _y1);
         },
 
         clone: function()
@@ -2170,18 +2124,24 @@ function customMathTypeData()
 
                 if (_objectJQuery.attr("type") !== "hidden" && _objectJQuery.attr("display") !== "hidden")
                 {
+                    var _clientRect;
 
-                    var _position = cMaths.position.getCoords(_objectJQuery[0], _relative);
+                    if (_relative != _object.offsetParent)
+                    {
+                        _clientRect = _object.getBoundingClientRect();
+                    }
+
+                    var _position = cMaths.position.getCoords(_objectJQuery[0], _relative, _clientRect);
 
                     var _computedStyle = _object.currentStyle || window.getComputedStyle(_object);
-                    var height = _object.clientHeight;
+                    var height = _clientRect.bottom - _clientRect.top;//_object.clientHeight;
                     
                     height += cMaths.position.translateCssSizes(_object, "marginTop", _computedStyle);
                     height += cMaths.position.translateCssSizes(_object, "marginBottom", _computedStyle);
                     height += cMaths.position.translateCssSizes(_object, "borderTopWidth", _computedStyle);
                     height += cMaths.position.translateCssSizes(_object, "borderBottomWidth", _computedStyle);
                     
-                    var width = _object.clientWidth;
+                    var width = _clientRect.right - _clientRect.left;//_object.clientWidth;
                     
                     width += cMaths.position.translateCssSizes(_object, "marginLeft", _computedStyle);
                     width += cMaths.position.translateCssSizes(_object, "marginRight", _computedStyle);
@@ -2542,14 +2502,14 @@ function customMathPositioningFunctions()
             , (window.pageYOffset || docEl.scrollTop || body.scrollTop) - (docEl.clientTop || body.clientTop || 0));
     }
 
-    this.getCoords = function getCoords(_object, _relativeTo) 
+    this.getCoords = function getCoords(_object, _relativeTo, _objectClientRect) 
     {
 
         var _objectPosition = new cMaths.vector2();
 
         if (_relativeTo === "screen")
         {
-            var box = _object.getBoundingClientRect();
+            var box = _objectClientRect || _object.getBoundingClientRect();
 
             _objectPosition.x = box.left;
             _objectPosition.y = box.top;
@@ -2565,7 +2525,7 @@ function customMathPositioningFunctions()
             else 
             {
                 //calculate position offset from viewport 
-                var box = _object.getBoundingClientRect();
+                var box = _objectClientRect || _object.getBoundingClientRect();
         
                 _objectPosition.x = box.left;
                 _objectPosition.y = box.top;
@@ -2818,7 +2778,7 @@ function cElementGenericFunctions()
             //add the element to the array
             cElement.elementArray.push(_customElement);
 
-            var _styleData = new cCss.styleModificationData2("zIndex", null, false, null, "unset", -1, true);
+            var _styleData = new cCss.styleSheetModificationData("zIndex", null, false, null, "unset", -1, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _ID, _styleData);
 
             cUtility.findHTMLObjects(_customElement).closest(".WebPanelOverlay").addClass("Element" + _ID);
@@ -3066,7 +3026,7 @@ function cElementModifyFunctions()
                 _transitionData += " " + (_messageData.opacityTiming || "linear");
                 _transitionData += " " + ((_messageData.opacityDelay || 0) / 1000).toString() + "s";
                   
-                var _styleData = new cCss.styleModificationData2("transition", "opacity", true, 2, _transitionData, -1, false);
+                var _styleData = new cCss.styleSheetModificationData("transition", "opacity", true, 2, _transitionData, -1, false);
                 cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
 
             }
@@ -3074,7 +3034,7 @@ function cElementModifyFunctions()
             {
 
                 var _transitionData = "opacity 0s linear 0s";    
-                var _styleData = new cCss.styleModificationData2("transition", "opacity", true, 2, _transitionData, -1, false);
+                var _styleData = new cCss.styleSheetModificationData("transition", "opacity", true, 2, _transitionData, -1, false);
                 cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
 
             }
@@ -3085,15 +3045,15 @@ function cElementModifyFunctions()
         {
             //change html style to be visiblie and set zIndex to default
             var _opacityToSet = (_messageData.opacity === null || _messageData.opacity === undefined) ? 100 : _messageData.opacity;
-            var _styleData = new cCss.styleModificationData2("opacity", null, false, null, _opacityToSet.toString(), -1, false);
+            var _styleData = new cCss.styleSheetModificationData("opacity", null, false, null, _opacityToSet.toString(), -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
 
-            _styleData = new cCss.styleModificationData2("visibility", null, false, null, "visible", -1, false);
+            _styleData = new cCss.styleSheetModificationData("visibility", null, false, null, "visible", -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
 
             var _zIndexToSet = ((_messageData.zIndex === null || _messageData.zIndex === undefined)  ? "10000" : _messageData.zIndex);
             var _zIndexImportanceToSet = ((_messageData.zIndexImportance === null || _messageData.zIndexImportance === undefined)  ? true : _messageData.zIndexImportance);
-            _styleData = new cCss.styleModificationData2("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+            _styleData = new cCss.styleSheetModificationData("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
 
         }
@@ -3101,7 +3061,7 @@ function cElementModifyFunctions()
         {
             //change html style to be visiblie and set zIndex to default
             var _opacityToSet = (_messageData.opacity === null || _messageData.opacity === undefined) ? 0 : _messageData.opacity;
-            var _styleData = new cCss.styleModificationData2("opacity", null, false, null, _opacityToSet.toString(), -1, false);
+            var _styleData = new cCss.styleSheetModificationData("opacity", null, false, null, _opacityToSet.toString(), -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
 
             var currentDelay = (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0);
@@ -3128,12 +3088,12 @@ function cElementModifyFunctions()
                     if (element.elementEnabled == false)
                     {
                         //set element to be hidden and set z-index to 0
-                        _styleData = new cCss.styleModificationData2("visibility", null, false, null, "hidden", -1, false);
+                        _styleData = new cCss.styleSheetModificationData("visibility", null, false, null, "hidden", -1, false);
                         cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);            
                         
                         var _zIndexToSet = ((_messageData.zIndex === null || _messageData.zIndex === undefined)  ? "0" : _messageData.zIndex);
                         var _zIndexImportanceToSet = ((_messageData.zIndexImportance === null || _messageData.zIndexImportance === undefined)  ? true : _messageData.zIndexImportance);
-                        _styleData = new cCss.styleModificationData2("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+                        _styleData = new cCss.styleSheetModificationData("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
                         cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
         
                     }
@@ -3145,13 +3105,6 @@ function cElementModifyFunctions()
             
             new cTimer.realtimeTimer(new cTimer.callback(opacityChange, this), true, currentDelay + 1, true);
         }
-
-        //check if zIndex supplied and set to that if so
-        // if (_messageData.zIndex)
-        // {
-        //     var _styleData = new cCss.styleModificationData2("zIndex", null, false, null, _messageData.zIndex, -1,  _messageData.zIndexImportance);
-        //     cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
-        // }
 
         //setup position variables
         var _posX = _messageData.posX || "undefined", _posY = _messageData.posY || "undefined";
@@ -3204,7 +3157,7 @@ function cElementModifyFunctions()
                 _transitionData + " " + (_messageData.positionTiming || "linear");
                 _transitionData + " " + ((_messageData.positionDelay || 0) / 1000).toString() + "s";
 
-                var _styleData = new cCss.styleModificationData2("transition", "left", true, 2, _transitionData, -1, false);
+                var _styleData = new cCss.styleSheetModificationData("transition", "left", true, 2, _transitionData, -1, false);
                 cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + element.ID, _styleData);
 
                 _styleData.cssTextProperty = "top";
@@ -4753,7 +4706,7 @@ function cTimerFunctions()
 
 window.cUtility = window.cUtility || new function cUtility()
 {
-    this.findHTMLObjectsFromName = function findHTMLObjectsFromName(name)
+    this.findHTMLObjectsFromClassName = function findHTMLObjectsFromClassName(name)
     {
         var nameParsed = (name.replace(/[.,\/#!$%\^&\*;:{}=_`~() ]/g,"-")).toLowerCase();
         return $("[class*=-" + nameParsed + "]");
@@ -4785,7 +4738,7 @@ window.cUtility = window.cUtility || new function cUtility()
         if (_element.elementType == '')
         {
             //return the mood element
-            return window.cUtility.findHTMLObjectsFromName(_element.elementName);
+            return window.cUtility.findHTMLObjectsFromClassName(_element.elementName);
         }
         
         //force values if element type is null/undefined
@@ -4819,9 +4772,9 @@ window.cUtility = window.cUtility || new function cUtility()
 			case "text-box":
 				return $('img[id="' + _element.elementName + '"]').parent();
 			case "role":
-				return window.cUtility.findHTMLObjectsFromName(_element.elementName).find('[role="' + lowerCaseElementExtra + '"]');
+				return window.cUtility.findHTMLObjectsFromClassName(_element.elementName).find('[role="' + lowerCaseElementExtra + '"]');
 			case "matrix":
-				return window.cUtility.findHTMLObjectsFromName(_element.elementExtra + "-" + _element.elementName);
+				return window.cUtility.findHTMLObjectsFromClassName(_element.elementExtra + "-" + _element.elementName);
 			
 			//default just incase incorrect typing
 			default:
@@ -4893,5 +4846,194 @@ window.cUtility = window.cUtility || new function cUtility()
 			_htmlObj.setAttribute("onclick", _function);
 		}
 	}
+
+}
+
+
+/*
+	Title:
+		cExpander
+	
+	Description:
+        Handle size expandable functions to
+        resize DOM objects to remove scrollers
+*/
+
+window.cExpander = window.cExpander || new function customExpander()
+{
+
+	//====DATA TYPES====//
+	this.dataTypes = new cExpanderDataTypes();
+
+	this.ExpansionData = this.dataTypes.expansionData.prototype;
+	this.expansionData = this.dataTypes.expansionData;
+	
+	//====FUNCTIONS====//
+	this.expansion = new cExpanderFunctions();
+
+	//====VARIABLES====//
+	this.allExpansionData = [];
+
+	//====RUN-TIME FUNCTIONS====//
+
+}
+
+function cExpanderDataTypes()
+{
+
+	this.expansionData = function expansionData(_objectToExpand, _scroller, _scrollerWidthOffset, _expandToJQuery, _expansionCssClass)
+	{
+		if (_objectToExpand == null || _scroller == null)
+		{
+			return null;
+		}
+
+		var _this = this;
+		this.objectToExpand = _objectToExpand;
+		this.objectToExpandDOM = this.objectToExpand;
+		this.usesElement = false;
+
+		if (typeof this.objectToExpand === "object")
+		{
+			if (typeof window.cElement != "undefined")
+			{
+				if (this.objectToExpand instanceof cElement.element)
+				{
+					this.usesElement = true;
+					this.objectToExpandDOM = cUtility.findHTMLObjects(_this.objectToExpand);
+				}
+			}
+		}
+		else
+		{
+			this.objectToExpandDOM = $(this.objectToExpand);
+		}
+
+		this.scroller = _scroller || ".scroller, .matrix-Scroller";
+		this.scrollerDOM = this.objectToExpandDOM.find(_this.scroller);
+		this.scrollerWidthOffset = _scrollerWidthOffset || 0;
+
+		if (this.objectToExpandDOM.length && this.objectToExpandDOM.length > 0)
+		{
+			this.objectToExpandDOM = this.objectToExpandDOM[0];
+		}
+
+		this.expandToJQuery = _expandToJQuery || "*";
+
+		this.expansionCssClass = _expansionCssClass || "defaultExpansion";
+		
+		$(_this.objectToExpandDOM).addClass(_this.expansionCssClass);
+		this.scrollerDOM.addClass(_this.expansionCssClass);
+		
+		this.originalHeight = -1;
+		this.heightChanged = -1;
+		this.expanded = false;
+		this.previousExpanded = false;
+
+		this.objectsMovedDOM = [];
+
+		this.checkMovedExists = function(_toCheck)
+        {
+            for (var i = 0; i < _this.objectsMovedDOM.length; i++)
+            {
+                if (_this.objectsMovedDOM[i] == _toCheck)
+                {
+                    return true;
+                }
+            }
+		}
+	}
+
+}
+
+function cExpanderFunctions()
+{
+	this.returnExpansionData = function returnExpansionData(_objectToExpand, _expansionCreationData)
+	{
+		for (var i = 0; i < cExpander.allExpansionData.length; i++)
+        {
+            if (cExpander.allExpansionData[i].objectToExpand == _objectToExpand)
+            {
+                return cExpander.allExpansionData[i];
+            }
+		}
+		
+		if (_expansionCreationData != null)
+		{
+			var _expansionData = new cExpander.expansionData(_objectToExpand
+												, _expansionCreationData._scroller
+												, _expansionCreationData._scrollerWidthOffset
+												, _expansionCreationData._expandToJQuery
+												, _expansionCreationData._expansionCssClass);
+			cExpander.allExpansionData.push(_expansionData);
+			return _expansionData;
+		}
+
+		return null;
+	}
+
+	this.toggleExpansion = function toggleExpansion(_objectToExpand, _expanded)
+	{
+		var _expansionData = cExpander.expansion.returnExpansionData(_objectToExpand);
+
+		if (_expansionData == null) { return false; }
+
+		_expansionData.previousExpanded = _expansionData.expanded;
+
+		if (_expanded)
+		{
+			_expansionData.expanded = _expanded;
+		}
+		else
+		{
+			_expansionData.expanded = !_expansionData.expanded;
+		}
+
+		cExpander.expansion.updateExpansion(_expansionData);
+	}
+
+	this.updateExpansion = function updateExpansion(_expansionData)
+	{
+		if (_expansionData.expanded)
+		{
+			//get total size of all items inside the inline form
+			var totalSize = cMaths.Bounds.fromObject(_expansionData.objectToExpandDOM
+											, document, _expansionData.expandToJQuery).size.y;
+
+			totalSize += _expansionData.scrollerWidthOffset;
+
+			if (_expansionData.previousExpanded != _expansionData.expanded)
+			{
+				_expansionData.originalHeight = cMaths.Bounds.fromObject(_expansionData.scrollerDOM[0], document, null).size.y;
+				_expansionData.heightChanged = totalSize - _expansionData.originalHeight;
+			}
+
+			//set height to be total size
+			var _styleData = new cCss.styleSheetModificationData("height", null, false, 0, totalSize + "px", -1, true);
+			cCss.styleSheet.replaceCssStyle("MainExpansionStyles", "." + _expansionData.expansionCssClass, _styleData);
+
+            //move all other html that might've been affected
+            //moveHTMLToNotOverlap(_inlineForm, _inlineFormScroller);
+		}
+		else
+		{
+			if (_expansionData.originalHeight != -1)
+			{
+				var _styleData = new cCss.styleSheetModificationData("height", null, false, 0, _expansionData.originalHeight + "px", -1, true);
+				cCss.styleSheet.replaceCssStyle("MainExpansionStyles", "." + _expansionData.expansionCssClass, _styleData);	
+
+            	//move all other html that might've been affected
+            	//moveHTMLToNotOverlap(_inlineForm, _inlineFormScroller);
+			}
+		}
+
+		/*
+		if (typeof resizePage != "undefined")
+        {
+            resizePage();
+		}
+		*/
+	}
+
 
 }

@@ -228,6 +228,7 @@ function customMathTypeData()
         this.topRight = new vector2(_x2, _y1);
         this.bottomRight = new vector2(_x2, _y2);
         this.bottomLeft = new vector2(_x1, _y2);
+        this.size = new vector2(_x2 - _x1, _y2 - _y1);
     }
 
     bounds.prototype =
@@ -242,6 +243,7 @@ function customMathTypeData()
             this.topRight.set(_x2, _y1);
             this.bottomRight.set(_x2, _y2);
             this.bottomLeft.set(_x1, _y2);
+            this.size.set(_x2 - _x1, _y2 - _y1);
         },
 
         clone: function()

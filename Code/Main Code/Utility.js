@@ -8,7 +8,7 @@
 
 window.cUtility = window.cUtility || new function cUtility()
 {
-    this.findHTMLObjectsFromName = function findHTMLObjectsFromName(name)
+    this.findHTMLObjectsFromClassName = function findHTMLObjectsFromClassName(name)
     {
         var nameParsed = (name.replace(/[.,\/#!$%\^&\*;:{}=_`~() ]/g,"-")).toLowerCase();
         return $("[class*=-" + nameParsed + "]");
@@ -40,7 +40,7 @@ window.cUtility = window.cUtility || new function cUtility()
         if (_element.elementType == '')
         {
             //return the mood element
-            return window.cUtility.findHTMLObjectsFromName(_element.elementName);
+            return window.cUtility.findHTMLObjectsFromClassName(_element.elementName);
         }
         
         //force values if element type is null/undefined
@@ -74,9 +74,9 @@ window.cUtility = window.cUtility || new function cUtility()
 			case "text-box":
 				return $('img[id="' + _element.elementName + '"]').parent();
 			case "role":
-				return window.cUtility.findHTMLObjectsFromName(_element.elementName).find('[role="' + lowerCaseElementExtra + '"]');
+				return window.cUtility.findHTMLObjectsFromClassName(_element.elementName).find('[role="' + lowerCaseElementExtra + '"]');
 			case "matrix":
-				return window.cUtility.findHTMLObjectsFromName(_element.elementExtra + "-" + _element.elementName);
+				return window.cUtility.findHTMLObjectsFromClassName(_element.elementExtra + "-" + _element.elementName);
 			
 			//default just incase incorrect typing
 			default:
