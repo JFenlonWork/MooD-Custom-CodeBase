@@ -52,16 +52,16 @@ function customMathTypeData()
 
     function vector2(_x, _y)
     {
-        this.x = _x || 0;
-        this.y = _y || 0;
+        this.x = _x === undefined ? null : _x;
+        this.y = _y === undefined ? null : _y;
     }
 
     vector2.prototype = 
     {
         set: function(_x, _y)
         {
-            this.x = _x || 0;
-            this.y = _y || 0;
+            this.x = _x === undefined ? null : _x;
+            this.y = _y === undefined ? null : _y;
         },
 
         clone: function()
@@ -71,22 +71,22 @@ function customMathTypeData()
 
         add: function(_vector)
         {
-            return new vector2(this.x + _vector.x, this.y + _vector.y);
+            return _vector == null ? this.clone() : new vector2(this.x + _vector.x, this.y + _vector.y);
         },
 
         subtract: function(_vector)
         {
-            return new vector2(this.x - _vector.x, this.y - _vector.y);
+            return _vector == null ? this.clone() : new vector2(this.x - _vector.x, this.y - _vector.y);
         },
 
         scale: function(_scalar)
-        {
-            return new vector2(this.x * _scalar, this.y * _scalar);
+        { 
+            return _vector == null ? null : new vector2(this.x * _scalar, this.y * _scalar);
         },
 
         dot: function(_vector)
         {
-            return new vector2(this.x * _vector.x, this.y * _vector.y);
+            return _vector == null ? null : new vector2(this.x * _vector.x, this.y * _vector.y);
         },
 
         distance: function (_vector) {
@@ -94,6 +94,7 @@ function customMathTypeData()
         },
     
         distanceSqr: function (_vector) {
+            if (_vector == null) { return NaN; }
             var deltaX = this.x - _vector.x;
             var deltaY = this.y - _vector.y;
             return (deltaX * deltaX + deltaY * deltaY);
@@ -104,18 +105,18 @@ function customMathTypeData()
 
     function vector3(_x, _y, _z)
     {
-        this.x = _x || 0;
-        this.y = _y || 0;
-        this.z = _z || 0;
+        this.x = _x === undefined ? null : _x;
+        this.y = _y === undefined ? null : _y;
+        this.z = _z === undefined ? null : _z;
     }
 
     vector3.prototype = 
     {
         set: function(_x, _y, _z)
         {
-            this.x = _x || 0;
-            this.y = _y || 0;
-            this.z = _z || 0;
+            this.x = _x === undefined ? null : _x;
+            this.y = _y === undefined ? null : _y;
+            this.z = _z === undefined ? null : _z;
         },
 
         clone: function()
@@ -130,22 +131,26 @@ function customMathTypeData()
 
         add: function(_vector)
         {
-            return new vector3(this.x + _vector.x, this.y + _vector.y, this.z + _vector.z);
+            return _vector == null ? this.clone()
+                    : new vector3(this.x + _vector.x, this.y + _vector.y, this.z + _vector.z);
         },
 
         subtract: function(_vector)
         {
-            return new vector3(this.x - _vector.x, this.y - _vector.y, this.z - _vector.z);
+            return _vector == null ? this.clone()
+                    : new vector3(this.x - _vector.x, this.y - _vector.y, this.z - _vector.z);
         },
 
         scale: function(_scalar)
         {
-            return new vector3(this.x * _scalar, this.y * _scalar, this.z * _scalar);
+            return _vector == null ? null
+                    : new vector3(this.x * _scalar, this.y * _scalar, this.z * _scalar);
         },
 
         dot: function(_vector)
         {
-            return new vector3(this.x * _vector.x, this.y * _vector.y, this.z * _vector.z);
+            return _vector == null ? null
+                    : new vector3(this.x * _vector.x, this.y * _vector.y, this.z * _vector.z);
         },
 
         distance: function (_vector) {
@@ -153,6 +158,7 @@ function customMathTypeData()
         },
     
         distanceSqr: function (_vector) {
+            if (_vector == null) { return NaN; }
             var deltaX = this.x - _vector.x;
             var deltaY = this.y - _vector.y;
             var deltaZ = this.z - _vector.z;
@@ -164,20 +170,20 @@ function customMathTypeData()
 
     function vector4(_x, _y, _z, _w)
     {
-        this.x = _x || 0;
-        this.y = _y || 0;
-        this.z = _z || 0;
-        this.w = _w || 0;
+        this.x = _x === undefined ? null : _x;
+        this.y = _y === undefined ? null : _y;
+        this.z = _z === undefined ? null : _z;
+        this.w = _w === undefined ? null : _w;
     }
 
     vector4.prototype = 
     {
         set: function(_x, _y, _z, _w)
         {
-            this.x = _x || 0;
-            this.y = _y || 0;
-            this.z = _z || 0;
-            this.w = _w || 0;
+            this.x = _x === undefined ? null : _x;
+            this.y = _y === undefined ? null : _y;
+            this.z = _z === undefined ? null : _z;
+            this.w = _w === undefined ? null : _w;
         },
 
         clone: function()
@@ -197,22 +203,26 @@ function customMathTypeData()
 
         add: function(_vector)
         {
-            return new vector4(this.x + _vector.x, this.y + _vector.y, this.z + _vector.z, this.w + _vector.w);
+            return _vector == null ? this.clone()
+                    : new vector4(this.x + _vector.x, this.y + _vector.y, this.z + _vector.z, this.w + _vector.w);
         },
 
         subtract: function(_vector)
         {
-            return new vector4(this.x - _vector.x, this.y - _vector.y, this.z - _vector.z, this.w - _vector.w);
+            return _vector == null ? this.clone()
+                    : new vector4(this.x - _vector.x, this.y - _vector.y, this.z - _vector.z, this.w - _vector.w);
         },
 
         scale: function(_scalar)
         {
-            return new vector4(this.x * _scalar, this.y * _scalar, this.z * _scalar, this.w * _scalar);
+            return _scalar == null ? null
+                    : new vector4(this.x * _scalar, this.y * _scalar, this.z * _scalar, this.w * _scalar);
         },
 
         dot: function(_vector)
         {
-            return new vector4(this.x * _vector.x, this.y * _vector.y, this.z * _vector.z, this.w * _vector.w);
+            return _vector == null ? null
+                    : new vector4(this.x * _vector.x, this.y * _vector.y, this.z * _vector.z, this.w * _vector.w);
         }
     }
 
@@ -220,64 +230,78 @@ function customMathTypeData()
 
     function bounds(_x1, _y1, _x2, _y2)
     {
-        this.x1 = _x1;
-        this.y1 = _y1;
-        this.x2 = _x2;
-        this.y2 = _y2;
-        this.topLeft = new vector2(_x1, _y1);
-        this.topRight = new vector2(_x2, _y1);
-        this.bottomRight = new vector2(_x2, _y2);
-        this.bottomLeft = new vector2(_x1, _y2);
-        this.size = new vector2(_x2 - _x1, _y2 - _y1);
+        this.x1 = _x1 === undefined ? null : _x1;
+        this.y1 = _y1 === undefined ? null : _y1;
+        this.x2 = _x2 === undefined ? null : _x2;
+        this.y2 = _y2 === undefined ? null : _y2;
+        this.topLeft = new vector2(this.x1, this.y1);
+        this.topRight = new vector2(this.x2, this.y1);
+        this.bottomRight = new vector2(this.x2, this.y2);
+        this.bottomLeft = new vector2(this.x1, this.y2);
+        this.size = new vector2(this.x2 - this.x1, this.y2 - this.y1);
     }
 
     bounds.prototype =
     {
         set: function(_x1, _y1, _x2, _y2)
         {
-            this.x1 = _x1;
-            this.y1 = _y1;
-            this.x2 = _x2;
-            this.y2 = _y2;
-            this.topLeft.set(_x1, _y1);
-            this.topRight.set(_x2, _y1);
-            this.bottomRight.set(_x2, _y2);
-            this.bottomLeft.set(_x1, _y2);
-            this.size.set(_x2 - _x1, _y2 - _y1);
+            this.x1 = _x1 === undefined ? null : _x1;
+            this.y1 = _y1 === undefined ? null : _y1;
+            this.x2 = _x2 === undefined ? null : _x2;
+            this.y2 = _y2 === undefined ? null : _y2;
+            this.topLeft = new vector2(this.x1, this.y1);
+            this.topRight = new vector2(this.x2, this.y1);
+            this.bottomRight = new vector2(this.x2, this.y2);
+            this.bottomLeft = new vector2(this.x1, this.y2);
+            this.size = new vector2(this.x2 - this.x1, this.y2 - this.y1);
         },
 
         clone: function()
         {
-            return new bounds(this.topLeft.x, this.topLeft.y, this.bottomRight.x, this.bottomRight.y);
+            return new bounds(this.x1, this.y1, this.x2, this.y2);
         },
 
         add: function(_bounds)
         {
-            return new bounds(this.x1 + _bounds.x1, this.y1 + _bounds.y1, this.x2 + _bounds.x2, this.y2 + _bounds.y2);
+            return _bounds == null ? this.clone()
+                        : new bounds(this.x1 + _bounds.x1, this.y1 + _bounds.y1, this.x2 + _bounds.x2, this.y2 + _bounds.y2);
         },
 
         subtract: function(_bounds)
         {
-            return new bounds(this.x1 - _bounds.x1, this.y1 - _bounds.y1, this.x2 - _bounds.x2, this.y2 - _bounds.y2);
+            return _bounds == null ? this.clone()
+                        : new bounds(this.x1 - _bounds.x1, this.y1 - _bounds.y1, this.x2 - _bounds.x2, this.y2 - _bounds.y2);
         },
 
         scale: function(_scalar)
         {
-            return new bounds(this.x1 * _scalar, this.y1 * _scalar, this.x2 * _scalar, this.y2 * _scalar);
+            return _scalar == null ? null
+                        : new bounds(this.x1 * _scalar, this.y1 * _scalar, this.x2 * _scalar, this.y2 * _scalar);
         },
 
         dot: function(_bounds)
         {
-            return new bounds(this.x1 * _bounds.x, this.y1 * _bounds.y, this.x2 * _bounds.x2, this.y2 * _bounds.y2);
+            return _bounds == null ? null
+                        : new bounds(this.x1 * _bounds.x, this.y1 * _bounds.y, this.x2 * _bounds.x2, this.y2 * _bounds.y2);
         },
 
         fromVector2s: function(_pos1, _pos2)
         {
-            return new bounds(_pos1.x, _pos1.y, _pos2.x, _pos2.y);
+            return (_pos1 == null || _pos2 == null) ? null
+                        : new bounds(_pos1.x, _pos1.y, _pos2.x, _pos2.y);
+        },
+
+        fromVector4: function(_vector)
+        {
+            return _vector == null ? null
+                        : new bounds(_vector.x, _vector.y, _vector.z, _vector.w);
         },
 
         fromObject: function(_object, _relative, _includeChildren)
         {
+
+            if (_object == null) { return null; }
+
             //setup object bounds
             var _objectBounds =
             {
@@ -391,22 +415,24 @@ function customMathTypeData()
 
     function line(_x1, _y1, _x2, _y2)
     {
-        this.x1 = _x1;
-        this.y1 = _y1;
-        this.x2 = _x2;
-        this.y2 = _y2;
+        this.x1 = _x1 === undefined ? null : _x1;
+        this.y1 = _y1 === undefined ? null : _y1;
+        this.x2 = _x2 === undefined ? null : _x2;
+        this.y2 = _y2 === undefined ? null : _y2;
     }
 
     line.prototype =
     {
         fromVector2s: function(_pos1, _pos2)
         {
-            return new line(_pos1.x, _pos1.y, _pos2.x, _pos2.y);
+            return (_pos1 == null || _pos2 == null) ? null
+                    : new line(_pos1.x, _pos1.y, _pos2.x, _pos2.y);
         },
 
         fromVector4: function(_vector)
         {
-            return new line(_vector.x, _vector.y, _vector.z, _vector.w);
+            return _vector == null ? null
+                        : new line(_vector.x, _vector.y, _vector.z, _vector.w);
         },
 
         distance: function () {
@@ -414,9 +440,10 @@ function customMathTypeData()
         },
     
         distanceSqr: function () {
+            if (this.x1 == null || this.x2 == null || this.y1 == null || this.y2 == null) { return NaN; }
             var deltaX = this.x1 - this.x2;
             var deltaY = this.y1 - this.y2;
-            return (deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+            return (deltaX * deltaX + deltaY * deltaY);
         }
     }
 
@@ -431,46 +458,58 @@ function customMathCollisionFunctions()
     //return any objects from _objects where object's bounds are within _areaBounds
     this.returnObjectsWithinArea = function(_areaBounds, _objects)
     {
-        var ret = [];
+        var _ret = [];
 
-        for (var i = 0; i < _objects.length; i++)
+        if (_objects != null && _areaBounds != null)
         {
-            //get object's bounds
-            var _otherBounds = cMaths.Bounds.fromObject(_objects[i]);
 
-            //check if object bounds is within _areaBounds
-            if (this.checkAreaWithinArea(_areaBounds, _otherBounds))
+            for (var i = 0; i < _objects.length; i++)
             {
-                ret.push(_objects[i]);
+                //get object's bounds
+                var _otherBounds = cMaths.Bounds.fromObject(_objects[i]);
+
+                //check if object bounds is within _areaBounds
+                if (this.checkAreaWithinArea(_areaBounds, _otherBounds))
+                {
+                    _ret.push({ _object: _objects[i], _bounds: _otherBounds });
+                }
             }
+
         }
 
-        return ret;
+        return _ret;
     }
 
     //return any objects from _objects where object's bounds intersect _areaBounds
     this.returnObjectsIntersectArea = function(_areaBounds, _objects)
     {
-        var ret = [];
+        var _ret = [];
 
-        for (var i = 0; i < _objects.length; i++)
+        if (_areaBounds != null && _objects != null) 
         {
-            //get object's bounds
-            var _otherBounds = cMaths.Bounds.fromObject(_objects[i]);
 
-            //check if object bounds intersects _areaBounds
-            if (this.checkAreaIntersectsArea(_areaBounds, _otherBounds))
+            for (var i = 0; i < _objects.length; i++)
             {
-                ret.push(_objects[i]);
+                //get object's bounds
+                var _otherBounds = cMaths.Bounds.fromObject(_objects[i]);
+
+                //check if object bounds intersects _areaBounds
+                if (this.checkAreaIntersectsArea(_areaBounds, _otherBounds))
+                {
+                    _ret.push({ _object: _objects[i], _bounds: _otherBounds });
+                }
             }
+
         }
 
-        return ret;
+        return _ret;
     }
 
     //check if a point is within bounds
     this.checkPointWithinArea = function(_areaBounds, _point)
     {
+        if (_areaBounds == null || _point == null) { return false; }
+
         if (_areaBounds.topLeft.x <= _point.x &&
             _areaBounds.topLeft.y <= _point.y &&
             _areaBounds.bottomRight.x >= _point.x &&
@@ -487,6 +526,9 @@ function customMathCollisionFunctions()
     //check if an area is completly within another
     this.checkAreaWithinArea = function(_areaBounds, _otherBounds)
     {
+
+        if (_areaBounds == null || _otherBounds == null) { return false; }
+
         var _cornersWithin = 0;
 
         //setup corners to test
@@ -520,6 +562,8 @@ function customMathCollisionFunctions()
     //check if an area intersects another anywhere
     this.checkAreaIntersectsArea = function(_areaBounds, _otherBounds)
     {
+
+        if (_areaBounds == null || _otherBounds == null) { return false; }
 
         //setup corners of _otherBounds and check if they are inside _areaBounds
         var _pointsToCheck = [new cMaths.vector2(_otherBounds.topLeft.x, _otherBounds.topLeft.y),
@@ -620,10 +664,9 @@ function customMathLineMathFunctions()
         //Do line intersection calculation stuff? 
         //en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Mathematics
 
-        var _lineIntersect = {
-            x : null,
-            y : null
-        }
+        if (_line1 == null || _line2 == null) { return null; }
+
+        var _lineIntersect = new cMaths.vector2(null, null);
 
         var div = (_line1.x1 - _line1.x2) * (_line2.y1 - _line2.y2)
                 - (_line1.y1 - _line1.y2) * (_line2.x1 - _line2.x2);
@@ -637,10 +680,7 @@ function customMathLineMathFunctions()
         _lineIntersect.y /= div;
 
         //check values are valid
-        if (isNaN(_lineIntersect.x) || isNaN(_lineIntersect.y) )
-        {
-            return null;
-        }
+        if (isNaN(_lineIntersect.x) || isNaN(_lineIntersect.y)) { return null; }
 
         return _lineIntersect;
     }
@@ -654,6 +694,7 @@ function customMathGenericFunctions()
     //check if value between min/max with epsilon accuracy
     this.between = function(_min, _val, _max, _eps)
     {
+        if (_min == null || _val == null || _max == null) { return NaN; }
         var _eps = _eps || 0;
         return (_min - _eps < _val  && _val < _max + _eps);
     }
@@ -675,6 +716,8 @@ function customMathPositioningFunctions()
 
     this.getCoords = function getCoords(_object, _relativeTo) 
     {
+
+        if (_object == null) { return null; }
 
         var _objectPosition = new cMaths.vector2();
 
@@ -721,6 +764,8 @@ function customMathPositioningFunctions()
     this.translateCssSizes = function translateCssSizes(_object, _css, _computedStyle)
     {
 
+        if (_css == null || (_object == null && _computedStyle == null)) { return NaN; }
+
         var _computedStyle = _computedStyle || _object.currentStyle || window.getComputedStyle(_object);
 
         switch(_computedStyle[_css])
@@ -738,7 +783,7 @@ function customMathPositioningFunctions()
                 {
                     return translateCssSizes(_object.offsetParent, _css, null)
                 }
-                return 0;
+                return NaN;
             default:
                 return parseInt(_computedStyle[_css], 10);
         }
