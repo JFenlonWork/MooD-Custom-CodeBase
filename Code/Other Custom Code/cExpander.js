@@ -15,13 +15,19 @@ window.cExpander = window.cExpander || new function customExpander()
 
 	this.ExpansionData = this.dataTypes.expansionData.prototype;
 	this.expansionData = this.dataTypes.expansionData;
+
+	this.CalculatedObjectData = this.dataTypes.calculatedObjectData.prototype;
+	this.calculatedObjectData = this.dataTypes.calculatedObjectData;
 	
 	//====FUNCTIONS====//
 	this.expansion = new cExpanderFunctions();
+	this.search = new cExpanderSearchFunctions();
 
 	//====VARIABLES====//
 	this.allExpansionData = [];
+	this.allCalculatedObjects = [];
 	this.uniqueID = 1;
+	this.uniqueCalculatedID = 1;
 
 	//====RUN-TIME FUNCTIONS====//
 
@@ -38,7 +44,9 @@ function cExpanderDataTypes()
 		}
 
 		var _this = this;
-		this.ID = _expansionID || window.cExpander.uniqueID++;
+		this.ID = _expansionID || cExpander.uniqueID;
+
+		if (this.ID >= cExpander.uniqueID) { cExpander.uniqueID = this.ID + 1; }
 
 		this.objectToExpand = _objectToExpand;
 		this.objectToExpandDOM = this.objectToExpand;
@@ -98,30 +106,43 @@ function cExpanderDataTypes()
 		{
 			while(_this.objectsMovedDOM.length > 0)
 			{
-				var _styleData = new cCss.styleSheetModificationData("transform", "translateY", true, 1, null, -1, false);
-				var _selector = cCss.styleSheet.getCssSelector("MainExpansionStyles", ".ExpansionMoved");
+				var _styleData = new cCss.styleSheetModificationData("transform", "translateY", true, 1, null, 0, true);
+				var _objectStyleID = cExpander.search.returnCalculatedObjectDataFromObject(_this.objectsMovedDOM[0], cExpander.uniqueCalculatedID);
+				var _selector = cCss.styleSheet.translateCssSelector(".ExpansionMoved" + _objectStyleID.ID, "MainExpansionStyles");
 				var _currentTransform = cCss.styleSheet.getCssStyle(_selector.style, _styleData, 2);
 
-				cCss.styleSheet.replaceCssStyle("MainExpansionStyles", ".ExpansionMoved", _styleData);
+				_styleData.value = (_currentTransform.values.length > 0) ? parseInt(_currentTransform.values[0].replace(/\(|\)/gi, ""), 10) - _this.heightChanged : 0;
+				_styleData.value += "px";
+
+				cCss.styleSheet.replaceCssStyle("MainExpansionStyles", ".ExpansionMoved" + _objectStyleID.ID, _styleData);
 
 				_this.objectsMovedDOM.shift();
 			}
 		}
 	}
 
+	this.calculatedObjectData = function calculatedObjectData(_object, _id)
+	{
+		if (_object == null) { return null; }
+		this.object = _object;
+		this.ID = _id || cExpander.uniqueCalculatedID;
+
+		if (this.ID >= cExpander.uniqueCalculatedID) { cExpander.uniqueCalculatedID = this.ID + 1; }
+	}
+
 }
 
-function cExpanderFunctions()
+function cExpanderSearchFunctions()
 {
 	this.returnExpansionDataFromObject = function returnExpansionData(_objectToExpand, _expansionCreationData)
 	{
-		for (var i = 0; i < cExpander.allExpansionData.length; i++)
-        {
-			if (cExpander.allExpansionData[i].objectToExpand == _objectToExpand ||
-				cExpander.allExpansionData[i].objectToExpandDOM == _objectToExpand)
-            {
-                return cExpander.allExpansionData[i];
-            }
+		for (var l = 0; l < cExpander.allExpansionData.length; l++)
+		{
+			if (cExpander.allExpansionData[l].objectToExpand == _objectToExpand ||
+				cExpander.allExpansionData[l].objectToExpandDOM == _objectToExpand)
+			{
+				return cExpander.allExpansionData[l];
+			}
 		}
 		
 		if (_expansionCreationData != null)
@@ -134,12 +155,9 @@ function cExpanderFunctions()
 
 	this.returnExpansionDataFromID = function returnExpansionDataFromID(_id, _expansionCreationData)
 	{
-		for (var i = 0; i < cExpander.allExpansionData.length; i++)
-        {
-            if (cExpander.allExpansionData[i].ID == _id)
-            {
-                return cExpander.allExpansionData[i];
-            }
+		for (var l = 0; l < cExpander.allExpansionData.length; l++)
+		{
+			if (cExpander.allExpansionData[l].id == _id) { return cExpander.allCalculatedObjects[l]; }
 		}
 		
 		if (_expansionCreationData != null)
@@ -149,6 +167,40 @@ function cExpanderFunctions()
 
 		return null;
 	}
+
+	this.returnCalculatedObjectDataFromObject = function returnCalculatedObjectDataFromObject(_object, _createOnFailID)
+	{
+		for (var l = 0; l < cExpander.allCalculatedObjects.length; l++)
+		{
+			if (cExpander.allCalculatedObjects[l].object == _object) { return cExpander.allCalculatedObjects[l]; }
+		}
+
+		if (_createOnFailID)
+		{
+			return cExpander.expansion.createCalculatedData(_object, _createOnFailID);
+		}
+
+		return null;
+	}
+
+	this.returnCalculatedObjectDataFromID = function returnCalculatedObjectDataFromID(_id, _createOnFailObject)
+	{
+		for (var l = 0; l < cExpander.allCalculatedObjects.length; l++)
+		{
+			if (cExpander.allCalculatedObjects[l].ID == _id) { return cExpander.allCalculatedObjects[l]; }
+		}
+
+		if (_createOnFailObject)
+		{
+			return cExpander.expansion.createCalculatedData(_createOnFailObject, _id);
+		}
+		
+		return null;
+	}
+}
+
+function cExpanderFunctions()
+{
 
 	this.createExpansionData = function createExpansionData(_expansionCreationData)
 	{
@@ -164,14 +216,21 @@ function cExpanderFunctions()
 		return _expansionData;
 	}
 
+	this.createCalculatedData = function createCalculatedData(_object, _id)
+	{
+		var _calculatedData = new cExpander.calculatedObjectData(_object, _id);
+		cExpander.allCalculatedObjects.push(_calculatedData);
+		return _calculatedData;
+	}
+
 	this.toggleExpansionID = function toggleExpansionID(_id, _expanded)
 	{
-		return cExpander.expansion.toggleExpansion(cExpander.expansion.returnExpansionDataFromID(_id), _expanded);
+		return cExpander.expansion.toggleExpansion(cExpander.search.returnExpansionDataFromID(_id), _expanded);
 	}
 
 	this.toggleExpansionObject = function toggleExpansion(_object, _expanded)
 	{
-		return cExpander.expansion.toggleExpansion(cExpander.expansion.returnExpansionDataFromObject(_object), _expanded);
+		return cExpander.expansion.toggleExpansion(cExpander.search.returnExpansionDataFromObject(_object), _expanded);
 	}
 
 	this.toggleExpansion = function toggleExpansion(_expansionData, _expanded)
@@ -232,12 +291,10 @@ function cExpanderFunctions()
 			}
 		}
 
-		/*
-		if (typeof resizePage != "undefined")
-        {
-            resizePage();
+		if (cPageResizer != null)
+		{
+			cPageResizer.resizePage();
 		}
-		*/
 	}
 
 	this.moveHTMLToNotOverlap = function moveHTMLToNotOverlap(_expansionData, _object, _allElements)
@@ -250,43 +307,68 @@ function cExpanderFunctions()
 			_expansionData.moved = [];
 			_objectBounds = cMaths.Bounds.fromObject(_expansionData.objectToExpandDOM, document);
 
-			$(".InteractiveModel").children().filter(function() {
-				return !(this == $("img[usemap='#ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']")[0] ||
-						this == $("map[name='ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']")[0] ||
-						this == $(ctl00_ContentPlaceHolder1_InteractiveModel1_shadow)[0] ||
-						this == _expansionData.objectToExpandDOM ||
-						$(this).not("div"))
-			}).each(function() {
-				var _bounds = cMaths.Bounds.fromObject(this, document);
+			var _objToIgnore = [$("img[usemap='#ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']"[0]),
+								$("map[name='ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']"[0]),
+								$("[id=ctl00_ContentPlaceHolder1_InteractiveModel1_shadow]")[0],
+								_expansionData.objectToExpandDOM]
 
-				if (_bounds.y2 > _objectBounds.y1)
+			var _allElements = $(".InteractiveModel").children().filter(function() {
+
+				if (_objToIgnore.includes(this)) { return false; }
+
+				if ($(this).is("div"))
 				{
-					_allElements.push(this);
+					var _bounds = cMaths.Bounds.fromObject(this, document);
+
+					if (_bounds.y2 > _objectBounds.y1)
+					{
+						return true;
+					}
 				}
-			});
+
+				return false;
+
+			}).toArray();
 		}
 
-		var _allWithin = cMaths.collision.returnObjectsIntersectArea(_objectBounds, _allElements).sort(function(a, b) {
-			return (a.y2 > b.y2);
-		});
+		var _allWithin = null;
+		var _lastLowest = null;
+		var _completeBounds = _objectBounds.clone();
 
-		for (var i = 0; i < _allWithin.length; a++)
+		do {
+			_lastLowest = _allWithin == null ? null : _allWithin.length > 0 ? _allWithin[0].object : null;
+			_allWithin = cMaths.collision.returnObjectsIntersectArea(_completeBounds, _allElements).sort(function(a, b) {
+				return (a.y2 > b.y2);
+			});
+
+			if (_allWithin.length > 0)
+			{
+				_completeBounds.y2 = _allWithin[0].y2;
+				_completeBounds.updateExtras();
+			}
+		} while (_allWithin.length != 0 && _allWithin[0].object != _lastLowest)
+
+		for (var i = 0; i < _allWithin.length; i++)
 		{
 			if (!(_expansionData.checkMovedExists(_allWithin[i]._object)))
 			{
 				
-                var _styleData = new cCss.styleSheetModificationData("transform", "translateY", true, 1, null, -1, false);
-				var _selector = cCss.styleSheet.getCssSelector("MainExpansionStyles", ".ExpansionMoved");
+                var _styleData = new cCss.styleSheetModificationData("transform", "translateY", true, 1, null, 0, true);
+				var _objectStyleID = cExpander.search.returnCalculatedObjectDataFromObject(_allWithin[i]._object, cExpander.uniqueCalculatedID);
+				var _selector = cCss.styleSheet.translateCssSelector(".ExpansionMoved" + _objectStyleID.ID, "MainExpansionStyles");
+				
 				var _currentTransform = cCss.styleSheet.getCssStyle(_selector.style, _styleData, 2);
+				
+				_styleData.value = (_currentTransform.values.length > 0) ? parseInt(_currentTransform.values[0].replace(/\(|\)/gi, ""), 10) + _expansionData.heightChanged : _expansionData.heightChanged;
+				_styleData.value += "px";
+				
+				cCss.styleSheet.replaceCssStyle("MainExpansionStyles", ".ExpansionMoved" + _objectStyleID.ID, _styleData);
 
-				cCss.styleSheet.replaceCssStyle("MainExpansionStyles", ".ExpansionMoved", _styleData);
-
-				_expansionData.moved.push(_allWithin[i]._object);
+                _expansionData.objectsMovedDOM.push(_allWithin[i]._object);
+                $(_allWithin[i]._object).addClass("ExpansionMoved" + _objectStyleID.ID);
 			}
 		}
 		
 	}
-
-
 
 }

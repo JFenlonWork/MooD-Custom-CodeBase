@@ -89,12 +89,12 @@ function customMathTypeData()
 
         clone: function()
         {
-            return new vector2(this.x, this.y);
+            return new cMaths.vector2(this.x, this.y);
         },
 
         add: function(_vector)
         {
-            return _vector == null ? this.clone() : new vector2(this.x + _vector.x, this.y + _vector.y);
+            return _vector == null ? this.clone() : new cMaths.vector2(this.x + _vector.x, this.y + _vector.y);
         },
 
         Add: function(_vector)
@@ -110,7 +110,7 @@ function customMathTypeData()
 
         subtract: function(_vector)
         {
-            return _vector == null ? this.clone() : new vector2(this.x - _vector.x, this.y - _vector.y);
+            return _vector == null ? this.clone() : new cMaths.vector2(this.x - _vector.x, this.y - _vector.y);
         },
 
         Subtract: function(_vector)
@@ -126,7 +126,7 @@ function customMathTypeData()
 
         scale: function(_scalar)
         { 
-            return _vector == null ? null : new vector2(this.x * _scalar, this.y * _scalar);
+            return _scalar == null ? null : new cMaths.vector2(this.x * _scalar, this.y * _scalar);
         },
 
         Scale: function(_scalar)
@@ -139,7 +139,7 @@ function customMathTypeData()
 
         dot: function(_vector)
         {
-            return _vector == null ? null : new vector2(this.x * _vector.x, this.y * _vector.y);
+            return _vector == null ? null : new cMaths.vector2(this.x * _vector.x, this.y * _vector.y);
         },
 
         Dot: function(_vector)
@@ -202,18 +202,18 @@ function customMathTypeData()
 
         clone: function()
         {
-            return new vector3(this.x, this.y, this.z);
+            return new cMaths.vector3(this.x, this.y, this.z);
         },
 
         vector2: function()
         {
-            return new vector2(this.x, this.y);
+            return new cMaths.vector2(this.x, this.y);
         },
 
         add: function(_vector)
         {
             return _vector == null ? this.clone()
-                    : new vector3(this.x + _vector.x, this.y + _vector.y, this.z + _vector.z);
+                    : new cMaths.vector3(this.x + _vector.x, this.y + _vector.y, this.z + _vector.z);
         },
 
         Add: function(_vector)
@@ -231,7 +231,7 @@ function customMathTypeData()
         subtract: function(_vector)
         {
             return _vector == null ? this.clone()
-                    : new vector3(this.x - _vector.x, this.y - _vector.y, this.z - _vector.z);
+                    : new cMaths.vector3(this.x - _vector.x, this.y - _vector.y, this.z - _vector.z);
         },
 
         Subtract: function(_vector)
@@ -249,7 +249,7 @@ function customMathTypeData()
         scale: function(_scalar)
         {
             return _vector == null ? null
-                    : new vector3(this.x * _scalar, this.y * _scalar, this.z * _scalar);
+                    : new cMaths.vector3(this.x * _scalar, this.y * _scalar, this.z * _scalar);
         },
 
         Scale: function(_scalar)
@@ -264,7 +264,7 @@ function customMathTypeData()
         dot: function(_vector)
         {
             return _vector == null ? null
-                    : new vector3(this.x * _vector.x, this.y * _vector.y, this.z * _vector.z);
+                    : new cMaths.vector3(this.x * _vector.x, this.y * _vector.y, this.z * _vector.z);
         },
 
         distance: function (_vector) {
@@ -324,23 +324,23 @@ function customMathTypeData()
 
         clone: function()
         {
-            return new vector4(this.x, this.y, this.z, this.w);
+            return new cMaths.vector4(this.x, this.y, this.z, this.w);
         },
 
         vector2: function()
         {
-            return new vector2(this.x, this.y);
+            return new cMaths.vector2(this.x, this.y);
         },
 
         vector3: function()
         {
-            return new vector3(this.x, this.y, this.z);
+            return new cMaths.vector3(this.x, this.y, this.z);
         },
 
         add: function(_vector)
         {
             return _vector == null ? this.clone()
-                    : new vector4(this.x + _vector.x, this.y + _vector.y, this.z + _vector.z, this.w + _vector.w);
+                    : new cMaths.vector4(this.x + _vector.x, this.y + _vector.y, this.z + _vector.z, this.w + _vector.w);
         },
 
         Add: function(_vector)
@@ -359,7 +359,7 @@ function customMathTypeData()
         subtract: function(_vector)
         {
             return _vector == null ? this.clone()
-                    : new vector4(this.x - _vector.x, this.y - _vector.y, this.z - _vector.z, this.w - _vector.w);
+                    : new cMaths.vector4(this.x - _vector.x, this.y - _vector.y, this.z - _vector.z, this.w - _vector.w);
         },
 
         Subtract: function(_vector)
@@ -378,7 +378,7 @@ function customMathTypeData()
         scale: function(_scalar)
         {
             return _scalar == null ? null
-                    : new vector4(this.x * _scalar, this.y * _scalar, this.z * _scalar, this.w * _scalar);
+                    : new cMaths.vector4(this.x * _scalar, this.y * _scalar, this.z * _scalar, this.w * _scalar);
         },
 
         Scale: function(_scalar)
@@ -394,7 +394,7 @@ function customMathTypeData()
         dot: function(_vector)
         {
             return _vector == null ? null
-                    : new vector4(this.x * _vector.x, this.y * _vector.y, this.z * _vector.z, this.w * _vector.w);
+                    : new cMaths.vector4(this.x * _vector.x, this.y * _vector.y, this.z * _vector.z, this.w * _vector.w);
         },
 
         Dot: function(_vector)
@@ -417,11 +417,11 @@ function customMathTypeData()
         this.y1 = _y1 === undefined ? null : _y1;
         this.x2 = _x2 === undefined ? null : _x2;
         this.y2 = _y2 === undefined ? null : _y2;
-        this.topLeft = new vector2(this.x1, this.y1);
-        this.topRight = new vector2(this.x2, this.y1);
-        this.bottomRight = new vector2(this.x2, this.y2);
-        this.bottomLeft = new vector2(this.x1, this.y2);
-        this.size = new vector2(this.x2 - this.x1, this.y2 - this.y1);
+        this.topLeft = new cMaths.vector2(this.x1, this.y1);
+        this.topRight = new cMaths.vector2(this.x2, this.y1);
+        this.bottomRight = new cMaths.vector2(this.x2, this.y2);
+        this.bottomLeft = new cMaths.vector2(this.x1, this.y2);
+        this.size = new cMaths.vector2(this.x2 - this.x1, this.y2 - this.y1);
     }
 
     this.bounds.prototype =
@@ -432,52 +432,148 @@ function customMathTypeData()
             this.y1 = _y1 === undefined ? null : _y1;
             this.x2 = _x2 === undefined ? null : _x2;
             this.y2 = _y2 === undefined ? null : _y2;
-            this.topLeft = new vector2(this.x1, this.y1);
-            this.topRight = new vector2(this.x2, this.y1);
-            this.bottomRight = new vector2(this.x2, this.y2);
-            this.bottomLeft = new vector2(this.x1, this.y2);
-            this.size = new vector2(this.x2 - this.x1, this.y2 - this.y1);
+            this.updateExtras();
+        },
+
+        setX1: function(_x1)
+        {
+            this.x1 = _x1 === undefined ? null : _x1;
+            this.updateExtras();
+            return this;
+        },
+
+        setY1: function(_y1)
+        {
+            this.y1 = _y1 === undefined ? null : _y1;
+            this.updateExtras();
+            return this;
+        },
+
+        setX2: function(_x1)
+        {
+            this.x1 = _x1 === undefined ? null : _x1;
+            this.updateExtras();
+            return this;
+        },
+
+        setY2: function(_y1)
+        {
+            this.y1 = _y1 === undefined ? null : _y1;
+            this.updateExtras();
+            return this;
+        },
+
+
+        updateExtras: function()
+        {
+            this.topLeft = new cMaths.vector2(this.x1, this.y1);
+            this.topRight = new cMaths.vector2(this.x2, this.y1);
+            this.bottomRight = new cMaths.vector2(this.x2, this.y2);
+            this.bottomLeft = new cMaths.vector2(this.x1, this.y2);
+            this.size = new cMaths.vector2(this.x2 - this.x1, this.y2 - this.y1);
         },
 
         clone: function()
         {
-            return new bounds(this.x1, this.y1, this.x2, this.y2);
+            return new cMaths.bounds(this.x1, this.y1, this.x2, this.y2);
         },
 
         add: function(_bounds)
         {
             return _bounds == null ? this.clone()
-                        : new bounds(this.x1 + _bounds.x1, this.y1 + _bounds.y1, this.x2 + _bounds.x2, this.y2 + _bounds.y2);
+                        : new cMaths.bounds(this.x1 + _bounds.x1, this.y1 + _bounds.y1, this.x2 + _bounds.x2, this.y2 + _bounds.y2);
+        },
+
+        Add: function(_bounds)
+        {
+            if (_bounds != null)
+            {
+                this.x1 += _bounds.x1;
+                this.y1 += _bounds.y1;
+                this.x2 += _bounds.x2;
+                this.y2 += _bounds.y2;
+                this.updateExtras();
+            }
+
+            return this;
         },
 
         subtract: function(_bounds)
         {
             return _bounds == null ? this.clone()
-                        : new bounds(this.x1 - _bounds.x1, this.y1 - _bounds.y1, this.x2 - _bounds.x2, this.y2 - _bounds.y2);
+                        : new cMaths.bounds(this.x1 - _bounds.x1, this.y1 - _bounds.y1, this.x2 - _bounds.x2, this.y2 - _bounds.y2);
+        },
+
+        Subtract: function(_bounds)
+        {
+            if (_bounds != null)
+            {
+                this.x1 -= _bounds.x1;
+                this.y1 -= _bounds.y1;
+                this.x2 -= _bounds.x2;
+                this.y2 -= _bounds.y2;
+                this.updateExtras();
+            }
+
+            return this;
         },
 
         scale: function(_scalar)
         {
             return _scalar == null ? null
-                        : new bounds(this.x1 * _scalar, this.y1 * _scalar, this.x2 * _scalar, this.y2 * _scalar);
+                        : new cMaths.bounds(this.x1 * _scalar, this.y1 * _scalar, this.x2 * _scalar, this.y2 * _scalar);
+        },
+
+        Scale: function(_scalar)
+        {
+            if (_scalar != null)
+            {
+                this.x1 *= _scalar;
+                this.y1 *= _scalar;
+                this.x2 *= _scalar;
+                this.y2 *= _scalar;
+                this.updateExtras();
+                return this;
+            }
+
+            this.set(null, null, null, null);
+            this.updateExtras();
+            return this;
         },
 
         dot: function(_bounds)
         {
             return _bounds == null ? null
-                        : new bounds(this.x1 * _bounds.x, this.y1 * _bounds.y, this.x2 * _bounds.x2, this.y2 * _bounds.y2);
+                        : new cMaths.bounds(this.x1 * _bounds.x, this.y1 * _bounds.y, this.x2 * _bounds.x2, this.y2 * _bounds.y2);
+        },
+
+        Dot: function(_bounds)
+        {
+            if (_bounds != null)
+            {
+                this.x1 *= _bounds.x1;
+                this.y1 *= _bounds.y1;
+                this.x2 *= _bounds.x2;
+                this.y2 *= _bounds.y2;
+                this.updateExtras();
+                return this;
+            }
+
+            this.set(null, null, null, null);
+            this.updateExtras();
+            return this;
         },
 
         fromVector2s: function(_pos1, _pos2)
         {
             return (_pos1 == null || _pos2 == null) ? null
-                        : new bounds(_pos1.x, _pos1.y, _pos2.x, _pos2.y);
+                        : new cMaths.bounds(_pos1.x, _pos1.y, _pos2.x, _pos2.y);
         },
 
         fromVector4: function(_vector)
         {
             return _vector == null ? null
-                        : new bounds(_vector.x, _vector.y, _vector.z, _vector.w);
+                        : new cMaths.bounds(_vector.x, _vector.y, _vector.z, _vector.w);
         },
 
         fromObject: function(_object, _relative, _includeChildren)
@@ -587,7 +683,7 @@ function customMathTypeData()
                 }
             }
 
-            return new bounds(_objectBounds.left,
+            return new cMaths.bounds(_objectBounds.left,
                                 _objectBounds.top,
                                 _objectBounds.right,
                                 _objectBounds.bottom);
@@ -615,13 +711,13 @@ function customMathTypeData()
         fromVector2s: function(_pos1, _pos2)
         {
             return (_pos1 == null || _pos2 == null) ? null
-                    : new line(_pos1.x, _pos1.y, _pos2.x, _pos2.y);
+                    : new cMaths.line(_pos1.x, _pos1.y, _pos2.x, _pos2.y);
         },
 
         fromVector4: function(_vector)
         {
             return _vector == null ? null
-                        : new line(_vector.x, _vector.y, _vector.z, _vector.w);
+                        : new cMaths.line(_vector.x, _vector.y, _vector.z, _vector.w);
         },
 
         distance: function () {
@@ -941,7 +1037,7 @@ function customMathPositioningFunctions()
                     _objectPosition.y -= _otherBox.top;
                 }
 
-                _objectPosition.add(cMaths.viewportOffset);
+                _objectPosition.Add(cMaths.viewportOffset);
             }
 
         }

@@ -6,12 +6,12 @@
 * These are the line numbers for the included files:
 * 16
 * 988
-* 1823
-* 2804
-* 3441
-* 3615
-* 4511
-* 4925
+* 1841
+* 2918
+* 3555
+* 3729
+* 4625
+* 5039
 ***********************************************************************************/
 
 /*
@@ -1796,7 +1796,25 @@ function customCssstyleSheetFunctions()
 			}
 			else
 			{
-				return false;
+				if (_styleData.cssTextProperty)
+				{
+					if (_styleData.splitType == 1)
+					{
+						_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleData.cssTextProperty + "(" + _styleData.value + ")";
+					}
+					else if (_styleData.split == 2)
+					{
+						_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleData.cssTextProperty + " " + _styleData.value;						
+					}
+					else
+					{
+						return false;
+					}
+				}
+				else
+				{
+					return false;
+				}
 			}
 
 			//add importance to the property
@@ -1912,12 +1930,12 @@ function customMathTypeData()
 
         clone: function()
         {
-            return new vector2(this.x, this.y);
+            return new cMaths.vector2(this.x, this.y);
         },
 
         add: function(_vector)
         {
-            return _vector == null ? this.clone() : new vector2(this.x + _vector.x, this.y + _vector.y);
+            return _vector == null ? this.clone() : new cMaths.vector2(this.x + _vector.x, this.y + _vector.y);
         },
 
         Add: function(_vector)
@@ -1933,7 +1951,7 @@ function customMathTypeData()
 
         subtract: function(_vector)
         {
-            return _vector == null ? this.clone() : new vector2(this.x - _vector.x, this.y - _vector.y);
+            return _vector == null ? this.clone() : new cMaths.vector2(this.x - _vector.x, this.y - _vector.y);
         },
 
         Subtract: function(_vector)
@@ -1949,7 +1967,7 @@ function customMathTypeData()
 
         scale: function(_scalar)
         { 
-            return _vector == null ? null : new vector2(this.x * _scalar, this.y * _scalar);
+            return _scalar == null ? null : new cMaths.vector2(this.x * _scalar, this.y * _scalar);
         },
 
         Scale: function(_scalar)
@@ -1962,7 +1980,7 @@ function customMathTypeData()
 
         dot: function(_vector)
         {
-            return _vector == null ? null : new vector2(this.x * _vector.x, this.y * _vector.y);
+            return _vector == null ? null : new cMaths.vector2(this.x * _vector.x, this.y * _vector.y);
         },
 
         Dot: function(_vector)
@@ -2025,18 +2043,18 @@ function customMathTypeData()
 
         clone: function()
         {
-            return new vector3(this.x, this.y, this.z);
+            return new cMaths.vector3(this.x, this.y, this.z);
         },
 
         vector2: function()
         {
-            return new vector2(this.x, this.y);
+            return new cMaths.vector2(this.x, this.y);
         },
 
         add: function(_vector)
         {
             return _vector == null ? this.clone()
-                    : new vector3(this.x + _vector.x, this.y + _vector.y, this.z + _vector.z);
+                    : new cMaths.vector3(this.x + _vector.x, this.y + _vector.y, this.z + _vector.z);
         },
 
         Add: function(_vector)
@@ -2054,7 +2072,7 @@ function customMathTypeData()
         subtract: function(_vector)
         {
             return _vector == null ? this.clone()
-                    : new vector3(this.x - _vector.x, this.y - _vector.y, this.z - _vector.z);
+                    : new cMaths.vector3(this.x - _vector.x, this.y - _vector.y, this.z - _vector.z);
         },
 
         Subtract: function(_vector)
@@ -2072,7 +2090,7 @@ function customMathTypeData()
         scale: function(_scalar)
         {
             return _vector == null ? null
-                    : new vector3(this.x * _scalar, this.y * _scalar, this.z * _scalar);
+                    : new cMaths.vector3(this.x * _scalar, this.y * _scalar, this.z * _scalar);
         },
 
         Scale: function(_scalar)
@@ -2087,7 +2105,7 @@ function customMathTypeData()
         dot: function(_vector)
         {
             return _vector == null ? null
-                    : new vector3(this.x * _vector.x, this.y * _vector.y, this.z * _vector.z);
+                    : new cMaths.vector3(this.x * _vector.x, this.y * _vector.y, this.z * _vector.z);
         },
 
         distance: function (_vector) {
@@ -2147,23 +2165,23 @@ function customMathTypeData()
 
         clone: function()
         {
-            return new vector4(this.x, this.y, this.z, this.w);
+            return new cMaths.vector4(this.x, this.y, this.z, this.w);
         },
 
         vector2: function()
         {
-            return new vector2(this.x, this.y);
+            return new cMaths.vector2(this.x, this.y);
         },
 
         vector3: function()
         {
-            return new vector3(this.x, this.y, this.z);
+            return new cMaths.vector3(this.x, this.y, this.z);
         },
 
         add: function(_vector)
         {
             return _vector == null ? this.clone()
-                    : new vector4(this.x + _vector.x, this.y + _vector.y, this.z + _vector.z, this.w + _vector.w);
+                    : new cMaths.vector4(this.x + _vector.x, this.y + _vector.y, this.z + _vector.z, this.w + _vector.w);
         },
 
         Add: function(_vector)
@@ -2182,7 +2200,7 @@ function customMathTypeData()
         subtract: function(_vector)
         {
             return _vector == null ? this.clone()
-                    : new vector4(this.x - _vector.x, this.y - _vector.y, this.z - _vector.z, this.w - _vector.w);
+                    : new cMaths.vector4(this.x - _vector.x, this.y - _vector.y, this.z - _vector.z, this.w - _vector.w);
         },
 
         Subtract: function(_vector)
@@ -2201,7 +2219,7 @@ function customMathTypeData()
         scale: function(_scalar)
         {
             return _scalar == null ? null
-                    : new vector4(this.x * _scalar, this.y * _scalar, this.z * _scalar, this.w * _scalar);
+                    : new cMaths.vector4(this.x * _scalar, this.y * _scalar, this.z * _scalar, this.w * _scalar);
         },
 
         Scale: function(_scalar)
@@ -2217,7 +2235,7 @@ function customMathTypeData()
         dot: function(_vector)
         {
             return _vector == null ? null
-                    : new vector4(this.x * _vector.x, this.y * _vector.y, this.z * _vector.z, this.w * _vector.w);
+                    : new cMaths.vector4(this.x * _vector.x, this.y * _vector.y, this.z * _vector.z, this.w * _vector.w);
         },
 
         Dot: function(_vector)
@@ -2240,11 +2258,11 @@ function customMathTypeData()
         this.y1 = _y1 === undefined ? null : _y1;
         this.x2 = _x2 === undefined ? null : _x2;
         this.y2 = _y2 === undefined ? null : _y2;
-        this.topLeft = new vector2(this.x1, this.y1);
-        this.topRight = new vector2(this.x2, this.y1);
-        this.bottomRight = new vector2(this.x2, this.y2);
-        this.bottomLeft = new vector2(this.x1, this.y2);
-        this.size = new vector2(this.x2 - this.x1, this.y2 - this.y1);
+        this.topLeft = new cMaths.vector2(this.x1, this.y1);
+        this.topRight = new cMaths.vector2(this.x2, this.y1);
+        this.bottomRight = new cMaths.vector2(this.x2, this.y2);
+        this.bottomLeft = new cMaths.vector2(this.x1, this.y2);
+        this.size = new cMaths.vector2(this.x2 - this.x1, this.y2 - this.y1);
     }
 
     this.bounds.prototype =
@@ -2255,52 +2273,148 @@ function customMathTypeData()
             this.y1 = _y1 === undefined ? null : _y1;
             this.x2 = _x2 === undefined ? null : _x2;
             this.y2 = _y2 === undefined ? null : _y2;
-            this.topLeft = new vector2(this.x1, this.y1);
-            this.topRight = new vector2(this.x2, this.y1);
-            this.bottomRight = new vector2(this.x2, this.y2);
-            this.bottomLeft = new vector2(this.x1, this.y2);
-            this.size = new vector2(this.x2 - this.x1, this.y2 - this.y1);
+            this.updateExtras();
+        },
+
+        setX1: function(_x1)
+        {
+            this.x1 = _x1 === undefined ? null : _x1;
+            this.updateExtras();
+            return this;
+        },
+
+        setY1: function(_y1)
+        {
+            this.y1 = _y1 === undefined ? null : _y1;
+            this.updateExtras();
+            return this;
+        },
+
+        setX2: function(_x1)
+        {
+            this.x1 = _x1 === undefined ? null : _x1;
+            this.updateExtras();
+            return this;
+        },
+
+        setY2: function(_y1)
+        {
+            this.y1 = _y1 === undefined ? null : _y1;
+            this.updateExtras();
+            return this;
+        },
+
+
+        updateExtras: function()
+        {
+            this.topLeft = new cMaths.vector2(this.x1, this.y1);
+            this.topRight = new cMaths.vector2(this.x2, this.y1);
+            this.bottomRight = new cMaths.vector2(this.x2, this.y2);
+            this.bottomLeft = new cMaths.vector2(this.x1, this.y2);
+            this.size = new cMaths.vector2(this.x2 - this.x1, this.y2 - this.y1);
         },
 
         clone: function()
         {
-            return new bounds(this.x1, this.y1, this.x2, this.y2);
+            return new cMaths.bounds(this.x1, this.y1, this.x2, this.y2);
         },
 
         add: function(_bounds)
         {
             return _bounds == null ? this.clone()
-                        : new bounds(this.x1 + _bounds.x1, this.y1 + _bounds.y1, this.x2 + _bounds.x2, this.y2 + _bounds.y2);
+                        : new cMaths.bounds(this.x1 + _bounds.x1, this.y1 + _bounds.y1, this.x2 + _bounds.x2, this.y2 + _bounds.y2);
+        },
+
+        Add: function(_bounds)
+        {
+            if (_bounds != null)
+            {
+                this.x1 += _bounds.x1;
+                this.y1 += _bounds.y1;
+                this.x2 += _bounds.x2;
+                this.y2 += _bounds.y2;
+                this.updateExtras();
+            }
+
+            return this;
         },
 
         subtract: function(_bounds)
         {
             return _bounds == null ? this.clone()
-                        : new bounds(this.x1 - _bounds.x1, this.y1 - _bounds.y1, this.x2 - _bounds.x2, this.y2 - _bounds.y2);
+                        : new cMaths.bounds(this.x1 - _bounds.x1, this.y1 - _bounds.y1, this.x2 - _bounds.x2, this.y2 - _bounds.y2);
+        },
+
+        Subtract: function(_bounds)
+        {
+            if (_bounds != null)
+            {
+                this.x1 -= _bounds.x1;
+                this.y1 -= _bounds.y1;
+                this.x2 -= _bounds.x2;
+                this.y2 -= _bounds.y2;
+                this.updateExtras();
+            }
+
+            return this;
         },
 
         scale: function(_scalar)
         {
             return _scalar == null ? null
-                        : new bounds(this.x1 * _scalar, this.y1 * _scalar, this.x2 * _scalar, this.y2 * _scalar);
+                        : new cMaths.bounds(this.x1 * _scalar, this.y1 * _scalar, this.x2 * _scalar, this.y2 * _scalar);
+        },
+
+        Scale: function(_scalar)
+        {
+            if (_scalar != null)
+            {
+                this.x1 *= _scalar;
+                this.y1 *= _scalar;
+                this.x2 *= _scalar;
+                this.y2 *= _scalar;
+                this.updateExtras();
+                return this;
+            }
+
+            this.set(null, null, null, null);
+            this.updateExtras();
+            return this;
         },
 
         dot: function(_bounds)
         {
             return _bounds == null ? null
-                        : new bounds(this.x1 * _bounds.x, this.y1 * _bounds.y, this.x2 * _bounds.x2, this.y2 * _bounds.y2);
+                        : new cMaths.bounds(this.x1 * _bounds.x, this.y1 * _bounds.y, this.x2 * _bounds.x2, this.y2 * _bounds.y2);
+        },
+
+        Dot: function(_bounds)
+        {
+            if (_bounds != null)
+            {
+                this.x1 *= _bounds.x1;
+                this.y1 *= _bounds.y1;
+                this.x2 *= _bounds.x2;
+                this.y2 *= _bounds.y2;
+                this.updateExtras();
+                return this;
+            }
+
+            this.set(null, null, null, null);
+            this.updateExtras();
+            return this;
         },
 
         fromVector2s: function(_pos1, _pos2)
         {
             return (_pos1 == null || _pos2 == null) ? null
-                        : new bounds(_pos1.x, _pos1.y, _pos2.x, _pos2.y);
+                        : new cMaths.bounds(_pos1.x, _pos1.y, _pos2.x, _pos2.y);
         },
 
         fromVector4: function(_vector)
         {
             return _vector == null ? null
-                        : new bounds(_vector.x, _vector.y, _vector.z, _vector.w);
+                        : new cMaths.bounds(_vector.x, _vector.y, _vector.z, _vector.w);
         },
 
         fromObject: function(_object, _relative, _includeChildren)
@@ -2410,7 +2524,7 @@ function customMathTypeData()
                 }
             }
 
-            return new bounds(_objectBounds.left,
+            return new cMaths.bounds(_objectBounds.left,
                                 _objectBounds.top,
                                 _objectBounds.right,
                                 _objectBounds.bottom);
@@ -2438,13 +2552,13 @@ function customMathTypeData()
         fromVector2s: function(_pos1, _pos2)
         {
             return (_pos1 == null || _pos2 == null) ? null
-                    : new line(_pos1.x, _pos1.y, _pos2.x, _pos2.y);
+                    : new cMaths.line(_pos1.x, _pos1.y, _pos2.x, _pos2.y);
         },
 
         fromVector4: function(_vector)
         {
             return _vector == null ? null
-                        : new line(_vector.x, _vector.y, _vector.z, _vector.w);
+                        : new cMaths.line(_vector.x, _vector.y, _vector.z, _vector.w);
         },
 
         distance: function () {
@@ -2764,7 +2878,7 @@ function customMathPositioningFunctions()
                     _objectPosition.y -= _otherBox.top;
                 }
 
-                _objectPosition.add(cMaths.viewportOffset);
+                _objectPosition.Add(cMaths.viewportOffset);
             }
 
         }
@@ -5074,4 +5188,480 @@ window.cUtility = window.cUtility || new function cUtility()
 		}
 	}
 
+}
+
+
+/*
+	Title:
+		cExpander
+	
+	Description:
+        Handle size expandable functions to
+        resize DOM objects to remove scrollers
+*/
+
+window.cExpander = window.cExpander || new function customExpander()
+{
+
+	//====DATA TYPES====//
+	this.dataTypes = new cExpanderDataTypes();
+
+	this.ExpansionData = this.dataTypes.expansionData.prototype;
+	this.expansionData = this.dataTypes.expansionData;
+
+	this.CalculatedObjectData = this.dataTypes.calculatedObjectData.prototype;
+	this.calculatedObjectData = this.dataTypes.calculatedObjectData;
+	
+	//====FUNCTIONS====//
+	this.expansion = new cExpanderFunctions();
+	this.search = new cExpanderSearchFunctions();
+
+	//====VARIABLES====//
+	this.allExpansionData = [];
+	this.allCalculatedObjects = [];
+	this.uniqueID = 1;
+	this.uniqueCalculatedID = 1;
+
+	//====RUN-TIME FUNCTIONS====//
+
+}
+
+function cExpanderDataTypes()
+{
+
+	this.expansionData = function expansionData(_objectToExpand, _scroller, _scrollerWidthOffset, _expandToJQuery, _expansionCssClass, _expansionID)
+	{
+		if (_objectToExpand == null || _scroller == null)
+		{
+			return null;
+		}
+
+		var _this = this;
+		this.ID = _expansionID || cExpander.uniqueID;
+
+		if (this.ID >= cExpander.uniqueID) { cExpander.uniqueID = this.ID + 1; }
+
+		this.objectToExpand = _objectToExpand;
+		this.objectToExpandDOM = this.objectToExpand;
+		this.usesElement = false;
+
+		if (typeof this.objectToExpand === "object")
+		{
+			if (typeof window.cElement != "undefined")
+			{
+				if (this.objectToExpand instanceof cElement.element)
+				{
+					this.usesElement = true;
+					this.objectToExpandDOM = cUtility.findHTMLObjects(_this.objectToExpand);
+				}
+			}
+		}
+		else
+		{
+			this.objectToExpandDOM = $(this.objectToExpand);
+		}
+
+		this.scroller = _scroller || ".scroller, .matrix-Scroller";
+		this.scrollerDOM = this.objectToExpandDOM.find(_this.scroller);
+		this.scrollerWidthOffset = _scrollerWidthOffset || 0;
+
+		if (this.objectToExpandDOM.length && this.objectToExpandDOM.length > 0)
+		{
+			this.objectToExpandDOM = this.objectToExpandDOM[0];
+		}
+
+		this.expandToJQuery = _expandToJQuery || "*";
+
+		this.expansionCssClass = _expansionCssClass || "defaultExpansion";
+		
+		$(_this.objectToExpandDOM).addClass(_this.expansionCssClass);
+		this.scrollerDOM.addClass(_this.expansionCssClass);
+		
+		this.originalHeight = -1;
+		this.heightChanged = -1;
+		this.expanded = false;
+		this.previousExpanded = false;
+
+		this.objectsMovedDOM = [];
+
+		this.checkMovedExists = function checkMovedExists(_toCheck)
+        {
+            for (var i = 0; i < _this.objectsMovedDOM.length; i++)
+            {
+                if (_this.objectsMovedDOM[i] == _toCheck)
+                {
+                    return true;
+                }
+            }
+		}
+
+		this.resetMoved = function resetMoved()
+		{
+			while(_this.objectsMovedDOM.length > 0)
+			{
+				var _styleData = new cCss.styleSheetModificationData("transform", "translateY", true, 1, null, 0, true);
+				var _objectStyleID = cExpander.search.returnCalculatedObjectDataFromObject(_this.objectsMovedDOM[0], cExpander.uniqueCalculatedID);
+				var _selector = cCss.styleSheet.translateCssSelector(".ExpansionMoved" + _objectStyleID.ID, "MainExpansionStyles");
+				var _currentTransform = cCss.styleSheet.getCssStyle(_selector.style, _styleData, 2);
+
+				_styleData.value = (_currentTransform.values.length > 0) ? parseInt(_currentTransform.values[0].replace(/\(|\)/gi, ""), 10) - _this.heightChanged : 0;
+				_styleData.value += "px";
+
+				cCss.styleSheet.replaceCssStyle("MainExpansionStyles", ".ExpansionMoved" + _objectStyleID.ID, _styleData);
+
+				_this.objectsMovedDOM.shift();
+			}
+		}
+	}
+
+	this.calculatedObjectData = function calculatedObjectData(_object, _id)
+	{
+		if (_object == null) { return null; }
+		this.object = _object;
+		this.ID = _id || cExpander.uniqueCalculatedID;
+
+		if (this.ID >= cExpander.uniqueCalculatedID) { cExpander.uniqueCalculatedID = this.ID + 1; }
+	}
+
+}
+
+function cExpanderSearchFunctions()
+{
+	this.returnExpansionDataFromObject = function returnExpansionData(_objectToExpand, _expansionCreationData)
+	{
+		for (var l = 0; l < cExpander.allExpansionData.length; l++)
+		{
+			if (cExpander.allExpansionData[l].objectToExpand == _objectToExpand ||
+				cExpander.allExpansionData[l].objectToExpandDOM == _objectToExpand)
+			{
+				return cExpander.allExpansionData[l];
+			}
+		}
+		
+		if (_expansionCreationData != null)
+		{
+			return cExpander.expansion.createExpansionData(_expansionCreationData);
+		}
+
+		return null;
+	}
+
+	this.returnExpansionDataFromID = function returnExpansionDataFromID(_id, _expansionCreationData)
+	{
+		for (var l = 0; l < cExpander.allExpansionData.length; l++)
+		{
+			if (cExpander.allExpansionData[l].id == _id) { return cExpander.allCalculatedObjects[l]; }
+		}
+		
+		if (_expansionCreationData != null)
+		{
+			return cExpander.expansion.createExpansionData(_expansionCreationData);
+		}
+
+		return null;
+	}
+
+	this.returnCalculatedObjectDataFromObject = function returnCalculatedObjectDataFromObject(_object, _createOnFailID)
+	{
+		for (var l = 0; l < cExpander.allCalculatedObjects.length; l++)
+		{
+			if (cExpander.allCalculatedObjects[l].object == _object) { return cExpander.allCalculatedObjects[l]; }
+		}
+
+		if (_createOnFailID)
+		{
+			return cExpander.expansion.createCalculatedData(_object, _createOnFailID);
+		}
+
+		return null;
+	}
+
+	this.returnCalculatedObjectDataFromID = function returnCalculatedObjectDataFromID(_id, _createOnFailObject)
+	{
+		for (var l = 0; l < cExpander.allCalculatedObjects.length; l++)
+		{
+			if (cExpander.allCalculatedObjects[l].ID == _id) { return cExpander.allCalculatedObjects[l]; }
+		}
+
+		if (_createOnFailObject)
+		{
+			return cExpander.expansion.createCalculatedData(_createOnFailObject, _id);
+		}
+		
+		return null;
+	}
+}
+
+function cExpanderFunctions()
+{
+
+	this.createExpansionData = function createExpansionData(_expansionCreationData)
+	{
+		var _expansionData = new cExpander.expansionData(
+										_expansionCreationData._objectToExpand
+										, _expansionCreationData._scroller
+										, _expansionCreationData._scrollerWidthOffset
+										, _expansionCreationData._expandToJQuery
+										, _expansionCreationData._expansionCssClass
+										, _expansionCreationData._id);
+
+		cExpander.allExpansionData.push(_expansionData);
+		return _expansionData;
+	}
+
+	this.createCalculatedData = function createCalculatedData(_object, _id)
+	{
+		var _calculatedData = new cExpander.calculatedObjectData(_object, _id);
+		cExpander.allCalculatedObjects.push(_calculatedData);
+		return _calculatedData;
+	}
+
+	this.toggleExpansionID = function toggleExpansionID(_id, _expanded)
+	{
+		return cExpander.expansion.toggleExpansion(cExpander.search.returnExpansionDataFromID(_id), _expanded);
+	}
+
+	this.toggleExpansionObject = function toggleExpansion(_object, _expanded)
+	{
+		return cExpander.expansion.toggleExpansion(cExpander.search.returnExpansionDataFromObject(_object), _expanded);
+	}
+
+	this.toggleExpansion = function toggleExpansion(_expansionData, _expanded)
+	{
+		if (_expansionData == null) { return false; }
+
+		_expansionData.previousExpanded = _expansionData.expanded;
+
+		if (_expanded)
+		{
+			_expansionData.expanded = _expanded;
+		}
+		else
+		{
+			_expansionData.expanded = !_expansionData.expanded;
+		}
+
+		cExpander.expansion.updateExpansion(_expansionData);
+		return true;
+	}
+
+	this.updateExpansion = function updateExpansion(_expansionData)
+	{
+		if (_expansionData.expanded)
+		{
+			//get total size of all items inside the inline form
+			var totalSize = cMaths.Bounds.fromObject(_expansionData.objectToExpandDOM
+											, document, _expansionData.expandToJQuery).size.y;
+
+			if (_expansionData.previousExpanded == false)
+			{
+				totalSize += _expansionData.scrollerWidthOffset;
+			}
+
+			if (_expansionData.previousExpanded != _expansionData.expanded)
+			{
+				_expansionData.originalHeight = cMaths.Bounds.fromObject(_expansionData.scrollerDOM[0], document, null).size.y;
+				_expansionData.heightChanged = totalSize - _expansionData.originalHeight;
+			}
+
+			//set height to be total size
+			var _styleData = new cCss.styleSheetModificationData("height", null, false, 0, totalSize + "px", -1, true);
+			cCss.styleSheet.replaceCssStyle("MainExpansionStyles", "." + _expansionData.expansionCssClass, _styleData);
+
+			//move all other html that might've been affected
+			cExpander.expansion.moveHTMLToNotOverlap(_expansionData)
+
+		}
+		else
+		{
+			if (_expansionData.originalHeight != -1)
+			{
+				var _styleData = new cCss.styleSheetModificationData("height", null, false, 0, _expansionData.originalHeight + "px", -1, true);
+				cCss.styleSheet.replaceCssStyle("MainExpansionStyles", "." + _expansionData.expansionCssClass, _styleData);	
+
+            	//move all other html that might've been affected
+            	_expansionData.resetMoved();
+			}
+		}
+
+		if (cPageResizer != null)
+		{
+			cPageResizer.resizePage();
+		}
+	}
+
+	this.moveHTMLToNotOverlap = function moveHTMLToNotOverlap(_expansionData, _object, _allElements)
+	{
+		var _objectBounds = cMaths.Bounds.fromObject(_object, document);
+
+		if (!_allElements)
+		{
+			var _allElements = [];
+			_expansionData.moved = [];
+			_objectBounds = cMaths.Bounds.fromObject(_expansionData.objectToExpandDOM, document);
+
+			var _objToIgnore = [$("img[usemap='#ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']"[0]),
+								$("map[name='ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']"[0]),
+								$("[id=ctl00_ContentPlaceHolder1_InteractiveModel1_shadow]")[0],
+								_expansionData.objectToExpandDOM]
+
+			var _allElements = $(".InteractiveModel").children().filter(function() {
+
+				if (_objToIgnore.includes(this)) { return false; }
+
+				if ($(this).is("div"))
+				{
+					var _bounds = cMaths.Bounds.fromObject(this, document);
+
+					if (_bounds.y2 > _objectBounds.y1)
+					{
+						return true;
+					}
+				}
+
+				return false;
+
+			}).toArray();
+		}
+
+		var _allWithin = null;
+		var _lastLowest = null;
+		var _completeBounds = _objectBounds.clone();
+
+		do {
+			_lastLowest = _allWithin == null ? null : _allWithin.length > 0 ? _allWithin[0].object : null;
+			_allWithin = cMaths.collision.returnObjectsIntersectArea(_completeBounds, _allElements).sort(function(a, b) {
+				return (a.y2 > b.y2);
+			});
+
+			if (_allWithin.length > 0)
+			{
+				_completeBounds.y2 = _allWithin[0].y2;
+				_completeBounds.updateExtras();
+			}
+		} while (_allWithin.length != 0 && _allWithin[0].object != _lastLowest)
+
+		for (var i = 0; i < _allWithin.length; i++)
+		{
+			if (!(_expansionData.checkMovedExists(_allWithin[i]._object)))
+			{
+				
+                var _styleData = new cCss.styleSheetModificationData("transform", "translateY", true, 1, null, 0, true);
+				var _objectStyleID = cExpander.search.returnCalculatedObjectDataFromObject(_allWithin[i]._object, cExpander.uniqueCalculatedID);
+				var _selector = cCss.styleSheet.translateCssSelector(".ExpansionMoved" + _objectStyleID.ID, "MainExpansionStyles");
+				
+				var _currentTransform = cCss.styleSheet.getCssStyle(_selector.style, _styleData, 2);
+				
+				_styleData.value = (_currentTransform.values.length > 0) ? parseInt(_currentTransform.values[0].replace(/\(|\)/gi, ""), 10) + _expansionData.heightChanged : _expansionData.heightChanged;
+				_styleData.value += "px";
+				
+				cCss.styleSheet.replaceCssStyle("MainExpansionStyles", ".ExpansionMoved" + _objectStyleID.ID, _styleData);
+
+                _expansionData.objectsMovedDOM.push(_allWithin[i]._object);
+                $(_allWithin[i]._object).addClass("ExpansionMoved" + _objectStyleID.ID);
+			}
+		}
+		
+	}
+
+}
+
+/*
+	Title:
+		Resize Model Masters
+	
+	Description:
+		script for auto-resizing model based on lowest elements or page marker
+*/
+
+window.cPageResizer = window.cPageResizer || new function customPageResizer()
+{
+    this.resizePage = function resizePage()
+    {
+        //find the lowest object or marker if placed
+        //higher = lower due to Y starting from top of the page
+        var lowest = cPageResizer.findLowestPoint();
+        
+        //store offsets for page end and screen end
+        var lowestOffset = 32;
+        var endOfPageOffset = 32;
+    
+        //This is just an extra 32px on the
+        //bottom of the screen so it doesn't feel too close
+        lowest += lowestOffset; 
+    
+        //this next part sets the two html parents of the page to hide the overflow(bit after max height)
+        //and to set the height of the entire page 
+        $("#ctl00_ContentPlaceHolder1_Container").addClass("modelMasterResizer");
+        $("#ctl00_ContentPlaceHolder1_InteractiveModel1").addClass("modelMasterResizer");
+        $("[id=ctl00_ContentPlaceHolder1_InteractiveModel1_shadow]").addClass("modelMasterResizer");
+    
+        $("#ctl00_ContentPlaceHolder1_Container").css("overflow","hidden").css("height",lowest + endOfPageOffset +"px");
+        $("#ctl00_ContentPlaceHolder1_InteractiveModel1").css("overflow","hidden").css("height",lowest+"px");
+        $("[id=ctl00_ContentPlaceHolder1_InteractiveModel1_shadow]").css("top",(lowest - 8)+"px");
+    
+        //force browser to be within page view
+        if (window.scrollY > lowest)
+        {
+            window.moveTo(window.scrollX, lowest);
+        }
+    }
+
+    //find the lowest position on the page
+    this.findLowestPoint = function findLowestPoint()
+    {
+        //check if a marker exists on the page
+        var marker = $(".mood-node-name-page-marker");
+
+        marker.sort(function(a, b) {
+            var _heightA = cMaths.Bounds.fromObject(a, document);
+            var _heightB = cMaths.Bounds.fromObject(b, document);
+            return _heightA.y2 < _heightB.y2;
+        })
+        
+        //if marker exists go to manual resizing
+        if (marker.length > 0) 
+        {
+            return cMaths.Bounds.fromObject(marker[0], document).y2;
+        }
+        
+        //else calculate the lowest point
+        return cPageResizer.findLowestHTMLObject();
+    }
+
+    //calculate the lowest positioned object in HTML
+    this.findLowestHTMLObject = function findLowestHTMLObject()
+    {
+        var _lowest = 0;
+
+        var _objToIgnore = [$("img[usemap='#ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']")[0],
+								$("map[name='ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']")[0],
+								$("[id=ctl00_ContentPlaceHolder1_InteractiveModel1_shadow]")[0]]
+        
+        //loop through all the main element html in page (the containers for each element)
+        $("[id=ctl00_ContentPlaceHolder1_InteractiveModel1]").children().each(function() {
+
+            if (_objToIgnore.includes(this)) { return; }
+
+            if ($(this).is("div"))
+			{
+                var _currentBounds = cMaths.Bounds.fromObject(this, document);
+                var _currentHeight = _currentBounds.y2;
+
+                //check if the currentHeight is a valid value
+                if (_currentHeight)
+                {
+                    //check currentHeight is greater than the
+                    //lowest point(top to bottom so technically lower)
+                    if (_currentHeight > _lowest)
+                    {
+                        //set new lowest to be currentHeight
+                        _lowest = _currentHeight;
+                    }
+                }
+            }
+        });  
+        
+        return _lowest;
+    }
 }

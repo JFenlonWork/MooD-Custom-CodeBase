@@ -808,7 +808,25 @@ function customCssstyleSheetFunctions()
 			}
 			else
 			{
-				return false;
+				if (_styleData.cssTextProperty)
+				{
+					if (_styleData.splitType == 1)
+					{
+						_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleData.cssTextProperty + "(" + _styleData.value + ")";
+					}
+					else if (_styleData.split == 2)
+					{
+						_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleData.cssTextProperty + " " + _styleData.value;						
+					}
+					else
+					{
+						return false;
+					}
+				}
+				else
+				{
+					return false;
+				}
 			}
 
 			//add importance to the property
