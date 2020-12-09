@@ -21,6 +21,9 @@ window.cTimer = window.cTimer || new function cTimer()
     this.Timer = this.dataTypes.timer.prototype;
     this.timer = this.dataTypes.timer;
 
+    this.ScaledTime = this.dataTypes.scaledTime.prototype;
+    this.scaledTime = this.dataTypes.scaledTime; 
+
     this.ScaledTimer = this.dataTypes.scaledTimer.prototype;
     this.scaledTimer = this.dataTypes.scaledTimer;
 
@@ -242,6 +245,13 @@ function cTimerDataTypes()
         }
 
         return this.timerID;
+    }
+
+    this.scaledTime = function scaledTime(_threshold, _interval)
+    {
+        if (_threshold == null || _time == null) { return null; }
+        this.threshold = _threshold;
+        this.interval = _interval;
     }
 
     //holds specific timer data with scaling time based on results
