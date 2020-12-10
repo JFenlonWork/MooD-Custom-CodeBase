@@ -12,6 +12,7 @@ window.cFader = window.cFader || new function customFader()
    //====VARIABLES====//
     this.allFaderData = [];
     this.uniqueFaderID = 10000;
+    this.uniqueFadingDataID = 1;
 
    //====DATA TYPES====//
    this.dataTypes = new cFaderDataTypes();
@@ -34,7 +35,7 @@ function cFaderDataTypes ()
     {
         if (_fadingData == null) { return null; }
 
-        this.fadingData = _fadingData;
+        this.fadingData = [];
         this.id = _faderID || cFader.uniqueFaderID;
 
         if (this.id == cFader.uniqueFaderID)
@@ -48,16 +49,19 @@ function cFaderDataTypes ()
         
         this.updateFadedCallback = function updateFadedCallback()
         {
-            if (_this.index >= _this.fadingData.length)
+            var _ret = false;
+            var _previousIndex = _this.index;
+
+            _this.fadingData[_this.index].toggleObject(false);
+
+            if (_this.index++ >= _this.fadingData.length - 1)
             {
                 _this.index = 0;
-                return true;
+                _ret = true;
             }
-            else
-            {
-                _this.index++;
-                return false;
-            }
+
+            _this.fadingData[_this.index].toggleObject(true);
+            return _ret;
         }
 
         this.calculateScaledTimerTime = function calculateScaledTimerTime()
@@ -65,14 +69,15 @@ function cFaderDataTypes ()
             var _ret = [];
             for (var l = 0; l < this.fadingData.length; l++)
             {
-                _ret.push(new cTime.scaledTime(a, this.fadingData[a].timeToFade));
+                _ret.push(new cTimer.scaledTime(l, this.fadingData[l].timeActive));
             }
             return _ret;
         }
 
         this.updateTimerTimes = function updateTimerTimes()
         {
-            this.faderTimer.scaledTime = _this.calculateScaledTimerTime();
+            if (this.faderTimer == null) { return null; }
+            this.faderTimer.scaledTime = this.calculateScaledTimerTime();
         }
 
         this.toggleFading = function toggleFading(_toggle)
@@ -91,7 +96,7 @@ function cFaderDataTypes ()
 
         this.addFadingData = function addFadingData(_fadingData)
         {
-            if (typeof _fadingData == "Array")
+            if (_fadingData instanceof Array)
             {
                 for (var l = 0; l < _fadingData.length; l++)
                 {
@@ -102,6 +107,7 @@ function cFaderDataTypes ()
             }
             else if (_fadingData instanceof cFader.fadingData)
             {
+                _fadingData.faderDataParent = _this;
                 this.fadingData.push(_fadingData);
                 this.updateTimerTimes();
                 return true;
@@ -130,7 +136,8 @@ function cFaderDataTypes ()
             cFader.allFaderData.splice(index, 1);
         }
 
-        this.faderTimer = new cTime.scaledTimer(new cTime.callback(this.updateFadedCallback), false, this.calculateScaledTimerTime(), null, true);
+        this.addFadingData(_fadingData);
+        this.faderTimer = new cTimer.scaledTimer(new cTimer.callback(this.updateFadedCallback), false, this.calculateScaledTimerTime(), null, true);
 
         if (_startOnCreation)
         {
@@ -143,7 +150,64 @@ function cFaderDataTypes ()
     {
         if (_objectToFade == null) { return null; }
         this.objectToFade = _objectToFade;
-        this.timeToFade = _timeToFade;
+        this.timeActive = _timeToFade[0]
+        this.timeToFadeIn = _timeToFade[1];
+        this.timeToFadeOut = _timeToFade[2];
+        this.id = cFader.uniqueFadingDataID++;
+        this.faderDataParent = null;
+
+        this.toggleObject = function toggleObject(_toggle)
+        {
+            if (_toggle)
+            {
+                this.enableObject();
+            }
+            else
+            {
+                this.disableObject();
+            }
+        }
+
+        this.enableObject = function enableObject()
+        {
+            if (this.faderDataParent == null) { return null; }
+
+            this.modifyTransformOpacity(this.timeToFadeIn);
+            this.modifyOpacity(1);
+            
+            $(this.objectToFade).addClass("Fader" + this.faderDataParent.id + "Transition" + this.id);
+        }
+
+        this.disableObject = function disableObject()
+        {
+            if (this.faderDataParent == null) { return null; }
+
+            this.modifyTransformOpacity(this.timeToFadeOut);
+            this.modifyOpacity(0);
+
+            $(this.objectToFade).addClass("Fader" + this.faderDataParent.id + "Transition" + this.id);
+        }
+
+        this.disableOnStart = function disableOnStart()
+        {
+            if (this.faderDataParent == null) { return null; }
+            this.modifyOpacity(0);
+
+            $(this.objectToFade).addClass("Fader" + this.faderDataParent.id + "Transition" + this.id);
+       }
+
+        this.modifyOpacity = function modifyOpacity(_opacity)
+        {
+            var _styleData = new cCss.styleSheetModificationData("opacity", null, false, -1, _opacity, -1, false);
+            cCss.styleSheet.replaceCssStyle("MainFaderStyles", ".Fader" + this.faderDataParent.id + "Transition" + this.id, _styleData);
+        }
+
+        this.modifyTransformOpacity = function modifyTransformOpacity(_time)
+        {
+            var _styleData = new cCss.styleSheetModificationData("transition", "opacity", true, 2, _time, -1, false);
+            cCss.styleSheet.replaceCssStyle("MainFaderStyles", ".Fader" + this.faderDataParent.id + "Transition" + this.id, _styleData);
+
+        }
     }
 
 }
@@ -180,7 +244,7 @@ function cFaderGenericFunctions()
 
     this.createFader = function createFader(_fadingData, _startIndex, _faderID, _startOnCreation)
     {
-        var _faderData = cFader.faderData(_fadingData, _startIndex, _faderID, _startOnCreation);
+        var _faderData = new cFader.faderData(_fadingData, _startIndex, _faderID, _startOnCreation);
         cFader.allFaderData.push(_faderData);
     }
 

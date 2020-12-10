@@ -8,10 +8,10 @@
 * 988
 * 1841
 * 2918
-* 3555
-* 3729
-* 4625
-* 5039
+* 3558
+* 3732
+* 4628
+* 5054
 ***********************************************************************************/
 
 /*
@@ -1047,7 +1047,7 @@ function cCssDataTypes()
 
 		//0 = none, 1 = brackets, 2 = commas
 		this.splitType = _splitType || 0;
-		this.value = _value || "";
+		this.value = _value == null ? "" : _value;
 		this.importance = _importance || false;
 		this.propertyIndex = _propertyIndex !== null ? _propertyIndex : -1;
 	}
@@ -3507,22 +3507,25 @@ function cElementModifyFunctions()
             }
             
             //class scroll seems to be the object itself vs the surrounding div
-            var scroller = $(htmlObject).children(".scroller");
+            var _scroller = $(htmlObject).children(".scroller");
             
-            var scrollOffset = null;
-            var scrollOffsetX = 0;
-            var scrollOffsetY = 0;
+            var _scrollOffset = null;
+            var _scrollOffsetX = 0;
+            var _scrollOffsetY = 0;
             
-            if (scroller.length > 0)
+            if (_scroller.length > 0)
             {
-                var scrollOffset = scroller[0].style;
-                var scrollOffsetX = scrollOffset.left.replace('px', '');
-                var scrollOffsetY = scrollOffset.top.replace('px', '');
+                var _scrollOffset = _scroller[0].style;
+                var _scrollOffsetX = parseInt(_scrollOffset.left, 10);
+                var _scrollOffsetY = parseInt(_scrollOffset.top, 10);
             }
+
+            //var _styleData = new cCss.styleSheetModificationData("left", null, false, null, , -1, true);
+            //cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _ID, _styleData);
             
             //set position and force align start to left of page
-            htmlOverlayPanel.style.left = (_posX - parseInt(scrollOffsetX)) + "px";
-            htmlOverlayPanel.style.top = (_posY - parseInt(scrollOffsetY)) + "px";
+            htmlOverlayPanel.style.left = (_posX - parseInt(_scrollOffsetX)) + "px";
+            htmlOverlayPanel.style.top = (_posY - parseInt(_scrollOffsetY)) + "px";
         }
     }
 
@@ -4646,6 +4649,9 @@ window.cTimer = window.cTimer || new function cTimer()
     this.Timer = this.dataTypes.timer.prototype;
     this.timer = this.dataTypes.timer;
 
+    this.ScaledTime = this.dataTypes.scaledTime.prototype;
+    this.scaledTime = this.dataTypes.scaledTime; 
+
     this.ScaledTimer = this.dataTypes.scaledTimer.prototype;
     this.scaledTimer = this.dataTypes.scaledTimer;
 
@@ -4705,6 +4711,7 @@ function cTimerDataTypes()
         //will start the timer
         this.start = function start()
         {
+            if (this.interval == null) { return false; }
             this.running = true;
             this.lastTickDate = this.time();
             this.skipOffset = true;
@@ -4757,6 +4764,7 @@ function cTimerDataTypes()
         //start and store the timeout
         this.loop = function loop()
         {
+            if (this.interval == null) { return false; }
             //reset interval
             this.currentInterval = this.interval;
 
@@ -4869,6 +4877,13 @@ function cTimerDataTypes()
         return this.timerID;
     }
 
+    this.scaledTime = function scaledTime(_threshold, _interval)
+    {
+        if (_threshold == null || _interval == null) { return null; }
+        this.threshold = _threshold;
+        this.interval = _interval;
+    }
+
     //holds specific timer data with scaling time based on results
     this.scaledTimer = function scaledTimer(_callback, _startOnCreation, _timeScalers, _runTime, _enableOffset)
     {
@@ -4877,7 +4892,7 @@ function cTimerDataTypes()
 
         //store time scaling variables
         this.currentFailedCount = 0;
-        this.timeScalers = _timeScalers || [];
+        this.timeScalers = _timeScalers || [new cTimer.timeScalers(null,null)];
 
         //loop through all time scalers and find current
         //scaled time for failed count
@@ -5193,475 +5208,328 @@ window.cUtility = window.cUtility || new function cUtility()
 
 /*
 	Title:
-		cExpander
+		Custom Fading functions
 	
 	Description:
-        Handle size expandable functions to
-        resize DOM objects to remove scrollers
+		Attempt at making a fading image slideshow
 */
 
-window.cExpander = window.cExpander || new function customExpander()
+
+window.cFader = window.cFader || new function customFader()
 {
+   //====VARIABLES====//
+    this.allFaderData = [];
+    this.uniqueFaderID = 10000;
+    this.uniqueFadingDataID = 1;
 
-	//====DATA TYPES====//
-	this.dataTypes = new cExpanderDataTypes();
+   //====DATA TYPES====//
+   this.dataTypes = new cFaderDataTypes();
 
-	this.ExpansionData = this.dataTypes.expansionData.prototype;
-	this.expansionData = this.dataTypes.expansionData;
+   this.FaderData = this.dataTypes.faderData.prototype;
+   this.faderData = this.dataTypes.faderData;
 
-	this.CalculatedObjectData = this.dataTypes.calculatedObjectData.prototype;
-	this.calculatedObjectData = this.dataTypes.calculatedObjectData;
-	
-	//====FUNCTIONS====//
-	this.expansion = new cExpanderFunctions();
-	this.search = new cExpanderSearchFunctions();
+   this.FadingData = this.dataTypes.fadingData.prototype;
+   this.fadingData = this.dataTypes.fadingData;
 
-	//====VARIABLES====//
-	this.allExpansionData = [];
-	this.allCalculatedObjects = [];
-	this.uniqueID = 1;
-	this.uniqueCalculatedID = 1;
-
-	//====RUN-TIME FUNCTIONS====//
-
+   //====FUNCTIONS====//
+    this.generic = new cFaderGenericFunctions();
+    this.search = new cFaderSearchFunctions();
 }
 
-function cExpanderDataTypes()
+function cFaderDataTypes () 
 {
 
-	this.expansionData = function expansionData(_objectToExpand, _scroller, _scrollerWidthOffset, _expandToJQuery, _expansionCssClass, _expansionID)
-	{
-		if (_objectToExpand == null || _scroller == null)
-		{
-			return null;
-		}
+    this.faderData = function faderData(_fadingData, _startIndex, _faderID, _startOnCreation)
+    {
+        if (_fadingData == null) { return null; }
 
-		var _this = this;
-		this.ID = _expansionID || cExpander.uniqueID;
+        this.fadingData = [];
+        this.id = _faderID || cFader.uniqueFaderID;
 
-		if (this.ID >= cExpander.uniqueID) { cExpander.uniqueID = this.ID + 1; }
-
-		this.objectToExpand = _objectToExpand;
-		this.objectToExpandDOM = this.objectToExpand;
-		this.usesElement = false;
-
-		if (typeof this.objectToExpand === "object")
-		{
-			if (typeof window.cElement != "undefined")
-			{
-				if (this.objectToExpand instanceof cElement.element)
-				{
-					this.usesElement = true;
-					this.objectToExpandDOM = cUtility.findHTMLObjects(_this.objectToExpand);
-				}
-			}
-		}
-		else
-		{
-			this.objectToExpandDOM = $(this.objectToExpand);
-		}
-
-		this.scroller = _scroller || ".scroller, .matrix-Scroller";
-		this.scrollerDOM = this.objectToExpandDOM.find(_this.scroller);
-		this.scrollerWidthOffset = _scrollerWidthOffset || 0;
-
-		if (this.objectToExpandDOM.length && this.objectToExpandDOM.length > 0)
-		{
-			this.objectToExpandDOM = this.objectToExpandDOM[0];
-		}
-
-		this.expandToJQuery = _expandToJQuery || "*";
-
-		this.expansionCssClass = _expansionCssClass || "defaultExpansion";
-		
-		$(_this.objectToExpandDOM).addClass(_this.expansionCssClass);
-		this.scrollerDOM.addClass(_this.expansionCssClass);
-		
-		this.originalHeight = -1;
-		this.heightChanged = -1;
-		this.expanded = false;
-		this.previousExpanded = false;
-
-		this.objectsMovedDOM = [];
-
-		this.checkMovedExists = function checkMovedExists(_toCheck)
+        if (this.id == cFader.uniqueFaderID)
         {
-            for (var i = 0; i < _this.objectsMovedDOM.length; i++)
+            cFader.uniqueFaderID++;
+        }
+
+        this.index = _startIndex || 0;
+        this.isFading = false;
+        var _this = this;
+        
+        this.updateFadedCallback = function updateFadedCallback()
+        {
+            var _ret = false;
+            var _previousIndex = _this.index;
+
+            _this.fadingData[_this.index].toggleObject(false);
+
+            if (_this.index++ >= _this.fadingData.length - 1)
             {
-                if (_this.objectsMovedDOM[i] == _toCheck)
+                _this.index = 0;
+                _ret = true;
+            }
+
+            _this.fadingData[_this.index].toggleObject(true);
+            return _ret;
+        }
+
+        this.calculateScaledTimerTime = function calculateScaledTimerTime()
+        {
+            var _ret = [];
+            for (var l = 0; l < this.fadingData.length; l++)
+            {
+                _ret.push(new cTimer.scaledTime(l, this.fadingData[l].timeActive));
+            }
+            return _ret;
+        }
+
+        this.updateTimerTimes = function updateTimerTimes()
+        {
+            if (this.faderTimer == null) { return null; }
+            this.faderTimer.scaledTime = this.calculateScaledTimerTime();
+        }
+
+        this.toggleFading = function toggleFading(_toggle)
+        {
+            if (_toggle)
+            {
+                this.isFading = true;
+                this.faderTimer.start();
+            }
+            else
+            {
+                this.isFading = false;
+                this.faderTimer.stop();
+            }
+        }
+
+        this.addFadingData = function addFadingData(_fadingData)
+        {
+            if (_fadingData instanceof Array)
+            {
+                for (var l = 0; l < _fadingData.length; l++)
                 {
-                    return true;
+                    this.addFadingData(_fadingData[l]);
+                }
+                this.updateTimerTimes();
+                return true;
+            }
+            else if (_fadingData instanceof cFader.fadingData)
+            {
+                _fadingData.faderDataParent = _this;
+                this.fadingData.push(_fadingData);
+                this.updateTimerTimes();
+                return true;
+            }
+            
+            return false;
+        }
+
+        this.findFadingIndexFromObject = function findFadingIndexFromObject(_object)
+        {
+            for (var l = 0; l < _this.fadingData.length; l++)
+            {
+                if (_this.fadingData[l].objectToFade == _object)
+                {
+                    return l;
                 }
             }
-		}
 
-		this.resetMoved = function resetMoved()
-		{
-			while(_this.objectsMovedDOM.length > 0)
-			{
-				var _styleData = new cCss.styleSheetModificationData("transform", "translateY", true, 1, null, 0, true);
-				var _objectStyleID = cExpander.search.returnCalculatedObjectDataFromObject(_this.objectsMovedDOM[0], cExpander.uniqueCalculatedID);
-				var _selector = cCss.styleSheet.translateCssSelector(".ExpansionMoved" + _objectStyleID.ID, "MainExpansionStyles");
-				var _currentTransform = cCss.styleSheet.getCssStyle(_selector.style, _styleData, 2);
+            return -1;
+        }
 
-				_styleData.value = (_currentTransform.values.length > 0) ? parseInt(_currentTransform.values[0].replace(/\(|\)/gi, ""), 10) - _this.heightChanged : 0;
-				_styleData.value += "px";
-
-				cCss.styleSheet.replaceCssStyle("MainExpansionStyles", ".ExpansionMoved" + _objectStyleID.ID, _styleData);
-
-				_this.objectsMovedDOM.shift();
-			}
-		}
-	}
-
-	this.calculatedObjectData = function calculatedObjectData(_object, _id)
-	{
-		if (_object == null) { return null; }
-		this.object = _object;
-		this.ID = _id || cExpander.uniqueCalculatedID;
-
-		if (this.ID >= cExpander.uniqueCalculatedID) { cExpander.uniqueCalculatedID = this.ID + 1; }
-	}
-
-}
-
-function cExpanderSearchFunctions()
-{
-	this.returnExpansionDataFromObject = function returnExpansionData(_objectToExpand, _expansionCreationData)
-	{
-		for (var l = 0; l < cExpander.allExpansionData.length; l++)
-		{
-			if (cExpander.allExpansionData[l].objectToExpand == _objectToExpand ||
-				cExpander.allExpansionData[l].objectToExpandDOM == _objectToExpand)
-			{
-				return cExpander.allExpansionData[l];
-			}
-		}
-		
-		if (_expansionCreationData != null)
-		{
-			return cExpander.expansion.createExpansionData(_expansionCreationData);
-		}
-
-		return null;
-	}
-
-	this.returnExpansionDataFromID = function returnExpansionDataFromID(_id, _expansionCreationData)
-	{
-		for (var l = 0; l < cExpander.allExpansionData.length; l++)
-		{
-			if (cExpander.allExpansionData[l].id == _id) { return cExpander.allCalculatedObjects[l]; }
-		}
-		
-		if (_expansionCreationData != null)
-		{
-			return cExpander.expansion.createExpansionData(_expansionCreationData);
-		}
-
-		return null;
-	}
-
-	this.returnCalculatedObjectDataFromObject = function returnCalculatedObjectDataFromObject(_object, _createOnFailID)
-	{
-		for (var l = 0; l < cExpander.allCalculatedObjects.length; l++)
-		{
-			if (cExpander.allCalculatedObjects[l].object == _object) { return cExpander.allCalculatedObjects[l]; }
-		}
-
-		if (_createOnFailID)
-		{
-			return cExpander.expansion.createCalculatedData(_object, _createOnFailID);
-		}
-
-		return null;
-	}
-
-	this.returnCalculatedObjectDataFromID = function returnCalculatedObjectDataFromID(_id, _createOnFailObject)
-	{
-		for (var l = 0; l < cExpander.allCalculatedObjects.length; l++)
-		{
-			if (cExpander.allCalculatedObjects[l].ID == _id) { return cExpander.allCalculatedObjects[l]; }
-		}
-
-		if (_createOnFailObject)
-		{
-			return cExpander.expansion.createCalculatedData(_createOnFailObject, _id);
-		}
-		
-		return null;
-	}
-}
-
-function cExpanderFunctions()
-{
-
-	this.createExpansionData = function createExpansionData(_expansionCreationData)
-	{
-		var _expansionData = new cExpander.expansionData(
-										_expansionCreationData._objectToExpand
-										, _expansionCreationData._scroller
-										, _expansionCreationData._scrollerWidthOffset
-										, _expansionCreationData._expandToJQuery
-										, _expansionCreationData._expansionCssClass
-										, _expansionCreationData._id);
-
-		cExpander.allExpansionData.push(_expansionData);
-		return _expansionData;
-	}
-
-	this.createCalculatedData = function createCalculatedData(_object, _id)
-	{
-		var _calculatedData = new cExpander.calculatedObjectData(_object, _id);
-		cExpander.allCalculatedObjects.push(_calculatedData);
-		return _calculatedData;
-	}
-
-	this.toggleExpansionID = function toggleExpansionID(_id, _expanded)
-	{
-		return cExpander.expansion.toggleExpansion(cExpander.search.returnExpansionDataFromID(_id), _expanded);
-	}
-
-	this.toggleExpansionObject = function toggleExpansion(_object, _expanded)
-	{
-		return cExpander.expansion.toggleExpansion(cExpander.search.returnExpansionDataFromObject(_object), _expanded);
-	}
-
-	this.toggleExpansion = function toggleExpansion(_expansionData, _expanded)
-	{
-		if (_expansionData == null) { return false; }
-
-		_expansionData.previousExpanded = _expansionData.expanded;
-
-		if (_expanded)
-		{
-			_expansionData.expanded = _expanded;
-		}
-		else
-		{
-			_expansionData.expanded = !_expansionData.expanded;
-		}
-
-		cExpander.expansion.updateExpansion(_expansionData);
-		return true;
-	}
-
-	this.updateExpansion = function updateExpansion(_expansionData)
-	{
-		if (_expansionData.expanded)
-		{
-			//get total size of all items inside the inline form
-			var totalSize = cMaths.Bounds.fromObject(_expansionData.objectToExpandDOM
-											, document, _expansionData.expandToJQuery).size.y;
-
-			if (_expansionData.previousExpanded == false)
-			{
-				totalSize += _expansionData.scrollerWidthOffset;
-			}
-
-			if (_expansionData.previousExpanded != _expansionData.expanded)
-			{
-				_expansionData.originalHeight = cMaths.Bounds.fromObject(_expansionData.scrollerDOM[0], document, null).size.y;
-				_expansionData.heightChanged = totalSize - _expansionData.originalHeight;
-			}
-
-			//set height to be total size
-			var _styleData = new cCss.styleSheetModificationData("height", null, false, 0, totalSize + "px", -1, true);
-			cCss.styleSheet.replaceCssStyle("MainExpansionStyles", "." + _expansionData.expansionCssClass, _styleData);
-
-			//move all other html that might've been affected
-			cExpander.expansion.moveHTMLToNotOverlap(_expansionData)
-
-		}
-		else
-		{
-			if (_expansionData.originalHeight != -1)
-			{
-				var _styleData = new cCss.styleSheetModificationData("height", null, false, 0, _expansionData.originalHeight + "px", -1, true);
-				cCss.styleSheet.replaceCssStyle("MainExpansionStyles", "." + _expansionData.expansionCssClass, _styleData);	
-
-            	//move all other html that might've been affected
-            	_expansionData.resetMoved();
-			}
-		}
-
-		if (cPageResizer != null)
-		{
-			cPageResizer.resizePage();
-		}
-	}
-
-	this.moveHTMLToNotOverlap = function moveHTMLToNotOverlap(_expansionData, _object, _allElements)
-	{
-		var _objectBounds = cMaths.Bounds.fromObject(_object, document);
-
-		if (!_allElements)
-		{
-			var _allElements = [];
-			_expansionData.moved = [];
-			_objectBounds = cMaths.Bounds.fromObject(_expansionData.objectToExpandDOM, document);
-
-			var _objToIgnore = [$("img[usemap='#ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']"[0]),
-								$("map[name='ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']"[0]),
-								$("[id=ctl00_ContentPlaceHolder1_InteractiveModel1_shadow]")[0],
-								_expansionData.objectToExpandDOM]
-
-			var _allElements = $(".InteractiveModel").children().filter(function() {
-
-				if (_objToIgnore.includes(this)) { return false; }
-
-				if ($(this).is("div"))
-				{
-					var _bounds = cMaths.Bounds.fromObject(this, document);
-
-					if (_bounds.y2 > _objectBounds.y1)
-					{
-						return true;
-					}
-				}
-
-				return false;
-
-			}).toArray();
-		}
-
-		var _allWithin = null;
-		var _lastLowest = null;
-		var _completeBounds = _objectBounds.clone();
-
-		do {
-			_lastLowest = _allWithin == null ? null : _allWithin.length > 0 ? _allWithin[0].object : null;
-			_allWithin = cMaths.collision.returnObjectsIntersectArea(_completeBounds, _allElements).sort(function(a, b) {
-				return (a.y2 > b.y2);
-			});
-
-			if (_allWithin.length > 0)
-			{
-				_completeBounds.y2 = _allWithin[0].y2;
-				_completeBounds.updateExtras();
-			}
-		} while (_allWithin.length != 0 && _allWithin[0].object != _lastLowest)
-
-		for (var i = 0; i < _allWithin.length; i++)
-		{
-			if (!(_expansionData.checkMovedExists(_allWithin[i]._object)))
-			{
-				
-                var _styleData = new cCss.styleSheetModificationData("transform", "translateY", true, 1, null, 0, true);
-				var _objectStyleID = cExpander.search.returnCalculatedObjectDataFromObject(_allWithin[i]._object, cExpander.uniqueCalculatedID);
-				var _selector = cCss.styleSheet.translateCssSelector(".ExpansionMoved" + _objectStyleID.ID, "MainExpansionStyles");
-				
-				var _currentTransform = cCss.styleSheet.getCssStyle(_selector.style, _styleData, 2);
-				
-				_styleData.value = (_currentTransform.values.length > 0) ? parseInt(_currentTransform.values[0].replace(/\(|\)/gi, ""), 10) + _expansionData.heightChanged : _expansionData.heightChanged;
-				_styleData.value += "px";
-				
-				cCss.styleSheet.replaceCssStyle("MainExpansionStyles", ".ExpansionMoved" + _objectStyleID.ID, _styleData);
-
-                _expansionData.objectsMovedDOM.push(_allWithin[i]._object);
-                $(_allWithin[i]._object).addClass("ExpansionMoved" + _objectStyleID.ID);
-			}
-		}
-		
-	}
-
-}
-
-/*
-	Title:
-		Resize Model Masters
-	
-	Description:
-		script for auto-resizing model based on lowest elements or page marker
-*/
-
-window.cPageResizer = window.cPageResizer || new function customPageResizer()
-{
-    this.resizePage = function resizePage()
-    {
-        //find the lowest object or marker if placed
-        //higher = lower due to Y starting from top of the page
-        var lowest = cPageResizer.findLowestPoint();
-        
-        //store offsets for page end and screen end
-        var lowestOffset = 32;
-        var endOfPageOffset = 32;
-    
-        //This is just an extra 32px on the
-        //bottom of the screen so it doesn't feel too close
-        lowest += lowestOffset; 
-    
-        //this next part sets the two html parents of the page to hide the overflow(bit after max height)
-        //and to set the height of the entire page 
-        $("#ctl00_ContentPlaceHolder1_Container").addClass("modelMasterResizer");
-        $("#ctl00_ContentPlaceHolder1_InteractiveModel1").addClass("modelMasterResizer");
-        $("[id=ctl00_ContentPlaceHolder1_InteractiveModel1_shadow]").addClass("modelMasterResizer");
-    
-        $("#ctl00_ContentPlaceHolder1_Container").css("overflow","hidden").css("height",lowest + endOfPageOffset +"px");
-        $("#ctl00_ContentPlaceHolder1_InteractiveModel1").css("overflow","hidden").css("height",lowest+"px");
-        $("[id=ctl00_ContentPlaceHolder1_InteractiveModel1_shadow]").css("top",(lowest - 8)+"px");
-    
-        //force browser to be within page view
-        if (window.scrollY > lowest)
+        this.destroy = function destroy()
         {
-            window.moveTo(window.scrollX, lowest);
+            this.faderTimer.destroy();
+            var index = cFader.search.findFaderDataIndexFromID(this.id);
+            cFader.allFaderData.splice(index, 1);
+        }
+
+        this.addFadingData(_fadingData);
+        this.faderTimer = new cTimer.scaledTimer(new cTimer.callback(this.updateFadedCallback), false, this.calculateScaledTimerTime(), null, true);
+
+        if (_startOnCreation)
+        {
+            this.toggleFading(true);
+        }
+
+    }
+
+    this.fadingData = function fadingData(_objectToFade, _timeToFade)
+    {
+        if (_objectToFade == null) { return null; }
+        this.objectToFade = _objectToFade;
+        this.timeActive = _timeToFade[0]
+        this.timeToFadeIn = _timeToFade[1];
+        this.timeToFadeOut = _timeToFade[2];
+        this.id = cFader.uniqueFadingDataID++;
+        this.faderDataParent = null;
+
+        this.toggleObject = function toggleObject(_toggle)
+        {
+            if (_toggle)
+            {
+                this.enableObject();
+            }
+            else
+            {
+                this.disableObject();
+            }
+        }
+
+        this.enableObject = function enableObject()
+        {
+            if (this.faderDataParent == null) { return null; }
+
+            this.modifyTransformOpacity(this.timeToFadeIn);
+            this.modifyOpacity(1);
+            
+            $(this.objectToFade).addClass("Fader" + this.faderDataParent.id + "Transition" + this.id);
+        }
+
+        this.disableObject = function disableObject()
+        {
+            if (this.faderDataParent == null) { return null; }
+
+            this.modifyTransformOpacity(this.timeToFadeOut);
+            this.modifyOpacity(0);
+
+            $(this.objectToFade).addClass("Fader" + this.faderDataParent.id + "Transition" + this.id);
+        }
+
+        this.disableOnStart = function disableOnStart()
+        {
+            if (this.faderDataParent == null) { return null; }
+            this.modifyOpacity(0);
+
+            $(this.objectToFade).addClass("Fader" + this.faderDataParent.id + "Transition" + this.id);
+       }
+
+        this.modifyOpacity = function modifyOpacity(_opacity)
+        {
+            var _styleData = new cCss.styleSheetModificationData("opacity", null, false, -1, _opacity, -1, false);
+            cCss.styleSheet.replaceCssStyle("MainFaderStyles", ".Fader" + this.faderDataParent.id + "Transition" + this.id, _styleData);
+        }
+
+        this.modifyTransformOpacity = function modifyTransformOpacity(_time)
+        {
+            var _styleData = new cCss.styleSheetModificationData("transition", "opacity", true, 2, _time, -1, false);
+            cCss.styleSheet.replaceCssStyle("MainFaderStyles", ".Fader" + this.faderDataParent.id + "Transition" + this.id, _styleData);
+
         }
     }
 
-    //find the lowest position on the page
-    this.findLowestPoint = function findLowestPoint()
-    {
-        //check if a marker exists on the page
-        var marker = $(".mood-node-name-page-marker");
+}
 
-        marker.sort(function(a, b) {
-            var _heightA = cMaths.Bounds.fromObject(a, document);
-            var _heightB = cMaths.Bounds.fromObject(b, document);
-            return _heightA.y2 < _heightB.y2;
-        })
-        
-        //if marker exists go to manual resizing
-        if (marker.length > 0) 
+
+
+function cFaderGenericFunctions()
+{
+    this.toggleFaderID = function toggleFader(_id, _toggle)
+    {
+        var _fader = cFader.search.findFaderDataFromID(_id);
+
+        if (_fader)
         {
-            return cMaths.Bounds.fromObject(marker[0], document).y2;
+            _fader.toggleFader(_toggle);
+            return true;
         }
-        
-        //else calculate the lowest point
-        return cPageResizer.findLowestHTMLObject();
+
+        return false;
     }
 
-    //calculate the lowest positioned object in HTML
-    this.findLowestHTMLObject = function findLowestHTMLObject()
+    this.toggleFaderObject = function toggleFaderObject(_object, _toggle)
     {
-        var _lowest = 0;
-
-        var _objToIgnore = [$("img[usemap='#ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']")[0],
-								$("map[name='ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']")[0],
-								$("[id=ctl00_ContentPlaceHolder1_InteractiveModel1_shadow]")[0]]
+        var _fader = cFader.search.findFaderDataFromObject(_object);
         
-        //loop through all the main element html in page (the containers for each element)
-        $("[id=ctl00_ContentPlaceHolder1_InteractiveModel1]").children().each(function() {
+        if (_fader)
+        {
+            _fader.toggleFader(_toggle);
+            return true;
+        }
 
-            if (_objToIgnore.includes(this)) { return; }
+        return false;
+    }
 
-            if ($(this).is("div"))
-			{
-                var _currentBounds = cMaths.Bounds.fromObject(this, document);
-                var _currentHeight = _currentBounds.y2;
+    this.createFader = function createFader(_fadingData, _startIndex, _faderID, _startOnCreation)
+    {
+        var _faderData = new cFader.faderData(_fadingData, _startIndex, _faderID, _startOnCreation);
+        cFader.allFaderData.push(_faderData);
+    }
 
-                //check if the currentHeight is a valid value
-                if (_currentHeight)
-                {
-                    //check currentHeight is greater than the
-                    //lowest point(top to bottom so technically lower)
-                    if (_currentHeight > _lowest)
-                    {
-                        //set new lowest to be currentHeight
-                        _lowest = _currentHeight;
-                    }
-                }
+    this.destroyFaderID = function destroyFaderID(_id)
+    {
+        var _fader = cFader.search.findFaderDataFromID(_id);
+
+        if (_fader)
+        {
+            _fader.destroy();
+            return true;
+        }
+
+        return false;
+    }
+
+    this.destroyFaderObject = function destroyFaderObject(_object)
+    {
+        var _fader = cFader.search.findFaderDataFromObject(_object);
+        
+        if (_fader)
+        {
+            _fader.destroy();
+            return true;
+        }
+
+        return false;
+    }
+}
+
+function cFaderSearchFunctions() 
+{
+    this.findFaderDataFromObject = function findFaderDataFromObject(_object)
+    {
+        var _faderIndex = cFader.search.findFaderDataIndexFromObject(_object);
+        if (_faderIndex != -1)
+        {
+            return cFader.allFaderData[_faderIndex];
+        }
+
+        return null;
+    }
+
+    this.findFaderDataIndexFromObject = function findFaderDataIndexFromObject(_object)
+    {
+        for (var l = 0; l < cFader.allFaderData.length; l++)
+        {
+            if (cFader.allFaderData[l].findFadingIndexFromObject(_object) != -1)
+            {
+                return l;
             }
-        });  
-        
-        return _lowest;
+        }
+
+        return -1;
+    }
+
+    this.findFaderDataFromID = function findFaderDataFromID(_faderID)
+    {
+        var _faderIndex = cFader.search.findFaderDataIndexFromID(_faderID);
+        if (_faderIndex != -1)
+        {
+            return cFader.allFaderData[_faderIndex];
+        }
+
+        return null;
+    }
+    
+    this.findFaderDataIndexFromID = function findFaderDataIndexFromID(_faderID)
+    {
+        for (var l = 0; l < cFader.allFaderData.length; l++)
+        {
+            if (cFader.allFaderData[l].id == _faderID)
+            {
+                return l;
+            }
+        }
+
+        return -1;
     }
 }

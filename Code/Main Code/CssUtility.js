@@ -59,7 +59,7 @@ function cCssDataTypes()
 
 		//0 = none, 1 = brackets, 2 = commas
 		this.splitType = _splitType || 0;
-		this.value = _value || "";
+		this.value = _value == null ? "" : _value;
 		this.importance = _importance || false;
 		this.propertyIndex = _propertyIndex !== null ? _propertyIndex : -1;
 	}

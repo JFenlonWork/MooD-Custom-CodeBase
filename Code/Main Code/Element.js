@@ -589,22 +589,25 @@ function cElementModifyFunctions()
             }
             
             //class scroll seems to be the object itself vs the surrounding div
-            var scroller = $(htmlObject).children(".scroller");
+            var _scroller = $(htmlObject).children(".scroller");
             
-            var scrollOffset = null;
-            var scrollOffsetX = 0;
-            var scrollOffsetY = 0;
+            var _scrollOffset = null;
+            var _scrollOffsetX = 0;
+            var _scrollOffsetY = 0;
             
-            if (scroller.length > 0)
+            if (_scroller.length > 0)
             {
-                var scrollOffset = scroller[0].style;
-                var scrollOffsetX = scrollOffset.left.replace('px', '');
-                var scrollOffsetY = scrollOffset.top.replace('px', '');
+                var _scrollOffset = _scroller[0].style;
+                var _scrollOffsetX = parseInt(_scrollOffset.left, 10);
+                var _scrollOffsetY = parseInt(_scrollOffset.top, 10);
             }
+
+            //var _styleData = new cCss.styleSheetModificationData("left", null, false, null, , -1, true);
+            //cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _ID, _styleData);
             
             //set position and force align start to left of page
-            htmlOverlayPanel.style.left = (_posX - parseInt(scrollOffsetX)) + "px";
-            htmlOverlayPanel.style.top = (_posY - parseInt(scrollOffsetY)) + "px";
+            htmlOverlayPanel.style.left = (_posX - parseInt(_scrollOffsetX)) + "px";
+            htmlOverlayPanel.style.top = (_posY - parseInt(_scrollOffsetY)) + "px";
         }
     }
 

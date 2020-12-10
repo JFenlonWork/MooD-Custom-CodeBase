@@ -83,6 +83,7 @@ function cTimerDataTypes()
         //will start the timer
         this.start = function start()
         {
+            if (this.interval == null) { return false; }
             this.running = true;
             this.lastTickDate = this.time();
             this.skipOffset = true;
@@ -135,6 +136,7 @@ function cTimerDataTypes()
         //start and store the timeout
         this.loop = function loop()
         {
+            if (this.interval == null) { return false; }
             //reset interval
             this.currentInterval = this.interval;
 
@@ -249,7 +251,7 @@ function cTimerDataTypes()
 
     this.scaledTime = function scaledTime(_threshold, _interval)
     {
-        if (_threshold == null || _time == null) { return null; }
+        if (_threshold == null || _interval == null) { return null; }
         this.threshold = _threshold;
         this.interval = _interval;
     }
@@ -262,7 +264,7 @@ function cTimerDataTypes()
 
         //store time scaling variables
         this.currentFailedCount = 0;
-        this.timeScalers = _timeScalers || [];
+        this.timeScalers = _timeScalers || [new cTimer.timeScalers(null,null)];
 
         //loop through all time scalers and find current
         //scaled time for failed count
