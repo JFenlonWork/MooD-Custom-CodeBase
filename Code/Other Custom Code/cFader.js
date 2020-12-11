@@ -146,13 +146,13 @@ function cFaderDataTypes ()
 
     }
 
-    this.fadingData = function fadingData(_objectToFade, _timeToFade)
+    this.fadingData = function fadingData(_objectToFade, _timeActive, _cssFadeIn, _cssFadeOut)
     {
         if (_objectToFade == null) { return null; }
         this.objectToFade = _objectToFade;
-        this.timeActive = _timeToFade[0]
-        this.timeToFadeIn = _timeToFade[1];
-        this.timeToFadeOut = _timeToFade[2];
+        this.timeActive = _timeActive;
+        this.cssFadeIn = _cssFadeIn;
+        this.cssFadeOut = _cssFadeOut;
         this.id = cFader.uniqueFadingDataID++;
         this.faderDataParent = null;
 
@@ -170,44 +170,31 @@ function cFaderDataTypes ()
 
         this.enableObject = function enableObject()
         {
-            if (this.faderDataParent == null) { return null; }
-
-            this.modifyTransformOpacity(this.timeToFadeIn);
-            this.modifyOpacity(1);
-            
-            $(this.objectToFade).addClass("Fader" + this.faderDataParent.id + "Transition" + this.id);
+            this.applyClass(this.cssFadeIn);
         }
 
         this.disableObject = function disableObject()
         {
-            if (this.faderDataParent == null) { return null; }
-
-            this.modifyTransformOpacity(this.timeToFadeOut);
-            this.modifyOpacity(0);
-
-            $(this.objectToFade).addClass("Fader" + this.faderDataParent.id + "Transition" + this.id);
+            this.applyClass(this.cssFadeOut);
         }
 
         this.disableOnStart = function disableOnStart()
         {
             if (this.faderDataParent == null) { return null; }
-            this.modifyOpacity(0);
 
-            $(this.objectToFade).addClass("Fader" + this.faderDataParent.id + "Transition" + this.id);
+            var _styleData = new cCss.styleSheetModificationData("opacity", null, false, -1, 0, -1, false);
+            cCss.styleSheet.replaceCssStyle("MainFaderStyles", ".Fader" + this.faderDataParent.id + "Startup" + this.id, _styleData);
+
+            _styleData = new cCss.styleSheetModificationData("transition", "opacity", true, 2, 0, -1, false);
+            cCss.styleSheet.replaceCssStyle("MainFaderStyles", ".Fader" + this.faderDataParent.id + "Startup" + this.id, _styleData);
+
+            $(this.objectToFade).addClass("Fader" + this.faderDataParent.id + "Startup" + this.id);
        }
 
-        this.modifyOpacity = function modifyOpacity(_opacity)
-        {
-            var _styleData = new cCss.styleSheetModificationData("opacity", null, false, -1, _opacity, -1, false);
-            cCss.styleSheet.replaceCssStyle("MainFaderStyles", ".Fader" + this.faderDataParent.id + "Transition" + this.id, _styleData);
-        }
-
-        this.modifyTransformOpacity = function modifyTransformOpacity(_time)
-        {
-            var _styleData = new cCss.styleSheetModificationData("transition", "opacity", true, 2, _time, -1, false);
-            cCss.styleSheet.replaceCssStyle("MainFaderStyles", ".Fader" + this.faderDataParent.id + "Transition" + this.id, _styleData);
-
-        }
+       this.applyClass = function applyClass(_class)
+       {
+           if (_class != null) { $(this.objectToFade).addClass(_class); }
+       }
     }
 
 }
