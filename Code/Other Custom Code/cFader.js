@@ -50,7 +50,6 @@ function cFaderDataTypes ()
         this.updateFadedCallback = function updateFadedCallback()
         {
             var _ret = false;
-            var _previousIndex = _this.index;
 
             _this.fadingData[_this.index].toggleObject(false);
 
@@ -137,7 +136,7 @@ function cFaderDataTypes ()
         }
 
         this.addFadingData(_fadingData);
-        this.faderTimer = new cTimer.scaledTimer(new cTimer.callback(this.updateFadedCallback), false, this.calculateScaledTimerTime(), null, true);
+        this.faderTimer = new cTimer.scaledTimer("FaderTimer" + this.id, new cTimer.callback(this.updateFadedCallback), false, this.calculateScaledTimerTime(), null, true);
 
         if (_startOnCreation)
         {
@@ -146,13 +145,14 @@ function cFaderDataTypes ()
 
     }
 
-    this.fadingData = function fadingData(_objectToFade, _timeActive, _cssFadeIn, _cssFadeOut)
+    this.fadingData = function fadingData(_objectToFade, _timeActive, _cssFadeIn, _cssFadeOut, _cssStart)
     {
         if (_objectToFade == null) { return null; }
         this.objectToFade = _objectToFade;
         this.timeActive = _timeActive;
         this.cssFadeIn = _cssFadeIn;
         this.cssFadeOut = _cssFadeOut;
+        this.cssStart = _cssStart;
         this.id = cFader.uniqueFadingDataID++;
         this.faderDataParent = null;
 
@@ -170,11 +170,15 @@ function cFaderDataTypes ()
 
         this.enableObject = function enableObject()
         {
+            this.removeClass(this.cssFadeOut);
+            this.removeClass(this.cssStart);
             this.applyClass(this.cssFadeIn);
         }
 
         this.disableObject = function disableObject()
         {
+            this.removeClass(this.cssFadeIn);
+            this.removeClass(this.cssStart);
             this.applyClass(this.cssFadeOut);
         }
 
@@ -189,12 +193,33 @@ function cFaderDataTypes ()
             cCss.styleSheet.replaceCssStyle("MainFaderStyles", ".Fader" + this.faderDataParent.id + "Startup" + this.id, _styleData);
 
             $(this.objectToFade).addClass("Fader" + this.faderDataParent.id + "Startup" + this.id);
-       }
+        }
 
-       this.applyClass = function applyClass(_class)
-       {
-           if (_class != null) { $(this.objectToFade).addClass(_class); }
-       }
+        this.applyClass = function applyClass(_class)
+        {
+            if (_class != null && this.objectToFade != null) { $(this.objectToFade).addClass(_class); }
+        }
+
+        this.removeClass = function removeClass(_class)
+        {
+            if (_class != null && this.objectToFade != null) { $(this.objectToFade).removeClass(_class); }
+        }
+
+        this.clearElementClass = function clearElementClass()
+        {
+            if (this.objectToFade != null)
+            {
+                if (typeof window.cElement != "undefined")
+                {
+                    //var _elementData = cElement.search.findEleme
+                }
+            }
+        }
+
+        if (this.cssStart)
+        {
+            this.applyClass(this.cssStart);
+        }
     }
 
 }

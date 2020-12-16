@@ -134,10 +134,10 @@ function cButtonSetupFunctions()
 	this.createButton = function createButton(_buttonData)
 	{
 		//create or find element for button
-		var elementGenerated = cElement.generic.addElement(_buttonData.name, "", "mood-button", _buttonData.id);
+		var _elementGenerated = cElement.generic.addElement(_buttonData.buttonObject, _buttonData.isMoodObject, _buttonData.buttonParentObject, _buttonData.id);
 	
 		//find html data for button
-		var moodButton = cUtility.findHTMLObjects(elementGenerated)[0];
+		var moodButton = _elementGenerated.elementObject;
 		var buttonGenerated = null;
 	
 		//if no element supplied with button
@@ -145,8 +145,8 @@ function cButtonSetupFunctions()
 		if (moodButton == null)
 		{
 			//add and/or get button 
-			buttonGenerated = cButton.generic.addButton(elementGenerated.ID, elementGenerated.ID, 
-								elementGenerated.ID, _buttonData.elementsToEnable, 
+			buttonGenerated = cButton.generic.addButton(_elementGenerated.ID, _elementGenerated.ID, 
+								_elementGenerated.ID, _buttonData.elementsToEnable, 
 								_buttonData.elementsToDisable, _buttonData.enabledOnDefault, 
 								_buttonData.canDisableSelf, _buttonData.id);
 		}
@@ -154,7 +154,7 @@ function cButtonSetupFunctions()
 		{
 			//add and/or get button 
 			buttonGenerated = cButton.generic.addButton(moodButton.id, moodButton.id, 
-									elementGenerated.ID, _buttonData.elementsToEnable, 
+									_elementGenerated.ID, _buttonData.elementsToEnable, 
 									_buttonData.elementsToDisable, _buttonData.enabledOnDefault, 
 									_buttonData.canDisableSelf, _buttonData.id);
 		}
@@ -847,7 +847,7 @@ function cButtonModifyFunctions()
 		_button.buttonEnabled = _enabled;
 
 		//find button assosciated with _button
-		var buttons = cUtility.findHTMLObjects(cElement.search.getElementID(_button.buttonElementID));
+		var buttons = cElement.search.getElementID(_button.buttonElementID).elementObject;
 		
 		//check if tab button exists
 		if (buttons)

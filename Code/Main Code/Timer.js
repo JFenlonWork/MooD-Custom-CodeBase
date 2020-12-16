@@ -46,9 +46,10 @@ function cTimerDataTypes()
     }
 
     //holds specific timer data for individual timers
-    this.timer = function timer(_callback, _timing, _startOnCreation, _runTime, _enableOffset)
+    this.timer = function timer(_name, _callback, _timing, _startOnCreation, _runTime, _enableOffset)
     {
         //store basic variables for timer
+        this.name = _name;
         this.running = _startOnCreation || false;
         this.pausedAt = 0;
         this.lastCompletion = 0;
@@ -97,6 +98,7 @@ function cTimerDataTypes()
             this.running = false;
             this.pausedAt = 0;
             window.clearTimeout(this.timeout);
+            this.timeout = null;
         }
 
         //will stop and then start
@@ -234,6 +236,7 @@ function cTimerDataTypes()
             this.stop();
             var index = cTimer.generic.findTimerIndexByID(this.timerID);
             cTimer.timers.splice(index, 1);
+            delete this;
         }
 
         //add current timer to list of timers
@@ -257,7 +260,7 @@ function cTimerDataTypes()
     }
 
     //holds specific timer data with scaling time based on results
-    this.scaledTimer = function scaledTimer(_callback, _startOnCreation, _timeScalers, _runTime, _enableOffset)
+    this.scaledTimer = function scaledTimer(_name, _callback, _startOnCreation, _timeScalers, _runTime, _enableOffset)
     {
         //setup timer for current scaled timer
         this.scaledCallBack = _callback;
@@ -336,13 +339,13 @@ function cTimerDataTypes()
         }
 
         //create timer with the callback of "waitForTimer"
-        cTimer.timer.call(this, new cTimer.callback(this.waitForTimer),
+        cTimer.timer.call(this, _name, new cTimer.callback(this.waitForTimer),
                         _timeScalers[0].interval, _startOnCreation, 
                         _runTime, _enableOffset);
     }
 
     //holds specific real-time timer data (10ms fastest realtime due to ancient browser stuff)
-    this.realtimeTimer = function realtimeTimer(_callback, _startOnCreation, _runTime, _destroyOnStop)
+    this.realtimeTimer = function realtimeTimer(_name, _callback, _startOnCreation, _runTime, _destroyOnStop)
     {
         //setup timer for current scaled timer
         this.realtimeCallback = _callback;
@@ -369,13 +372,22 @@ function cTimerDataTypes()
         }
 
         //create a 10ms timer with the callback "waitForTimer"
-        cTimer.timer.call(this, new cTimer.callback(this.waitForTimer), 
+        cTimer.timer.call(this, _name, new cTimer.callback(this.waitForTimer), 
             10, _startOnCreation, _runTime, true);
     }
 }
 
 function cTimerFunctions()
 {
+    this.findTimerByName = function findTimerByName(_name)
+    {
+        var _ret = null;
+        cTimer.timers.forEach(function(_timer, _index, _arr) {
+            if (_timer.name == _name) { return _ret = _arr[_index]; }
+        });
+        return _ret;
+    }
+
     //return the timer with _id
     this.findTimerByID = function findTimerByID(_id)
     {
@@ -391,19 +403,11 @@ function cTimerFunctions()
 
     this.findTimerIndexByID = function findTimerIndexByID(_id)
     {
-        //loop through all timer in cTimer
-        for (var t = 0; t < cTimer.timers.length; t++)
-        {
-            //check if the timerID is _id
-            if (cTimer.timers[t].timerID == _id)
-            {
-                //return the timer if it is
-                return t;
-            }
-        }
-
-        //return null to show it doesn't exist
-        return null;
+        var _ret = null;
+        cTimer.timers.forEach(function(_timer, _index, _arr) {
+            if (_timer.timerID == _id) { return _ret = _arr[_index]; }
+        });
+        return _ret;
     }
 
     //run timer function

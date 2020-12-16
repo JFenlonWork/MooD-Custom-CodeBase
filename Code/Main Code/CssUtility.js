@@ -770,8 +770,19 @@ function customCssstyleSheetFunctions()
 
 			if (_styleData.propertyIndex === -1)
 			{
-				//replace entire property value
-				_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleData.value;
+				if (_styleData.splitType === 1)
+				{
+					_style[_styleData.property] = _styleParsedData.returnTypeNewCss + " " + _styleData.cssTextProperty + "(" + _styleData.value + ")";
+				}
+				else if (_styleData.splitType === 2)
+				{
+					_style[_styleData.property] = _styleParsedData.returnTypeNewCss + (_styleParsedData.returnTypeNewCss == "" ? "" : ", ") + _styleData.cssTextProperty + " " + _styleData.value;
+				}
+				else
+				{
+					//replace entire property value
+					_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleData.value;
+				}
 			}
 			else if (_styleParsedData.returnTypeIndex !== -1)
 			{

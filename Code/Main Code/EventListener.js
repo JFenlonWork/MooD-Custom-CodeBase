@@ -286,8 +286,8 @@ function cEventListenerGenericFunctions()
             {
                 //setup scaled timer
                 cEventListener.listenerRegistrationQueueTimer 
-                = new cTimer.scaledTimer( new cTimer.callback(
-                                            function() {return cEventListener.queue.registerListenersInQueue()} ), true, 
+                = new cTimer.scaledTimer( "EventListenerRegistrationQueueTimer", new cTimer.callback(
+                                            function() { return cEventListener.queue.registerListenersInQueue(); }), true, 
                                             cEventListener.listenerRegistrationQueueScaledTimer
                                         );
             }
