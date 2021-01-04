@@ -80,6 +80,7 @@ function cTimerDataTypes()
         this.enableOffset = _enableOffset || false;
         this.intervalOffset = 0;
         this.skipOffset = true;
+        this.skipOffsetIfTooLarge = false;
 
         //will start the timer
         this.start = function start()
@@ -168,9 +169,16 @@ function cTimerDataTypes()
 
                 //if offset is more than interval total
                 //limit offset to be interval (instant loop)
-                if (this.intervalOffset < - this.currentInterval)
+                if (this.intervalOffset < -this.currentInterval)
                 {
-                    this.intervalOffset = -this.currentInterval;
+                    if (skipOffsetIfTooLarge)
+                    {
+                        this.intervalOffset = -(this.currentInterval % this.intervalOffset);
+                    }
+                    else
+                    {
+                        this.intervalOffset = -this.currentInterval;
+                    }
                 }
             }
             else
@@ -268,6 +276,7 @@ function cTimerDataTypes()
         //store time scaling variables
         this.currentFailedCount = 0;
         this.timeScalers = _timeScalers || [new cTimer.timeScalers(null,null)];
+        this.resetSkipOffset = null;
 
         //loop through all time scalers and find current
         //scaled time for failed count
@@ -330,12 +339,21 @@ function cTimerDataTypes()
                 }
             }
 
+            //reset skip offset if it was previous active
+            if (this.skipOffset != null)
+            {
+                this.skipOffset = this.resetSkipOffset;
+                this.skipOffset = null;
+            }
+
             //check if interval is changing, then
-            //force offset skipping to allow interval change
+            //force offset skipping to allow interval change without instant call
             if (this.currentInterval != this.interval)
             {
+                this.resetSkipOffset = this.skipOffset;
                 this.skipOffset = true;
             }
+
         }
 
         //create timer with the callback of "waitForTimer"
