@@ -13,7 +13,7 @@ Code Contents:
      * [Element]
      * [Button]
    * Utilities
-     * [Timer](Timer.md)
+     * [Timer](/Code/Main-Code/Timer/Timer.md)
      * [Utility]
      * [Css Utility]
      * [Maths]
