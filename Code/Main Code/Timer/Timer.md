@@ -6,10 +6,10 @@
     cTimer.  
 
 Data Types:
-* [Callback](/callback.md)
-* [Timer](/baseTimer.md)
-* [Scaled Timer](/scaledTimer.md)
-* [Realtime Timer](/realtimeTimer.md)
+* [Callback](callback.md)
+* [Timer](baseTimer.md)
+* [Scaled Timer](scaledTimer.md)
+* [Realtime Timer](realtimeTimer.md)
 
 Functions:
 * [Find Timer By Name](#timername)
