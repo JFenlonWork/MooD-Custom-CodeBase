@@ -268,7 +268,7 @@ function cTimerDataTypes()
     }
 
     //holds specific timer data with scaling time based on results
-    this.scaledTimer = function scaledTimer(_name, _callback, _startOnCreation, _timeScalers, _runTime, _enableOffset)
+    this.scaledTimer = function scaledTimer(_name, _callback, _startOnCreation, _timeScalers, _runtime, _enableOffset)
     {
         //setup timer for current scaled timer
         this.scaledCallBack = _callback;
