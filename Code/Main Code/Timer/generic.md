@@ -6,15 +6,15 @@
 
 * <h2> Methods: </h2>
 
-    * <a name="findtimerbyname"/> findTimerByName <p style="padding-left: 20px;"> Returns the first timer with the same name supplied. </p>
+    * <a name="findtimerbyname"/> [findTimerByName](#findtimerbynameexample) <p style="padding-left: 20px;"> Returns the first timer with the same name supplied. </p>
 
-    * <a name="findtimerbyid"/> findTimerById <p style="padding-left: 20px;"> Returns the first timer with the same ID supplied. </p>
+    * <a name="findtimerbyid"/> [findTimerById](#findtimerbyidexample) <p style="padding-left: 20px;"> Returns the first timer with the same ID supplied. </p>
 
-    * <a name="findtimerindexbyid"/> findTimerIndexByID <p style="padding-left: 20px;"> Returns the index of the first timer with the same ID supplied. </p>
+    * <a name="findtimerindexbyid"/> [findTimerIndexByID](#findtimerindexbyidexample) <p style="padding-left: 20px;"> Returns the index of the first timer with the same ID supplied. </p>
 
 * <h2> Examples: </h2>
   
-  * findTimerByName:
+  * <a name="findtimerbynameexample"/> findTimerByName:
     ```Javascript
       var _timer = cTimer.generic.findTimerByName("Example1");
 
@@ -25,7 +25,7 @@
     ``` 
     <hr>
 
-  * findTimerByID:
+  * <a name="findtimerbyidexample"/> findTimerByID:
     ```Javascript
       var _timer = cTimer.generic.findTimerByID(1);
       
@@ -37,7 +37,7 @@
 
     <hr>
 
-  * findTimerIndexByID:
+  * <a name="findtimerindexbyidexample"/> findTimerIndexByID:
     ```Javascript
       //Grab timer index if it exists
       var _timerIndex = cTimer.generic.findTimerIndexByID(1);

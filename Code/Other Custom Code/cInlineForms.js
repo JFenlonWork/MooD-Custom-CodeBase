@@ -11,10 +11,10 @@ var _enableRelationshipNavigation = true;
 var _enableKnowledgeActivatedDocumentsNavigation = true;
 var _enableInlineFormWidthChanges = true;
 var _enableHideEmptyInlineForms = true;
+var _inlineFormsWidth = "75em";
 
 window.cInlineFormCode = window.cInlineFormCode || new function customInlineForm()
 {
-    var _width = "75em";
 
     this.hideEmptyHTMLFields = function hideEmptyHTMLFields()
     {
@@ -121,8 +121,8 @@ window.cInlineFormCode = window.cInlineFormCode || new function customInlineForm
             });
 
             $(this).find(".fieldControlContainer").each(function() {
-                $(this).removeClass("widthSingle").css("width",_width);
-                $(this).closest(".fieldContainer").removeClass("widthSingle").css("width",_width);
+                $(this).removeClass("widthSingle").css("width",_inlineFormsWidth);
+                $(this).closest(".fieldContainer").removeClass("widthSingle").css("width",_inlineFormsWidth);
             });
 
         });

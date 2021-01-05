@@ -1,5 +1,5 @@
 # Timer.js
-### This code uses a custom implementation of setTimeout to create a re-usable accurate timer.
+### This code uses a custom implementation of [setTimeout](#settimeout) to create a re-usable accurate timer.
 #
 
 #### Code Prefix:
@@ -16,16 +16,17 @@
 
 * ".dataTypes" contains original functions for below.
 * Protoypes of below start with capital instead of lowercase.
-* "callback" Instance of [Callback](callback.md).
-* "timer" Instance of [Timer](baseTimer.md).
-* "scaledTimer" Instance of [Scaled Timer](scaledTimer.md).
-* "scaledTime" Instance of [Scaled Time](scaledTime.md).
-* "realtimeTimer" Instance of [Realtime Timer](realtimeTimer.md)
+* ".callback" Instance of [Callback](callback.md).
+* ".timer" Instance of [Timer](baseTimer.md).
+* ".scaledTimer" Instance of [Scaled Timer](scaledTimer.md).
+* ".scaledTime" Instance of [Scaled Time](scaledTime.md).
+* ".realtimeTimer" Instance of [Realtime Timer](realtimeTimer.md)
 
 <h2> Functions: </h2>
 
 * [generic](generic.md)
 
 #### References: 
+ * <a name="settimeout"/> [setTimeout()](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)
   
 [Return to parent](/README.md)
