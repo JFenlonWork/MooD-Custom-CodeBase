@@ -76,9 +76,9 @@
 
     * <a name="runloop"/> runLoop <p style="padding-left: 20px;"> Invokes the callback and determines if the timer should continue or be [destroyed](#destroy). </p>
 
-    * <a name="destroy"/> destroy <p style="padding-left: 20px; padding-bottom: 40px;"> Handles the destruction of the timer and removal from the [timer list](Timer.md#timerlist).</p>
+    * <a name="destroy"/> destroy <p style="padding-left: 20px; padding-bottom: 40px;"> Handles the destruction of the timer and removal from the [timer list](../README.md#timerlist).</p>
 
 #### References:
  * <a name="datetime"/> [date.time()](https://developer.mozilla.org/en-US/docs/We
   
-[Return to parent](Timer.md)
+[Return to parent](../README.md)

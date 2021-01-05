@@ -16,15 +16,15 @@
 
 * ".dataTypes" contains original functions for below.
 * Protoypes of below start with capital instead of lowercase.
-* ".callback" Instance of [Callback](callback.md).
-* ".timer" Instance of [Timer](baseTimer.md).
-* ".scaledTimer" Instance of [Scaled Timer](scaledTimer.md).
-* ".scaledTime" Instance of [Scaled Time](scaledTime.md).
-* ".realtimeTimer" Instance of [Realtime Timer](realtimeTimer.md)
+* ".callback" Instance of [Callback](./Markdowns/callback.md).
+* ".timer" Instance of [Timer](./Markdowns/baseTimer.md).
+* ".scaledTimer" Instance of [Scaled Timer](./Markdowns/scaledTimer.md).
+* ".scaledTime" Instance of [Scaled Time](./Markdowns/scaledTime.md).
+* ".realtimeTimer" Instance of [Realtime Timer](./Markdowns/realtimeTimer.md)
 
 <h2> Functions: </h2>
 
-* [generic](generic.md)
+* [generic](./Markdowns/generic.md)
 
 #### References: 
  * <a name="settimeout"/> [setTimeout()](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)

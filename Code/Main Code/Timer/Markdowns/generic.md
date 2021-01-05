@@ -51,6 +51,6 @@
     ```
 
 #### References:
- * <a name="timerlist"/> [timer list](Timer.md#timerlist)
+ * <a name="timerlist"/> [timer list](../README.md#timerlist)
   
-[Return to parent](Timer.md)
+[Return to parent](../README.md)
