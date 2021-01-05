@@ -19,7 +19,7 @@
 
     * <a name="_enableoffset"/> _enableOffset <p style="padding-left: 20px; padding-bottom: 40px;"> Determine if the timer should [correct timing inaccuracies](#enableoffset) from [timeout](#settimeout) vs [actual time](#datetime) </p>
 
-  * <a name="properties"/> <h2> Properties: </h2>
+* <a name="properties"/> <h2> Properties: </h2>
     * <a name="name"/> name <p style="padding-left: 20px;"> The name of the timer that can be used for searching. </p>
     
     * <a name="running"/> Running <p style="padding-left: 20px;"> Whether the timer is currently running or paused. </p>
@@ -54,7 +54,7 @@
 
     * <a name="skipoffsetiftoolarge"/> skipOffsetIfTooLarge  <p style="padding-left: 20px; padding-bottom: 40px;"> Used to limit offset to times within interval to disable instant calls. </p>
 
-  * <h2> Methods: </h2>
+* <h2> Methods: </h2>
 
     * <a name="time"/> time <p style="padding-left: 20px;"> Returns the current [datetime](#datetime). </p>
 
@@ -76,10 +76,8 @@
 
     * <a name="runloop"/> runLoop <p style="padding-left: 20px;"> Invokes the callback and determines if the timer should continue or be [destroyed](#destroy). </p>
 
-    * <a name="destroy"/> destroy <p style="padding-left: 20px; padding-bottom: 40px;"> Handles the destruction of the timer and removal from the [timer list](#timerlist).</p>
+    * <a name="destroy"/> destroy <p style="padding-left: 20px; padding-bottom: 40px;"> Handles the destruction of the timer and removal from the [timer list](Timer.md#timerlist).</p>
 
 #### References:
-#### e = External, i = Internal
- * <a name="datetime"/> [date.time() (e)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getTime)
- * <a name="settimeout"/> [setTimeout() (e)](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)
- * <a name="apply"/> [apply() (e)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply)
+ * <a name="datetime"/> [date.time()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getTime)
+ * <a name="settimeout"/> [setTimeout()](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)

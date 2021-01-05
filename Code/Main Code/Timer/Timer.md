@@ -5,30 +5,25 @@
 #### Code Prefix:
     cTimer.  
 
-Data Types:
-* [Callback](/callback.md)
-* [Timer](/baseTimer.md)
-* [Scaled Timer](/scaledTimer.md)
-* [Realtime Timer](/realtimeTimer.md)
+<h2> Properties: </h2>
 
-Functions:
-* [Find Timer By Name](#timername)
-* [Find Timer By ID](#timerid)
-* [Find Timer Index By ID](#timerindexid)
+* <a name="timerlist"/> timers <p style="padding-left: 20px;"> Array of all valid timers. </p>
 
-#### Data Type Details:
+* <a name="uniquetimerid"/> uniqueTimerId <p style="padding-left: 20px;"> Stores an Id that isn't used by any current timer. (default 10000) </p>
 
 
+<h2> Data Types: </h2>
 
+* ".dataTypes" contains original functions for below.
+* Protoypes of below start with capital instead of lowercase.
+* "callback" Instance of [Callback](callback.md).
+* "timer" Instance of [Timer](baseTimer.md).
+* "scaledTimer" Instance of [Scaled Timer](scaledTimer.md).
+* "scaledTime" Instance of [Scaled Time](scaledTime.md).
+* "realtimeTimer" Instance of [Realtime Timer](realtimeTimer.md)
 
+<h2> Functions: </h2>
 
+* [generic](generic.md)
 
-#### Function Examples:
-
-
-
-#### References:
-#### e = External, i = Internal
- * <a name="datetime"/> [date.time() (e)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getTime)
- * <a name="settimeout"/> [setTimeout() (e)](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)
- * <a name="apply"/> [apply() (e)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply)
+#### References: 

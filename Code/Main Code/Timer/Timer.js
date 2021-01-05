@@ -428,6 +428,8 @@ function cTimerFunctions()
         return _ret;
     }
 
+    /* Depricated Due to not needing it anymore
+
     //run timer function
     this.runTimerFunction = function runTimerFunction(_function, _id)
     {
@@ -442,5 +444,5 @@ function cTimerFunctions()
                 _timer[_function]();
             }
         }
-    }
+    } */
 }
