@@ -46,7 +46,7 @@
 
     * <a name="tickselapsed"/> ticksElapsed <p style="padding-left: 20px;"> How much time has elapsed since [date.time()](#datetime) and startDate. </p>
 
-    * <a name="enableoffset"/> enableOffset <p style="padding-left: 20px;"> Determines if the timer takes into account variances between [setTimeout](#settimout) time and actual time elapsed. </p>
+    * <a name="enableoffset"/> enableOffset <p style="padding-left: 20px;"> Determines if the timer takes into account variances between [setTimeout](#settimeout) time and actual time elapsed. </p>
 
     * <a name="intervaloffset"/> intervalOffset <p style="padding-left: 20px;"> The time to offset the current interval to make it inline with actual time elapsed vs [setTimout](#settimeout) time elapsed. </p>
 
@@ -60,7 +60,7 @@
 
     * <a name="start"/> start <p style="padding-left: 20px;"> Start the timer running. </p>
 
-    * <a name="stop"/> stop <p style="padding-left: 20px;"> Stop the timer and clear the [timeout](#settimout). </p>
+    * <a name="stop"/> stop <p style="padding-left: 20px;"> Stop the timer and clear the [timeout](#settimeout). </p>
 
     * <a name="restart"/> restart <p style="padding-left: 20px;"> Stop the timer and then start it again. </p>
 
