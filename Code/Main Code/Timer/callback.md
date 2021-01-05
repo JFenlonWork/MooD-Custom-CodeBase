@@ -23,3 +23,5 @@
 
 #### References:
  * <a name="apply"/> [apply()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply)
+  
+[Return to parent](Timer.md)

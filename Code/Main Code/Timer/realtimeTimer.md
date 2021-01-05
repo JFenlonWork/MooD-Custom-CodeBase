@@ -32,3 +32,5 @@ cTimer.realtimeTimer(_name, _callback, _startOnCreation, _runTime, _destroyOnSto
 
 #### References:
   
+
+[Return to parent](Timer.md)

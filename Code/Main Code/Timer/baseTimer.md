@@ -81,3 +81,5 @@
 #### References:
  * <a name="datetime"/> [date.time()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getTime)
  * <a name="settimeout"/> [setTimeout()](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)
+  
+[Return to parent](Timer.md)

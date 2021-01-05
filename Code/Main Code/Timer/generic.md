@@ -52,3 +52,5 @@
 
 #### References:
  * <a name="timerlist"/> [timer list](Timer.md#timerlist)
+  
+[Return to parent](Timer.md)

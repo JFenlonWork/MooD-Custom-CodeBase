@@ -39,3 +39,4 @@ cTimer.scaledTimer(_name, _callback, _startOnCreation, _timeScalers, _runtime, _
 
 #### References:
   
+[Return to parent](Timer.md)

@@ -18,3 +18,5 @@
     * <a name="interval"/> interval <p style="padding-left: 20px;"> The interval to set the [timer's](baseTimer.md#interval) interval to. </p>
 
 #### References:
+  
+[Return to parent](Timer.md)
