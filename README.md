@@ -18,7 +18,7 @@ Code Contents:
      * [Css Utility]
      * [Maths]
  * Other Code
-   * [Page Resizer]
+   * [Page Resizer](/Code/Other%20Custom%20Code/cPageResizer/README.md)
    * [Fader]
    * [Expander]
    * [Inline Forms]

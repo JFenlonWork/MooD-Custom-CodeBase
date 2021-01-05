@@ -8,19 +8,20 @@
 
 window.cPageResizer = window.cPageResizer || new function customPageResizer()
 {
+
+    //store offsets for page end and screen end
+    this.lowestOffset = 32;
+    this.endOfPageOffset = 32;
+
     this.resizePage = function resizePage()
     {
         //find the lowest object or marker if placed
         //higher = lower due to Y starting from top of the page
         var lowest = cPageResizer.findLowestPoint();
         
-        //store offsets for page end and screen end
-        var lowestOffset = 32;
-        var endOfPageOffset = 32;
-    
         //This is just an extra 32px on the
         //bottom of the screen so it doesn't feel too close
-        lowest += lowestOffset; 
+        lowest += cPageResizer.lowestOffset; 
     
         //this next part sets the two html parents of the page to hide the overflow(bit after max height)
         //and to set the height of the entire page 
@@ -28,7 +29,7 @@ window.cPageResizer = window.cPageResizer || new function customPageResizer()
         $("#ctl00_ContentPlaceHolder1_InteractiveModel1").addClass("modelMasterResizer");
         $("[id=ctl00_ContentPlaceHolder1_InteractiveModel1_shadow]").addClass("modelMasterResizer");
     
-        $("#ctl00_ContentPlaceHolder1_Container").css("overflow","hidden").css("height",lowest + endOfPageOffset +"px");
+        $("#ctl00_ContentPlaceHolder1_Container").css("overflow","hidden").css("height",lowest + cPageResizer.endOfPageOffset +"px");
         $("#ctl00_ContentPlaceHolder1_InteractiveModel1").css("overflow","hidden").css("height",lowest+"px");
         $("[id=ctl00_ContentPlaceHolder1_InteractiveModel1_shadow]").css("top",(lowest - 8)+"px");
     
