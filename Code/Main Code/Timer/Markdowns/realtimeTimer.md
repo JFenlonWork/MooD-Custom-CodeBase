@@ -16,7 +16,7 @@ cTimer.realtimeTimer(_name, _callback, _startOnCreation, _runTime, _destroyOnSto
 
     * <a name="_destroyonstop"/> _destroyOnStop <p style="padding-left: 20px; padding-bottom: 40px;"> Determine if the timer should [destroy](baseTimer.md#destroy) itself when it is stopped through callback responding with "False". </p>
 
-* <a name="properties"/> <h2> Properties: </h2>
+* <a name="properties"/> * <a name="properties"/> <h2> Properties: </h2>
 
     * <a name="inherittimer"/> Inherit from timer <p style="padding-left: 20px;"> The real-time timer inherts all values from [timer](baseTimer.md). </p>
 
@@ -26,7 +26,7 @@ cTimer.realtimeTimer(_name, _callback, _startOnCreation, _runTime, _destroyOnSto
 
     * <a name="destroyonstop"/> destroyOnStop <p style="padding-left: 20px; padding-bottom: 40px;"> Determine if the timer should [destroy](baseTimer.md#destroy) itself when it is stopped through callback responding with "False". </p>
 
-* <h2> Methods: </h2>
+* <a name="methods"/> <h2> Methods: </h2>
 
     * <a name="waitfortimer"/> waitForTimer <p style="padding-left: 20px;"> Acts as a middle-man for base timer callback to implement real-time updates based on [timer's callback](#callback) return value. </p>
 

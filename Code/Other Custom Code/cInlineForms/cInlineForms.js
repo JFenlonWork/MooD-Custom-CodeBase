@@ -7,14 +7,14 @@
 		Modify Inline Forms To Make Relatinships Size Correct
 */
 
-var _enableRelationshipNavigation = true;
-var _enableKnowledgeActivatedDocumentsNavigation = true;
-var _enableInlineFormWidthChanges = true;
-var _enableHideEmptyInlineForms = true;
-var _inlineFormsWidth = "75em";
-
-window.cInlineFormCode = window.cInlineFormCode || new function customInlineForm()
+window.cInlineForm = window.cInlineForm || new function customInlineForm()
 {
+
+    this.enableRelationshipNavigation = true;
+    this.enableKnowledgeActivatedDocumentsNavigation = true;
+    this.enableInlineFormWidthChanges = true;
+    this.enableHideEmptyInlineForms = true;
+    this.inlineFormsWidth = "75em";
 
     this.hideEmptyHTMLFields = function hideEmptyHTMLFields()
     {
@@ -23,17 +23,27 @@ window.cInlineFormCode = window.cInlineFormCode || new function customInlineForm
             var editorElement = $(element);
 
             if (editorElement.outerHeight() === 0) {
-                editorElement.closest("div.fieldContainer").css('display', 'none');
+
+                var parent = editorElement.closest("div.fieldContainer");
+                parent.css('display', 'none');
+
+                var separator = parent.prev(".separator")
+                if (separator)
+                {
+                    $(separator).css('display','none');
+                }
             }
         });
     }
 
+    //applies any width changes and titles css changes to inline forms
     this.modifyInlineFields = function modifyInlineFields ()
     {
         $(".mood-inlineformelementeditor").each(function () {
 
             var currentInlineForm = this;
 
+            //wait until the inline form has been populated
             (function checkSize()
             {
                 var totalSize = 0;
@@ -54,82 +64,16 @@ window.cInlineFormCode = window.cInlineFormCode || new function customInlineForm
                 this.classList.add("inlineFormTitleModified");
             });
 
-            $(this).find("HtmlFieldControl").each(function() {
-
-                var _remove = false;
-
-                if ($(this).outerHeight() == 0)
-                {
-                    _remove = true;
-                }
-
-                if (this.innerText == "" || this.innerText == " " || this.innerText == String.fromCharCode(160))
-                {
-                    _remove = true;
-                }
-
-                if (_remove)
-                {
-                    var parentContainer = $(this).closest(".fieldContainer");
-                    var previousElement = parentContainer.prev(".separator");
-
-                    if (previousElement)
-                    {
-                        previousElement.remove();
-                    }
-                    else
-                    {
-                        var nextElement = parentContainer.next(".separator");
-
-                        if (nextElement)
-                        {
-                            nextElement.remove();
-                        }
-                    }
-
-                    parentContainer.remove();
-                }
-
-            });
-
-            $(this).find(".fieldContainer").find("input").each(function() {
-
-                var _value = this.getAttribute("value");
-
-                if (_value == "0|" || _value == "")
-                {
-                    var parentContainer = $(this).closest(".fieldContainer");
-                    var previousElement = parentContainer.prev(".separator");
-
-                    if (previousElement)
-                    {
-                        previousElement.remove();
-                    }
-                    else
-                    {
-                        var nextElement = parentContainer.next(".separator");
-
-                        if (nextElement)
-                        {
-                            nextElement.remove();
-                        }
-                    }
-        
-                    parentContainer.remove();
-                }
-
-            });
-
             $(this).find(".fieldControlContainer").each(function() {
-                $(this).removeClass("widthSingle").css("width",_inlineFormsWidth);
-                $(this).closest(".fieldContainer").removeClass("widthSingle").css("width",_inlineFormsWidth);
+                $(this).removeClass("widthSingle").css("width",cInlineForm.inlineFormsWidth);
+                $(this).closest(".fieldContainer").removeClass("widthSingle").css("width",cInlineForm.inlineFormsWidth);
             });
 
         });
 
     }
 
-    //remove check boxes and excess relationships
+    //remove check boxes and excess relationships visuals
     this.setupInlineRelationships = function setupInlineRelationships() {
     
         //search for all relationship tick/radio lists
@@ -182,17 +126,17 @@ window.cInlineFormCode = window.cInlineFormCode || new function customInlineForm
                 {
                     if (Sys.WebForms.PageRequestManager.getInstance())
                     {
-                        if (_enableHideEmptyInlineForms)
+                        if (cInlineForm.enableHideEmptyInlineForms)
                         {
-                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineFormCode.hideEmptyHTMLFields);
+                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.hideEmptyHTMLFields);
                         }
 
-                        if (_enableInlineFormWidthChanges)
+                        if (cInlineForm.enableInlineFormWidthChanges)
                         {
-                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineFormCode.modifyInlineFields);
+                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.modifyInlineFields);
                         }
 
-                        if (_enableRelationshipNavigation)
+                        if (cInlineForm.enableRelationshipNavigation)
                         {
                             var doit = function notready() { window.alert("Ooops"); };
 
@@ -230,7 +174,7 @@ window.cInlineFormCode = window.cInlineFormCode || new function customInlineForm
 
                         }
 
-                        if (_enableKnowledgeActivatedDocumentsNavigation)
+                        if (cInlineForm.enableKnowledgeActivatedDocumentsNavigation)
                         {
                             var dothat = function notready() { window.alert("Not ready"); };
 
@@ -266,9 +210,9 @@ window.cInlineFormCode = window.cInlineFormCode || new function customInlineForm
                             dothat();
                         }
 
-                        if (_enableRelationshipNavigation || _enableKnowledgeActivatedDocumentsNavigation)
+                        if (cInlineForm.enableRelationshipNavigation || cInlineForm.enableKnowledgeActivatedDocumentsNavigation)
                         {
-                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineFormCode.setupInlineRelationships);                            
+                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.setupInlineRelationships);                            
                         }
     
                         return;

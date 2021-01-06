@@ -19,7 +19,7 @@
 
     * <a name="_enableoffset"/> _enableOffset <p style="padding-left: 20px; padding-bottom: 40px;"> Determine if the timer should [correct timing inaccuracies](#enableoffset) from [timeout](#settimeout) vs [actual time](#datetime) </p>
 
-* <a name="properties"/> <h2> Properties: </h2>
+* <a name="properties"/> * <a name="properties"/> <h2> Properties: </h2>
     * <a name="name"/> name <p style="padding-left: 20px;"> The name of the timer that can be used for searching. </p>
     
     * <a name="running"/> Running <p style="padding-left: 20px;"> Whether the timer is currently running or paused. </p>
@@ -54,7 +54,7 @@
 
     * <a name="skipoffsetiftoolarge"/> skipOffsetIfTooLarge  <p style="padding-left: 20px; padding-bottom: 40px;"> Used to limit offset to times within interval to disable instant calls. </p>
 
-* <h2> Methods: </h2>
+* <a name="methods"/> <h2> Methods: </h2>
 
     * <a name="time"/> time <p style="padding-left: 20px;"> Returns the current [datetime](#datetime). </p>
 

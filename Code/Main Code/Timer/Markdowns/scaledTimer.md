@@ -18,7 +18,7 @@ cTimer.scaledTimer(_name, _callback, _startOnCreation, _timeScalers, _runtime, _
 
     * <a name="_enableoffset"/> _enableOffset <p style="padding-left: 20px; padding-bottom: 40px;"> Determine if the timer should [correct timing inaccuracies](#enableoffset) from [timeout](#settimeout) vs [actual time](#datetime) </p>
 
-* <a name="properties"/> <h2> Properties: </h2>
+* <a name="properties"/> * <a name="properties"/> <h2> Properties: </h2>
 
     * <a name="inherittimer"/> Inherit from timer <p style="padding-left: 20px;"> The scaled timer inherts all values from [timer](baseTimer.md). </p>
 
@@ -31,7 +31,7 @@ cTimer.scaledTimer(_name, _callback, _startOnCreation, _timeScalers, _runtime, _
 
     * <a name="resetskipoffset"/> resetSkipOffset <p style="padding-left: 20px; padding-bottom: 40px;"> Used to reset the [timer's skipOffset](baseTimer.md#skipOffset) to original after the current [time scaler](scaledTime.md) changes. </p>
 
-* <h2> Methods: </h2>
+* <a name="methods"/> <h2> Methods: </h2>
 
     * <a name="findcurrenttimescaler"/> findCurrentTimeScaler <p style="padding-left: 20px;"> Returns the current [time scaler](scaledTime.md) that falls within the parameters of the [currentFailedCount](#currentfailedcount). </p>
 

@@ -1,10 +1,10 @@
 <a name="timer"/> <h2> generic </h1> 
   <p style="padding-left: 20px;"> Stores all "generic" functions for <a href="timer"> timer</a>. </p>
 
-#### Code Prefix:
+#### <a name="codeprefix"/> Code Prefix:
     cTimer.generic
 
-* <h2> Methods: </h2>
+* <a name="methods"/> <h2> Methods: </h2>
 
     * <a name="findtimerbyname"/> [findTimerByName](#findtimerbynameexample) <p style="padding-left: 20px;"> Returns the first timer with the same name supplied. </p>
 
@@ -12,7 +12,7 @@
 
     * <a name="findtimerindexbyid"/> [findTimerIndexByID](#findtimerindexbyidexample) <p style="padding-left: 20px;"> Returns the index of the first timer with the same ID supplied. </p>
 
-* <h2> Examples: </h2>
+* <a name="functions"/> <h2> Examples: </h2>
   
   * <a name="findtimerbynameexample"/> findTimerByName:
     ```Javascript
