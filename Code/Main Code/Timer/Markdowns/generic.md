@@ -12,7 +12,7 @@
 
     * <a name="findtimerindexbyid"/> [findTimerIndexByID](#findtimerindexbyidexample) <p style="padding-left: 20px;"> Returns the index of the first timer with the same ID supplied. </p>
 
-* <a name="functions"/> <h2> Examples: </h2>
+* <a name="examples"/> <h2> Examples: </h2>
   
   * <a name="findtimerbynameexample"/> findTimerByName:
     ```Javascript

@@ -1,5 +1,5 @@
-# cInlineForms.js
-### A combination of functions to improve the visuals of inline forms when displayed on the web
+# <a name="title"/> cInlineForms.js
+### <a name="description"/> A combination of functions to improve the visuals of inline forms when displayed on the web
 #
 
 #### <a name="codeprefix"/> Code Prefix:
@@ -14,7 +14,7 @@
 
 * <a name="properties"/> <h2>  Properties: </h2>
 
-* <a name="enablerelationshipnavigation"/> enableRelationshipNavigation <p style="padding-left: 20px;"> Enables/Disables the ability to navigate to relationship elements on click. </p>
+  * <a name="enablerelationshipnavigation"/> enableRelationshipNavigation <p style="padding-left: 20px;"> Enables/Disables the ability to navigate to relationship elements on click. </p>
 
   * <a name="enableknowledgeactivateddocumentsnavigation"/> enableKnowledgeActivatedDocumentsNavigation <p style="padding-left: 20px;"> Enables/Disables the ability to navigate to knowledge activated elements on click. </p>
 
@@ -38,11 +38,7 @@
 
   * <a name="enableinlineoptions"/> enableInlineOptions <p style="padding-left: 20px;"> Runs on instantiation and applies any options from [properties](#properties)</p>
 
-* <a name="functions"/> <h2> Functions: </h2>
-
-* <a name="_INSERTNAME"/> _INSERTNAME <p style="padding-left: 20px;"> _INSERT_INFORMATIION </p>
-
-* <a name="functions"/> <h2> Examples: </h2>
+* <a name="examples"/> <h2> Examples: </h2>
 
 #### References: 
   
