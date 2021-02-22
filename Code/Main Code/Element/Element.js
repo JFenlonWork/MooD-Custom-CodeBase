@@ -131,6 +131,10 @@ function cElementSetupFunctions()
             //create element
             cElement.generic.addElement(_elementData.elementObject, _elementData.isMoodObject, _elementData.elementParentObject, _elementData.id);
 
+            if (_elementData.onClick) {
+                cElement.modify.addOnClickToElement(_elementData.id, _elementData.onClick, true, _elementData.css);
+            }
+
             //modify original id to increase to shorten creation code
             _elementData.id++;
         }
@@ -167,7 +171,7 @@ function cElementGenericFunctions()
         }
 
         //return the element that already exists
-        console.log("Element with name: "+ _elementName + " Exists");
+        console.log("Element with id: "+ _ID + " Exists");
         return cElement.elementArray[exists];
     }
 
@@ -344,6 +348,8 @@ function cElementModifyFunctions()
                     cEventListener.message.sendMessageToType(_element.eventListener, new cEventListener.basicMessage("listenToElementEnableChange", _enabled.message));
                     _element.elementEnabled = !_element.elementEnabled;						
                 }
+
+                return true;
             }
             
             //log warning fail and return false
@@ -455,25 +461,21 @@ function cElementModifyFunctions()
     //add onClick to element's html
     this.addOnClickToElement = function addOnClickToElement(_elementID, _function, _addOrCreate, _css)
 	{
-		
 		var _css = _css || null;
 		//find all html objects from ID
-		var elementObjs = cElement.search.getElementID(_elementID).elementObject;
+        var elementObj = cElement.search.getElementID(_elementID)
 		
-		if (elementObjs)
+		if (elementObj)
 		{
-			//loop through all objects
-			for (var e = 0; e < elementObjs.length; e++)
+            if (elementObj.elementObject == null) { console.error("No HTML supplied for: " + _elementID); return; };
+			//add onto onclick
+			cUtility.addOnClickToHTML(elementObj.elementObject, _function, _addOrCreate);
+        
+            if (_css)
 			{
-				//add onto onclick
-				cUtility.addOnClickToHTML(elementObjs[e], _function, _addOrCreate);
-
-				if (_css)
-				{
-					//Add css based on button
-					elementObjs[e].classList.add(_css);
-				}
+				//Add css based on button
+				elementObj.elementObject.classList.add(_css);
 			}
-		}
+        }
 	}
 }

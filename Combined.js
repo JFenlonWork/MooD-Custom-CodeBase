@@ -4,14 +4,18 @@
 * print statement.
 ***********************************************************************************
 * These are the line numbers for the included files:
-* 16
-* 988
-* 1852
-* 2929
-* 3410
-* 3584
-* 4480
-* 4910
+* 20
+* 991
+* 1855
+* 2336
+* 2510
+* 3406
+* 4483
+* 4933
+* 5087
+* 5463
+* 5804
+* 6034
 ***********************************************************************************/
 
 /*
@@ -81,7 +85,7 @@ window.cButton = window.cButton || new function cButton()
 
 function cButtonDataTypes()
 {
-	this.button = function button(_htmlButtonID, _moodButtonID, _buttonElementID, _buttonEnabledByDefault, _canDisableSelf, _element)
+	this.button = function button(_buttonName, _buttonHTML, _htmlButtonID, _moodButtonID, _buttonElementID, _buttonEnabledByDefault, _canDisableSelf, _element)
 	{	
 		this.htmlButtonID = _htmlButtonID;
 		this.moodButtonID = _moodButtonID;
@@ -95,7 +99,7 @@ function cButtonDataTypes()
 		this.canDisableSelf = _canDisableSelf || false;
 		this.buttonEnabled = "false";
 		
-		this.elementOwned = _element || new customElement(_htmlButtonID + ' ' + _buttonElementID.toString(), '', '', _buttonElementID);
+		this.elementOwned = _element || cElement.generic.addElement({ name: _buttonName, id: _buttonElementID, htmlObj: _buttonHTML }, _moodButtonID == null ? false : true, null, _buttonElementID);
 		this.buttonElementID = this.elementOwned.ID || uniqueID;
 		
         //store a link to this current element for functions below
@@ -150,7 +154,7 @@ function cButtonSetupFunctions()
 	this.createButton = function createButton(_buttonData)
 	{
 		//create or find element for button
-		var _elementGenerated = cElement.generic.addElement(_buttonData.buttonObject, _buttonData.isMoodObject, _buttonData.buttonParentObject, _buttonData.id);
+		var _elementGenerated = cElement.generic.addElement(_buttonData.buttonHTML, _buttonData.isMoodObject, _buttonData.buttonParentObject, _buttonData.id);
 	
 		//find html data for button
 		var moodButton = _elementGenerated.elementObject;
@@ -161,16 +165,16 @@ function cButtonSetupFunctions()
 		if (moodButton == null)
 		{
 			//add and/or get button 
-			buttonGenerated = cButton.generic.addButton(_elementGenerated.ID, _elementGenerated.ID, 
-								_elementGenerated.ID, _buttonData.elementsToEnable, 
+			buttonGenerated = cButton.generic.addButton(_buttonData.name, _buttonData.buttonHTML, _elementGenerated.ID, _elementGenerated.ID, 
+								_buttonData.elementsToEnable, 
 								_buttonData.elementsToDisable, _buttonData.enabledOnDefault, 
 								_buttonData.canDisableSelf, _buttonData.id);
 		}
 		else
 		{
 			//add and/or get button 
-			buttonGenerated = cButton.generic.addButton(moodButton.id, moodButton.id, 
-									_elementGenerated.ID, _buttonData.elementsToEnable, 
+			buttonGenerated = cButton.generic.addButton(_buttonData.name, _buttonData.buttonHTML, moodButton.id, moodButton.id, 
+									_buttonData.elementsToEnable, 
 									_buttonData.elementsToDisable, _buttonData.enabledOnDefault, 
 									_buttonData.canDisableSelf, _buttonData.id);
 		}
@@ -205,7 +209,7 @@ function cButtonSetupFunctions()
 			if (_buttonData.onClick == null)
 			{
 				_buttonData.onClick = "cButton.modify.toggleButtonClick(" + buttonGenerated.buttonElementID + ")";
-			}
+			}			
 	
 			//check if onClick is in string
 			if (_buttonData.onClick.charAt(0) == '"')
@@ -215,7 +219,7 @@ function cButtonSetupFunctions()
 			}
 
 			//add on click to object
-			cElement.modify.addOnClickToElement(buttonGenerated.buttonElementID, _buttonData.onClick, true);
+			cElement.modify.addOnClickToElement(buttonGenerated.buttonElementID, _buttonData.onClick, true, _buttonData.onClickCss);
 	
 			//return succeeded
 			return true;
@@ -471,12 +475,11 @@ function cButtonGenericFunctions()
 	}
 
 	//function to add button
-	this.addButton = function addButton(_htmlButtonID, _moodButtonID, _buttonElementID, _tabElementsToEnable, _tabElementsToDisable, _buttonEnabledByDefault, _canDisableSelf, _ID)
+	this.addButton = function addButton(_buttonName, _buttonHTML, _htmlButtonID, _moodButtonID, _tabElementsToEnable, _tabElementsToDisable, _buttonEnabledByDefault, _canDisableSelf, _ID)
 	{
 		
 		var _buttonEnabledByDefault = _buttonEnabledByDefault || false;
 		var _canDisableSelf = _canDisableSelf || false;
-		var _ID = _ID || uniqueID;
 
 		var button = null;
 		
@@ -485,7 +488,7 @@ function cButtonGenericFunctions()
 		if (exists == -1)
 		{
 			//setup button and add to buttonArray
-			button = new cButton.button(_htmlButtonID, _moodButtonID, parseInt(_buttonElementID),
+			button = new cButton.button(_buttonName, _buttonHTML, _htmlButtonID, _moodButtonID, _ID,
 											 _buttonEnabledByDefault, _canDisableSelf,
 											  cElement.search.getElementID(_ID));
 			cButton.buttonArray.push(button);
@@ -1852,6 +1855,1557 @@ function customCssstyleSheetFunctions()
 
 /*
 	Title:
+		Elements
+	
+	Description:
+		Attempt at making an array to hold elements dynamcally
+*/
+
+window.cElement = window.cElement || new function cElement()
+{
+
+    //===LOCAL VARIABLES===//
+    this.uniqueID = 10000;
+    this.elementArray = [];
+
+    //====DATA TYPES====//
+    this.dataTypes = new cElementDataTypes();
+    
+    //holds basic message information that is used by the event listener
+    this.Element = this.dataTypes.element.prototype;
+    this.element = this.dataTypes.element;
+
+    //====FUNCTIONS====//
+    this.setup = new cElementSetupFunctions();
+    this.generic = new cElementGenericFunctions();
+    this.search = new cElementSearchFunctions();
+    this.modify = new cElementModifyFunctions();
+
+    //===RUN-TIME FUNCTIONS===//
+    (function setupElementListenerCreation()
+    {
+        
+        //check if cEventListener has been defined
+        if (typeof cEventListener !== 'undefined')
+        {
+            //add element setup to "EventListenerCreation" 
+            cEventListener.generic.addFunctionToWaitingForMessage("afterEventListenerCreation",
+                { 
+                    setupFunction : 
+                        function () 
+                        {
+                            //call any functions listening to "afterElementSetup"
+                            new cTimer.timer("Element Wait For Message",
+                                                new cTimer.callback(
+                                                    function ()
+                                                    { 
+                                                        cEventListener.queue.invokeMessageQueue("afterElementSetup");
+                                                    })
+                                                , 100, 10);
+                        }
+                }
+            );
+            
+            //add element registration to event listeners
+            cEventListener.generic.addRegistrationFunction("element",
+                { 
+                    getRegisterQueueType : 
+                        function (_data) 
+                        {
+                            return window.cElement.search.getElementID(_data.message).eventListener;
+                        }  
+                }
+            );
+        }
+        else
+        {
+            //retry in 10ms if undefined
+            setTimeout(function() { setupElementListenerCreation(); }, 10);
+        }
+        
+    })();
+    
+}
+
+function cElementDataTypes()
+{
+    this.element = function element(_elementObject, _moodObject, _elementParentObject, _ID)
+    {
+        this.elementObject = _elementObject;
+        this.elementParentObject = _elementParentObject || (_moodObject === true ? $(_elementObject).closest(".WebPanelOverlay")[0] : this.elementObject);
+        this.ID = _ID || cElement.uniqueID;
+        this.elementEnabled = false;
+        
+        if (_ID == cElement.uniqueID)
+        {
+            cElement.uniqueID++;
+        }
+    
+        this.eventListener = new cEventListener.listener();
+
+        //store a link to this current element for functions below
+        var currentElement = this;
+        
+        this.eventListener.messagesListeningTo.push(
+            new cEventListener.basicMessage('listenToToggleElementToEnableStatus', 
+            { 
+                receiveMessage : function (_data) 
+                {
+                    cElement.modify.toggleElement(currentElement.ID,
+                                                    _data.message,
+                                                    _data.senderListener.message.message
+                                                );
+                }
+            }
+            )
+        );
+
+        this.eventListener.messagesListeningTo.push(
+            new cEventListener.basicMessage('listenToToggleElementToDisableStatus', 
+            { 
+                receiveMessage : function (_data) 
+                {
+                    cElement.modify.toggleElement(currentElement.ID,
+                                                    _data.message,
+                                                    _data.senderListener.message.message
+                                                );
+                }
+            }
+            )
+        );
+    }
+}
+
+function cElementSetupFunctions()
+{
+    this.createElement = function createElement(_elementData)
+    {
+        //check if element info actually has anything in it
+        if (_elementData)
+        {
+            //create element
+            cElement.generic.addElement(_elementData.elementObject, _elementData.isMoodObject, _elementData.elementParentObject, _elementData.id);
+
+            if (_elementData.onClick) {
+                cElement.modify.addOnClickToElement(_elementData.id, _elementData.onClick, true, _elementData.css);
+            }
+
+            //modify original id to increase to shorten creation code
+            _elementData.id++;
+        }
+        else
+        {
+            console.warn("Warning: HTML/JS is empty, if not adding elements ignore this");
+        }
+    }
+}
+
+function cElementGenericFunctions()
+{
+    this.addElement = function addElement(_elementObject, _moodObject, _elementParentObject, _ID)
+    {
+        var _ID = _ID || cElement.uniqueID;
+
+        var exists = cElement.search.checkElementExists(_elementObject);
+        if (exists == -1)
+        {
+            //setup the element
+            var _customElement = new cElement.element(_elementObject, _moodObject, _elementParentObject, parseInt(_ID));
+
+            //add the element to the array
+            cElement.elementArray.push(_customElement);
+
+            var _styleData = new cCss.styleSheetModificationData("zIndex", null, false, null, "unset", -1, true);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _ID, _styleData);
+
+            $(_customElement.elementParentObject).addClass("Element" + _ID);
+
+            //return the newly created element
+            console.log("Created Element with object: " + _elementObject);
+            return _customElement;
+        }
+
+        //return the element that already exists
+        console.log("Element with id: "+ _ID + " Exists");
+        return cElement.elementArray[exists];
+    }
+
+    this.removeElement = function removeElement(_elementName, _elementExtra, _elementType)
+    {
+        //check if the element exists in the array and where
+        var exists = cElement.search.checkElementExists(_elementName, _elementExtra, _elementType)
+        if (exists != -1)
+        {
+            //if the element exists remove it and return true
+            var currentElement = cElement.elementArray[exists];
+
+            //loop through all listeners attached to element and remove them
+            while (currentElement.listener.length > 0)
+            {
+                cEventListener.generic.deregisterListener(currentElement, currentElement.listeners[0].listener, currentElement.listener[0].listenerType, currentElement.listener[0].listenerExtra);
+            }
+
+            //loop through all things the element is listening too and remove them
+            while (currentElement.listeningTo.length > 0)
+            {
+                cEventListener.generic.deregisterListener(currentElement.listeningTo[0].listener, currentElement, currentElement.listeningTo[0].listenerType, currentElement.listeningTo[0].listenerExtra)
+            }
+
+            //remove the element from the element array and return true
+            cElement.elementArray.splice(exists,1);
+            return true;
+        }
+
+        //return false because element doesn't exist
+        console.log("Element with name: " + _elementName + " Doesn't Exist");
+        return false;
+    }
+}
+
+function cElementSearchFunctions()
+{
+
+    //return the element associated with a listener
+    this.returnElementListener = function returnElementListener(_listener)
+    {
+        //check type of input and return based on that
+        if (typeof _listener.message == "string" || typeof _listener.messages == "number")
+        {
+            //find the element from an ID
+            var _element = cElement.search.getElementID(_listener.message);
+
+            //check if element exists, if so return the listener
+            if (_element)
+            {
+                return _element.eventListener;
+            }
+        }
+        else if (_listener.message instanceof cElement.element)
+        {
+            return _listener.message.eventListener;
+        }
+
+        return null;
+    }
+
+    //check element exists and return the index
+    this.checkElementExists = function checkElementExists(_elementObject)
+    {
+        for (var i = 0; i < cElement.elementArray.length; i++)
+        {
+            //check if the names and role match
+            if (cElement.elementArray[i].elementObject == _elementObject)
+            {
+                //return the position in the array
+                return i;
+            }
+        }
+
+        //return -1 if not found
+        return -1;
+    }
+
+    //search for and return the elements with _elementName
+    this.getElementByName = function getElementByName(_elementName)
+    {
+        //store elements
+        var ret = [];
+
+        //loop through every element in the array
+        cElement.elementArray.forEach(function (_element, _index, _arr)
+        {
+            if (_element.elementName == _elementName)
+            {
+                ret.push(_arr[_index]);
+            }
+        });
+
+        if (ret.length <= 0)
+        {
+            //return null if not found
+            console.log("Element with name: " + _elementName + " Doesn't exist");
+        }
+
+        return ret;
+    }
+
+    //return the element with _ID
+    this.getElementID = function getElementID(_ID)
+    {
+        //loop through every element in the array
+        var _ret = null;
+        cElement.elementArray.forEach(function (_element, _index, _arr)
+        {
+            if (_element.ID == _ID) { return _ret = _arr[_index]; }
+        });
+
+        if (_ret)
+        {
+            return _ret;
+        }
+
+        //return null if not found
+        console.log("Element with ID: " + _ID + " Doesn't Exists");
+        return null;
+    }
+
+    //return the listener 
+    this.getElementByListener = function getElementByListener(_listener)
+    {
+        //loop through every element in the array
+        var _ret = null;
+        cElement.elementArray.forEach(function (_element, _index, _arr)
+        {
+            if (_element.eventListener.ID == _listener.ID) { return _ret = _arr[_index]; }
+        });
+
+        if (_ret)
+        {
+            return _ret;
+        }
+        //return null if not found
+        console.log("Element with listener: " + _listener + " Doesn't Exist");
+        return null;
+    }
+
+    this.getElementBy
+
+}
+
+function cElementModifyFunctions()
+{
+    this.toggleElement = function toggleElement(_elementID, _enabled, _messageData) 
+    {	
+        var _element = cElement.search.getElementID(_elementID);
+    
+        var _messageData = _messageData || {};
+    
+        //check if element isn't null
+        if (_element) 
+        {
+            //find HTML object attached to element
+            //var htmlObject = _element.elementObject;
+
+            if (_element.elementObject) 
+            {
+                //turn message enable/disable into bool
+                var _toEnable = (_enabled.message === "enable" || _enabled.message === true);
+        
+                //modify the element's extras I.E position and zIndex
+                cElement.modify.modifyElementOpacity(_element, _messageData, _toEnable);
+                cElement.modify.modifyElementPosition(_element, _messageData);
+
+                //check if the element now has a different active status and modify
+                if (_enabled.message == "enable" && !_element.elementEnabled || 
+                    _enabled.message == "disable" && _element.elementEnabled)
+                {
+                    //update listenerToElementEnabledChange and set element to be opposite
+                    cEventListener.message.sendMessageToType(_element.eventListener, new cEventListener.basicMessage("listenToElementEnableChange", _enabled.message));
+                    _element.elementEnabled = !_element.elementEnabled;						
+                }
+            }
+            
+            //log warning fail and return false
+            console.warn("Warning: No HTML Element Found With Name: " + _element.elementName + " Check HTML is correct, This usually happens when an object doesn't exist but is still being refenced");
+            return false;
+        }
+            
+        //log warning fail and return false
+        console.warn("Warning: No Element Found Check HTML is correct");
+        return false;
+    }
+
+    this.modifyElementOpacity = function modifyElementOpacity(_element, _messageData, _enabled)
+    {
+        if (_messageData.opacityTime)
+        {
+            var _transitionData = "opacity " + ((_messageData.opacityTime || 0) / 1000).toString() + "s";
+            _transitionData += " " + (_messageData.opacityTiming || "linear");
+            _transitionData += " " + ((_messageData.opacityDelay || 0) / 1000).toString() + "s";
+                  
+            var _styleData = new cCss.styleSheetModificationData("transition", "opacity", true, 2, _transitionData, -1, false);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+        }
+        else
+        {
+            var _transitionData = "opacity 0s linear 0s";    
+            var _styleData = new cCss.styleSheetModificationData("transition", "opacity", true, 2, _transitionData, -1, false);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+        }
+
+        if (_enabled)
+        {
+            var _zIndexToSet = (_messageData.zIndex == null ? "10000" : _messageData.zIndex);
+            var _zIndexImportanceToSet = (_messageData.zIndexImportance == null  ? true : _messageData.zIndexImportance);
+            var _styleData = new cCss.styleSheetModificationData("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);    
+
+            //change html style to be visiblie and set zIndex to default
+            var _opacityToSet = _messageData.opacity == null ? 100 : _messageData.opacity;
+            _styleData = new cCss.styleSheetModificationData("opacity", null, false, null, _opacityToSet.toString(), -1, false);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+
+            _styleData = new cCss.styleSheetModificationData("visibility", null, false, null, "visible", -1, false);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+
+            var _opacityTimer = cTimer.generic.findTimerByName("ElementOpacityTimer" + _element.ID);
+
+            if (_opacityTimer)
+            {
+                _opacityTimer.destroy();
+            }
+        }
+        else
+        {
+            //change html style to be visiblie and set zIndex to default
+            var _opacityToSet = _messageData.opacity == null ? 0 : _messageData.opacity;
+            var _styleData = new cCss.styleSheetModificationData("opacity", null, false, null, _opacityToSet.toString(), -1, false);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+            
+            if (_element.elementEnabled == true && _enabled == false)
+            {
+                var currentDelay = (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0);
+
+                function opacityChange(_args)
+                {
+                    _styleData = new cCss.styleSheetModificationData("visibility", null, false, null, "hidden", -1, false);
+                    cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);            
+                            
+                    var _zIndexToSet = (_messageData.zIndex == null ? "0" : _messageData.zIndex);
+                    var _zIndexImportanceToSet = (_messageData.zIndexImportance == null ? true : _messageData.zIndexImportance);
+                    _styleData = new cCss.styleSheetModificationData("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+                    cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+                }
+                
+                new cTimer.realtimeTimer("ElementOpacityTimer" + _element.ID, new cTimer.callback(opacityChange, this), true, currentDelay + 1, true);
+            }
+        }
+    }
+
+    this.modifyElementPosition = function modifyElementPosition(_element, _messageData)
+    {
+        //setup position variables
+        var _posX = _messageData.posX != null ? _messageData.posX : typeof _messageData.generatePosX == "function" ? _messageData.generatePosX() : null;
+        var _posY = _messageData.posY != null ? _messageData.posY : typeof _messageData.generatePosY == "function" ? _messageData.generatePosY() : null;
+
+        var _transitionData = ((_messageData.positionMoveTime || 0) / 1000).toString() + "s"
+                                + " " + (_messageData.positionTiming || "linear") + " "
+                                + ((_messageData.positionDelay || 0) / 1000).toString() + "s";
+
+        if (_posX) 
+        {
+            var _styleData = new cCss.styleSheetModificationData("transition", "left", true, 2, _transitionData, -1, false);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+
+            _styleData = new cCss.styleSheetModificationData("left", null, false, 0, _posX + "px", -1, true);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+        }
+
+        if (_posY) 
+        {
+            var _styleData = new cCss.styleSheetModificationData("transition", "top", true, 2, _transitionData, -1, false);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+
+            _styleData = new cCss.styleSheetModificationData("top", null, false, 0, _posY + "px", -1, true);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+        }
+    }
+
+    //add onClick to element's html
+    this.addOnClickToElement = function addOnClickToElement(_elementID, _function, _addOrCreate, _css)
+	{
+		var _css = _css || null;
+		//find all html objects from ID
+        var elementObj = cElement.search.getElementID(_elementID)
+		
+		if (elementObj)
+		{
+            if (elementObj.elementObject == null) { console.error("No HTML supplied for: " + _elementID); return; };
+			//add onto onclick
+			cUtility.addOnClickToHTML(elementObj.elementObject, _function, _addOrCreate);
+        
+            if (_css)
+			{
+				//Add css based on button
+				elementObj.elementObject.classList.add(_css);
+			}
+        }
+	}
+}
+
+
+/*
+	Title:
+		Elements Groups
+	
+	Description:
+		Attempt at making a grouping system to hold elements
+*/
+
+var cElementGroup = window.cElementGroup || new function cElementGroup()
+{
+	//===LOCAL VARIABLES===//
+	this.elementGroupArray = [];
+
+    //====DATA TYPES====//
+	this.dataTypes = new cElementGroupDataTypes();
+	
+	this.ElementGroup = this.dataTypes.elementGroup.prototype;
+	this.elementGroup = this.dataTypes.elementGroup;
+
+	//====FUNCTIONS====//
+	this.setup = cElementGroupSetupFunctions();
+	this.search = cElementGroupSearchFunctions();
+
+	//===RUN-TIME FUNCTIONS===//
+	(function setupElementGroupListenerCreation()
+    {
+        
+        //check if cEventListener has been defined
+        if (typeof cEventListener !== 'undefined')
+        {           
+            //add element group registration to event listeners
+            cEventListener.generic.addRegistrationFunction("elementGroup",
+                { 
+                    getRegisterQueueType : 
+                        function (_data) 
+                        {
+                            return window.cElementGroup.search.returnElementGroupFromID(_data.message).eventListener;
+                        }  
+                }
+            );
+        }
+        else
+        {
+            //retry in 10ms if undefined
+            setTimeout(function() { setupElementGroupListenerCreation(); }, 10);
+        }
+        
+    })();
+}
+
+function cElementGroupDataTypes()
+{
+	this.elementGroup = function elementGroup(_ID, _elementsInGroup, _eventListener)
+	{
+		this.ID = _ID || cElement.uniqueID;
+		this.elementsInGroup = _elementsInGroup || [];
+		this.eventListener = _eventListener || new cEventListener.listener();
+
+		var currentElementGroup = this;
+        
+        this.eventListener.messagesListeningTo.push(
+            new cEventListener.basicMessage('listenToToggleElementToEnableStatus', 
+            { 
+                receiveMessage : function (_data) 
+                {
+					/*
+                    cElement.modify.toggleElement(currentElement.ID,
+                                                    _data.message,
+                                                    _data.senderListener.message.message
+												);
+					*/
+					//Relay Message Data To Elements
+                }
+            }
+            )
+        );
+
+        this.eventListener.messagesListeningTo.push(
+            new cEventListener.basicMessage('listenToToggleElementToDisableStatus', 
+            { 
+                receiveMessage : function (_data) 
+                {
+					/*
+                    cElement.modify.toggleElement(currentElement.ID,
+                                                    _data.message,
+                                                    _data.senderListener.message.message
+												);
+					*/
+					//Relay Message Data To Elements
+                }
+            }
+            )
+        );}
+}
+
+function cElementGroupSetupFunctions()
+{
+	//add a new element group to the array
+	this.addElementGroup = function addElementGroup(_ID, _elementsInGroup)
+	{
+		//find if element group exists
+		var _elementGroupExists = cElementGroup.search.returnElementGroupIndexFromID(_ID);
+
+		if (_elementGroupExists == -1)
+		{
+			//element group doesn't exist so add it to array and return the new group
+			var _elementGroup = new cElementGroup.elementGroup(_ID, _elementsInGroup);
+			cElementGroup.elementGroupArray.push(_elementGroup);
+
+			return _elementGroup;
+		}
+		
+		//element group already exists so exit
+		return null;
+	}
+
+	//remove an element group from the array
+	this.removeElementGroup = function removeElementGroup(_ID)
+	{
+		//find if element group exists
+		var _elementGroupExists = cElementGroup.search.returnElementGroupIndexFromID(_ID);
+
+		if (_elementGroupExists == -1)
+		{
+			//remove the element group and return true
+			cElementGroup.elementGroupArray.splice(_elementGroupExists, 1);
+
+			return true;
+		}
+
+		//element group doesn't exist so return false
+		return false;
+	}
+}
+
+function cElementGroupSearchFunctions()
+{
+	//return the element group with _ID
+	this.returnElementGroupFromID = function returnElementGroupFromID(_ID)
+	{
+		//find the index for the element group
+		var _index = cElementGroup.search.returnElementGroupIndexFromID(_ID);
+
+		//check index is valid
+		if (_index != -1)
+		{
+			//return the element group at index
+			return cElementGroup.elementGroupArray[_index];
+		}
+
+		//return null as no element group exists
+		return null;
+	}
+
+	//return the index of element group with _ID
+	this.returnElementGroupIndexFromID = function returnElementGroupIndexFromID(_ID)
+	{
+		//loop through all element groups and find the index with _ID
+		for (var i = 0; i < cElementGroup.elementGroupArray.length; i++)
+		{
+			//check ID's match
+			if (cElementGroup.elementGroupArray[i].ID == _ID)
+			{
+				//return index;
+				return i;
+			}
+		}
+
+		//return -1 as no element group exists
+		return -1;
+	}
+}
+
+
+/*
+	Title:
+		Custom Event Listener
+	
+	Description:
+		Attempt at making an event listener 
+*/
+
+//Main Type
+window.cEventListener = window.cEventListener || new function customEventListener() 
+{
+    //====VARIABLES====//
+
+    //setup variables
+    //default listener ID to stop IDs from overlapping
+    this.uniqueListenerID = 0;
+
+    //store all listeners in an easy to access place
+    this.allListeners = [];
+
+    //store all listeners waiting to be registered
+    //also store any custom functions that have been added to
+    //handle the registration of listeners
+    this.listenerRegistrationQueue = [];
+    this.listenerRegistrationFunctions = [];
+
+    //store scaled time for timer for registering queue listeners
+    this.listenerRegistrationQueueScaledTimer = 
+    [
+        {threshold : 0, interval : 500},
+        {threshold : 10, interval : 1000},
+        {threshold : 65, interval : 2000},
+        {threshold : 185, interval : 5000}
+    ];
+
+    //store timer for registering queue listeners
+    this.listenerRegistrationQueueTimer = null;
+
+    //store any messages to be broadcasted (change to priortiy queue list?)
+    this.functionWaitingForMessageQueue = [];
+
+    //store any messages broadcasted and ready to be removed
+    this.functionWaitingInvoked = [];
+
+    //store if queue invoke process has started
+    this.functionQueueProcessStarted = 0;
+
+    //====DATA TYPES====//
+    this.dataTypes = new cEventListenerDataTypes();
+    
+    //holds basic message information that is used by the event listener
+    this.BasicMessage = this.dataTypes.basicMessage.prototype;
+    this.basicMessage = this.dataTypes.basicMessage;
+
+    //holds basic listener specific message information
+    this.ListenerMessage = this.dataTypes.listenerMessage.prototype;
+    this.listenerMessage = this.dataTypes.listenerMessage;
+
+    //holds basic listener specific information for the queue register
+    this.listenerQueuerInfo = this.dataTypes.listenerQueuerInfo.prototype;
+    this.listenerQueuerInfo = this.dataTypes.listenerQueuerInfo;
+
+    //holds all the main listener specfic information
+    this.Listener = this.dataTypes.listener.prototype;
+    this.listener = this.dataTypes.listener;
+
+    //====FUNCTIONS====//
+    this.generic = new cEventListenerGenericFunctions();
+    this.queue = new cEventListenerQueueFunctions();
+    this.search = new cEventListenerSearchFunctions();
+    this.message = new cEventListenerMessageFunctions();
+
+    //===RUN TIME===//
+    //initiate and run event listener on MooD page load
+    (function initiateEventListener()
+    {
+        //check if Salamander/MooD has been setup
+        if (Salamander.lang.isSysDefined())
+        {		
+            if (Sys.WebForms)
+            {
+                if (Sys.WebForms.PageRequestManager)
+                {
+                    if (Sys.WebForms.PageRequestManager.getInstance())
+                    {
+                        //add eventListenerPageLoaded to run on page load
+                        Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cEventListener.generic.eventListenerPageLoaded);
+                        return;
+                    }
+                }
+            }	
+        }
+        
+        //if Salamander/MooD hasn't been setup then retry in 10ms
+        setTimeout(function() { initiateEventListener(); },10);
+    })();
+}
+
+function cEventListenerDataTypes()
+{
+    //structure of the messages the event listener uses
+    //hold basic message data
+    this.basicMessage = function basicMessage(_type, _message)
+    {
+        //force inputted variables to be valid
+        this.type = _type || '';
+        this.message = _message || '';
+    
+        //run _messageFunction on _message if available, otherwise return message
+        this.evaluateMessage =  function evaluateMessage(_messageFunction, _messageExtras, _comparison)
+        {
+            //check if _messageFunction exists otherwise set it to null
+            _messageFunction = _messageFunction || 'null';
+            _messageExtras = _messageExtras || "";
+            _comparison = _comparison || false;
+    
+            //check if the message is a custom object
+            if (this.message === Object(this.message))
+            {
+                //check that the custom message function exists
+                if (typeof this.message[_messageFunction] === "function")
+                {
+                    //check if evaluate message is being used for comparison
+                    if (_comparison)
+                    {
+                        //return the function itself
+                        return this.message[_messageFunction];
+                    }
+                    else 
+                    {
+                        //otherwise invoke custom message function on the message
+                        return this.message[_messageFunction].call(this.message, _messageExtras);
+                    }
+                }
+                
+                //return the messageFunction as it isn't
+                //a function and is probably a value instead
+                return this.message[_messageFunction];
+            }
+            
+            //return evaluated message as the
+            //message is a primative type
+            //return this.message;
+
+            //return null as no function found
+            return null;
+        }
+    }
+
+    //Holds basic listener messaging information
+    this.listenerMessage = function listenerMessage(_listener, _message)
+    {	
+        this.listener = _listener;
+        this.message = _message || new cEventListener.basicMessage('','');
+    }
+
+    //holds basic listener information inside a queue to setup listener at intervals
+    this.listenerQueuerInfo = function listenerQueuerInfo(_listenerInfo, _listenToInfo)
+    {
+        this.listenerInfo = _listenerInfo || new cEventListener.listenerMessage(null, null);
+        this.listenToInfo = _listenToInfo || new cEventListener.listenerMessage(null, null);
+    }
+
+    //hold all information to do with individual listeners
+    this.listener = function listener()
+    {
+        //setup basic variables
+        //store what is listening to this listener
+        this.listeners = [];
+
+        //store what this listener is listening to
+        this.listeningTo = [];
+
+        //store the messages this listener is looking for
+        this.messagesListeningTo = [];
+
+        //store ID for listener and increment global listener ID
+        this.listenerID = cEventListener.uniqueListenerID;
+        var _currentListener = this;
+
+        cEventListener.uniqueListenerID++;
+
+        //handle recieving messages
+        this.receiveMessage = function receiveMessage(_sender, _message)
+        {
+            //loop through all messages this listener is listening to
+            for (var i = 0; i < this.messagesListeningTo.length; i++)
+            {
+                //check if the message type is on of the messages this listener is listening to
+                if (_message.type == this.messagesListeningTo[i].type)
+                {
+                    //check if this listener has a method of handling the message type
+                    if (this.messagesListeningTo[i].message != null)
+                    {
+                        //find any listener specific data attached to this message
+                        //NEEDS EDITING LATER                        
+                        var _messageType = _message.evaluateMessage(_message.type) || _message.type;
+
+                        var senderListenerIndex = 
+                            _currentListener.findListeningTo(
+                                _sender.listenerID,
+                                _messageType
+                            );
+
+                        var senderListenerData = _currentListener.listeningTo[senderListenerIndex];
+
+                        //return the result of the method used to handle this message
+                        return this.messagesListeningTo[i].evaluateMessage
+                        (
+                            "receiveMessage",
+                            {   //sender extra message data
+                                message: _message,
+                                sender: _sender,
+                                senderListener: senderListenerData
+                            }
+                        );
+                    }
+                }
+            }
+        }
+
+        //find listener from ID and Type
+        this.findListener = function findListener(_id, _type)
+        {
+            return _currentListener.findListenerIndexInList(_id, _type, _currentListener.listeners);
+        }
+
+        //check if listener exists
+        this.checkListenerExists = function checkListenerExists(_id, _type)
+        {
+            return (_currentListener.findListener(_id, _type) != -1)
+        }
+
+        //find listeningTo from ID and Type
+        this.findListeningTo = function findListeningTo(_id, _type)
+        {
+            return _currentListener.findListenerIndexInList(_id, _type, _currentListener.listeningTo);
+        }
+
+        //check if listenTo exists
+        this.checkListeningToExists = function checkListeningToExists(_id, _type)
+        {
+            return (_currentListener.findListeningTo(_id, _type) != -1)
+        }
+
+        //find listener information in list
+        this.findListenerIndexInList = function findListenerIndexInList(_id, _type, _list)
+        {
+            //loop through all _list listeners
+            for (var l = 0; l < _list.length; l++)
+            {
+                //check if listenerID and listenerType are the same
+                if (_list[l].listener.listenerID == _id
+                    && _list[l].message.type == _type)
+                {
+                    return l;
+                }
+            }
+
+            //return -1 if no listener exists
+            return -1;
+        }
+    }
+}
+
+function cEventListenerGenericFunctions()
+{
+    //run any functions needed on page load (Salamader/MooD finished setup)
+    this.eventListenerPageLoaded = function eventListenerPageLoaded()
+    {
+        //remove eventListenerPageLoaded from page loading to stop duplicate responses
+        Sys.WebForms.PageRequestManager.getInstance().remove_pageLoaded(cEventListener.generic.eventListenerPageLoaded);
+        
+        //broadcast ready signal to anything listening
+        (function invokeAfterCreation() {
+            setTimeout(function() {
+                return cEventListener.queue.invokeMessageQueue("afterEventListenerCreation");
+            }, 500);
+        })();
+        
+        //setup interval for registering any listeners in the queue,
+        //run based on a slowdown timer
+        (function setupScaledTimer() {
+            //check if timer exists
+            if (cTimer)
+            {
+                //setup scaled timer
+                cEventListener.listenerRegistrationQueueTimer 
+                = new cTimer.scaledTimer( "EventListenerRegistrationQueueTimer", new cTimer.callback(
+                                            function() { return cEventListener.queue.registerListenersInQueue(); }), true, 
+                                            cEventListener.listenerRegistrationQueueScaledTimer
+                                        );
+            }
+            else
+            {
+                //wait until scaled timer exists
+                setTimeout(function() { return setupScaledTimer()}, 10);
+            }
+        })();
+
+    }
+
+    //handle registering listener to "listen to"
+    this.registerListener = function registerListener(_listenTo, _listener, _listenerMessage)
+    {
+        //check if both inputs are valid
+        if (_listener && _listenTo)
+        {
+            //check if listener is not already registered to _listenTo
+            if (!_listenTo.checkListenerExists(_listener.listenerID, _listenerMessage.type))
+            {
+                //add listener to _listenTo listeners
+                //and add _listeningTo to listener's listeningTo
+                _listenTo.listeners.push(new cEventListener.listenerMessage(_listener, _listenerMessage));
+                _listener.listeningTo.push(new cEventListener.listenerMessage(_listenTo, _listenerMessage));
+
+                var message = new cEventListener.basicMessage("registerListenerSuccesful",
+                {
+                    listeningTo: _listenTo,
+                    listener: _listener,
+                    message: _listenerMessage,
+                    registerListenerSuccesful: function() {
+                        return this.message.type;
+                    }
+                });
+
+                //call register succesful on listener
+                cEventListener.message.sendMessage(_listenTo, _listener, message);
+                
+                return true;
+
+            }
+            else
+            {
+                //log a warning that the _listener is already listening to the _listeningTo with the same message type
+                console.warn("Listener already exists with ID: " + _listener.listenerID + " and Type:" + _listenerInfo.type + " Listening to: " + _listenTo.listenerID);
+                return false;
+            }
+        }
+        else //log a warning that one of the inputted values does not exist
+        {
+            console.warn("Listener: " + _listener + " or " + _listenTo + " does not exists");
+            return false;
+        }
+    
+    }
+
+    //handle de-registering listener from "listen to"
+    this.deregisterListener = function deregisterListener(_listenTo, _listener, _listenerInfo)
+    {
+        //setup temporary listenerMessages
+        var tempListener = new cEventListener.listenerMessage(_listener, _listenerMessage);
+        var tempListeningTo = new cEventListener.listenerMessage(_listenTo, _listenerMessage);
+        
+        //check the listener is valid
+        if (_listener)
+        {
+            //find where the listener is inside _listenTo's listeners
+            var listenerIndex = cEventListener.search.findListenerIndexFromIDType(_listener.id, _listener.tpye, _listenTo.listeners);
+            
+            //check if listener is registered to _listenTo
+            if (listenerIndex != -1)
+            {
+                //remove listener from listenTo
+                _listenTo.listeners.splice(listenerIndex,1);
+                
+                //check if _listenTo exists
+                if (_listenTo)
+                {
+                    //find index for _listenTo inside what _listener is listening too
+                    var listeningToIndex = cEventListener.search.findListenerIndexFromIDType(_listenTo.id, _listenerInfo.type, _listener.listeningTo);
+                    
+                    //check if listenTo is within _listener's listenTo
+                    if (listeningToIndex != -1) 
+                    {
+                        
+                        var message = new cEventListener.basicMessage("deregisterListenerSuccesful",
+                        {
+                            listeningTo: tempListeningTo,
+                            listener: tempListener
+                        });
+
+                        /*
+                        //setup deregister successful message
+                        var messageContents = {
+                            listeningTo: tempListeningTo,
+                            listener: tempListener,
+                            message: "deregisterListenerSuccesful"
+                        }
+
+                        //create message with type deregister successful and the above message contents
+                        var message = new cEventListener.basicMessage("deregisterListenerSuccesful", messageContents);
+                        */
+
+                        //call deregister succesful on listener
+                        cEventListener.message.sendMessage(_listenTo, _listener, message);
+                        
+                        //remove listenTo from listener
+                        _listener.listeningTo.splice(listeningToIndex,1);
+                    }
+                }
+                
+                //NEEDS EDITING LATER
+                return true;
+            }
+            else
+            {
+                console.warn (_listener + " Does not exist within " + _listenTo + "'s listeners");
+                return false;
+            }
+        }
+        
+        console.warn ("_listener is an invalid input: " + _listener);
+        return false;
+    }
+
+    //add queue registration function
+    this.addRegistrationFunction = function addRegistrationFunction(_queueType, _queueFunction)
+    {
+            //find queueFunction index
+            var registraitonFunction = cEventListener.search.findRegistrationFunction(_queueType);
+            
+            //check index exists
+            if (registraitonFunction == null)
+            {
+                //add new function to the list of registration functions
+                cEventListener.listenerRegistrationFunctions.push(new cEventListener.basicMessage(_queueType, _queueFunction));
+                return true;
+            }
+            
+            //display warning that there is already a function with the same type 
+            console.warn("Queue Registration Function Already Exists With Type: " + _queueType);
+    }
+    
+    //remove queue registration function
+    this.removeRegistrationFunction = function removeRegistrationFunction(_queueType)
+    {
+            //find queueFunction index
+            var registraitonFunction = cEventListener.search.findRegistrationFunction(_queueType);
+            
+            //check index exists
+            if (registraitonFunction != null)
+            {
+                //remove function from the list of registration functions
+                cEventListener.listenerRegistrationFunctions.splice(registraitonFunction, 1);
+                return true;
+            }
+            
+            //display warning that the function doesn't exist with _queueType
+            console.warn("Queue Registration Function Does Not Exist With Type: " + _queueType);
+    }
+
+    //add waiting for message functions to array
+    this.addFunctionToWaitingForMessage = function addFunctionToWaitingForMessage(_messageType, _messageFunction)
+    {
+        //add message to function array
+        cEventListener.functionWaitingForMessageQueue.push(new cEventListener.basicMessage(_messageType, _messageFunction));
+    }
+
+    //remove waiting for message functions
+    this.removeFunctionFromWaitingForMessage = function removeFunctionFromWaitingForMessage(_messageType, _messageFunction)
+    {
+        //store current index of message
+        var currentIndex = -1;
+
+        //loop until all messages have been removed
+        do {
+
+            //store the next index of _messageType/_messageFunction
+            currentIndex = cEventListener.search.returnFunctionWaitingForMessageIndex(_messageType, _messageFunction);
+
+            //check if current index is not null
+            if (currentIndex != -1)
+            {
+                //remove current index from array
+                cEventListener.functionWaitingForMessageQueue.splice(currentIndex, 1);
+            }
+
+        } while (currentIndex != -1);
+
+    }
+}
+
+function cEventListenerQueueFunctions()
+{
+    //run all setup listener functions
+    this.invokeMessageQueue = function invokeMessageQueue(_functionType)
+    {
+        //store any messages that have been invoked
+        cEventListener.functionQueueProcessStarted += 1;
+
+        //loop through all functions within the current message queue
+        for (var l = 0; l < cEventListener.functionWaitingForMessageQueue.length; l++)
+        {
+            //check if message type is the same as _functionType
+            if (cEventListener.functionWaitingForMessageQueue[l].type == _functionType)
+            {
+
+                if (cEventListener.queue.checkMessageQueueInvoked(cEventListener.functionWaitingForMessageQueue[l]) == -1)
+                {
+                    //invoke the "setupFunction" of that message
+                    cEventListener.functionWaitingForMessageQueue[l].evaluateMessage("setupFunction");
+
+                    //add this individual to be removed
+                    cEventListener.functionWaitingInvoked.push(
+                        new cEventListener.basicMessage(_functionType,
+                            cEventListener.functionWaitingForMessageQueue[l].evaluateMessage(
+                                "setupFunction", null, true)
+                        )
+                    );
+
+                }
+            }
+        }
+
+        cEventListener.functionQueueProcessStarted -= 1;
+
+        if (cEventListener.functionQueueProcessStarted == 0)
+        {
+            //loop through all messages that have been invoked and remove them
+            for (var m = 0; m < cEventListener.functionWaitingInvoked.length; m++)
+            {
+                cEventListener.queue.removeFromMessageQueue(cEventListener.functionWaitingInvoked[m]);
+                cEventListener.functionWaitingInvoked.splice(m,1);
+                m--;
+            }
+        }
+    }
+
+    this.checkMessageQueueInvoked = function checkMessageQueueInvoked(_messageQueuer)
+    {
+        //loop through all messages that have been invoked and remove them
+        for (var m = 0; m < cEventListener.functionWaitingInvoked.length; m++)
+        {
+            if (cEventListener.functionWaitingInvoked[m] == _messageQueuer)
+            {
+                return m;
+            }
+        }
+
+        //otherwise return -1 because it doesn't exist
+        return -1;
+    }
+
+    this.removeFromMessageQueue = function removeFromMessageQueue(_message)
+    {
+        //loop through all functions within the current message queue
+        for (var l = 0; l < cEventListener.functionWaitingForMessageQueue.length; l++)
+        {
+            //check if message type is the same as _functionType
+            if (cEventListener.functionWaitingForMessageQueue[l].type == _message.type &&
+                cEventListener.functionWaitingForMessageQueue[l].evaluateMessage("setupFunction", null, true) == _message.message)
+            {
+                //remove the message as removing it within the
+                //loop can cause array mismatches
+                cEventListener.functionWaitingForMessageQueue.splice(l,1);
+                return;
+            }
+        }
+    }
+
+    //loop through listeners waiting to be registered and register them
+    this.registerListenersInQueue = function registerListenersInQueue () 
+    {
+        console.log("Executed Queue Register");
+
+        //store if any listener has been registered for scaled timer purposes
+        var _listenerHasBeenRegistered = false;
+
+        //run any functions that are waiting for registration of listeners to start
+        cEventListener.queue.invokeMessageQueue("registeringListeners");
+	
+        //loop through all listeners in queue
+        for (var l = 0; l < cEventListener.listenerRegistrationQueue.length; l++)
+        {
+        
+            //check listener data exists
+            var listener = null;
+            if (typeof cEventListener.listenerRegistrationQueue[l].returnListener != "undefined")
+            {
+                //get listener data based on registration function information
+                //listener = cEventListener.search.returnQueueListener(cEventListener.listenerRegistrationQueue[l].listenerInfo);
+                if (typeof cEventListener.listenerRegistrationQueue[l].returnListener == "function")
+                {
+                    listener = cEventListener.listenerRegistrationQueue[l].returnListener();
+                }
+                else
+                {
+                    listener = cEventListener.listenerRegistrationQueue[l].returnListener;
+                }
+            }
+            else
+            {
+                //warn that some of the information doesn't exist and then remove it from the list
+                console.warn("Warning: Failed To Register Due To Listener Data Not Existing");
+                console.warn(cEventListener.listenerRegistrationQueue[l]);
+                cEventListener.listenerRegistrationQueue.splice(l,1);
+                continue;
+            }
+            
+            //check listenTo data exists
+            var listenTo = null;
+            if (typeof cEventListener.listenerRegistrationQueue[l].returnListenTo != "undefined")
+            {
+                //get listener data based on registration function information
+                //listener = cEventListener.search.returnQueueListener(cEventListener.listenerRegistrationQueue[l].listenerInfo);
+                if (typeof cEventListener.listenerRegistrationQueue[l].returnListenTo == "function")
+                {
+                    listenTo = cEventListener.listenerRegistrationQueue[l].returnListenTo();
+                }
+                else
+                {
+                    listenTo = cEventListener.listenerRegistrationQueue[l].returnListenTo;
+                }
+            }
+            else
+            {
+                //warn that some of the information doesn't exist and then remove it from the list
+                console.warn("Warning: Failed To Register Due To ListenTo Data Not Existing");
+                console.warn(cEventListener.listenerRegistrationQueue[l]);
+                cEventListener.listenerRegistrationQueue.splice(l,1);
+                continue;
+            }
+            
+            //check if listener and listenTo exist
+            if (listener && listenTo)
+            {
+                //try to register listener
+                if (cEventListener.generic.registerListener(listenTo, listener, cEventListener.listenerRegistrationQueue[l].message))
+                {
+                    //if succesful then pop listener from register
+                    cEventListener.listenerRegistrationQueue.splice(l,1);
+                    l--;
+                    _listenerHasBeenRegistered = true;
+                }
+            }
+        }
+        
+        //run any functions that are waiting for registration of listeners to finish
+        cEventListener.queue.invokeMessageQueue("registeredListeners");
+
+        return _listenerHasBeenRegistered;
+    }
+}
+
+function cEventListenerSearchFunctions()
+{
+    //return if the listener is in a list
+    this.checkListenerInList = function checkListenerInList(_ID, _type, _list)
+    {
+        //return true if index exists otherwise return false
+        return cEventListener.search.findListenerIndexFromIDType(_ID, _type, _list) != -1;
+    }
+
+    //return the index of a listener in a list
+    this.findListenerIndex = function findListenerIndex(_listenerMessage, _list)
+    {
+        //loop through _list
+        for (var l = 0; l < _list.length; l++)
+        {
+            //check if listenerID and listenerType are the same
+            if (_list[l].listener.listenerID == _listenerMessage.listener.listenerID
+                && _list[l].message.type == _listenerMessage.message.type)
+            {
+                return l;
+            }
+        }
+
+        console.warn(_listenerMessage.listener.listenerID + " does not exist in list");
+        return -1;
+    }
+
+    //return the index of a listener in a list from ID/type
+    this.findListenerIndexFromIDType = function findListenerIndexFromIDType(_ID, _type, _list)
+    {
+        //loop through _list
+        for (var l = 0; l < _list.length; l++)
+        {
+            //check if listenerID and listenerType are the same
+            if (_list[l].listener.listenerID == _ID
+                && _list[l].message.type == _type)
+            {
+                return l;
+            }
+        }
+
+        console.warn("Either: ID: " + _ID + " Or Type: " + _type + " does not exist in List: " + _list);
+        return -1;
+    }
+
+    //return the index of a registration function with the type _queueType
+    this.findRegistrationFunction = function findRegistrationFunction(_queuerType)
+    {
+        //Loop through all registration functions
+        for (var l = 0; l < cEventListener.listenerRegistrationFunctions.length; l++)
+        {
+            //check if function type is the same as _queueType
+            if (cEventListener.listenerRegistrationFunctions[l].type == _queuerType)
+            {
+                return l;
+            }
+        }
+        
+        return null;
+    }
+
+    //returns queueListener based on custom registration functions
+    this.returnQueueListener = function returnQueueListener(_data)
+    {
+        //find queueFunction index
+        var registraitonFunction = cEventListener.search.findRegistrationFunction(_data.type);
+        
+        //check index exists
+        if (registraitonFunction != null)
+        {
+            //return the queue listener based on _data
+            return cEventListener.listenerRegistrationFunctions[registraitonFunction].evaluateMessage("getRegisterQueueType", _data);
+        }
+        
+        //return null if no custom type found
+        return null;
+    }
+
+    //returns the message 
+    this.returnFunctionWaitingForMessageIndex = function returnFunctionWaitingForMessageIndex(_messageType, _messageFunction)
+    {
+        //check if message function has been entered
+        var _messageFunction = _messageFunction || "";
+
+        //loop through all messages in the "waiting" array
+        for (var a = 0; a < cEventListener.functionWaitingForMessageQueue.length; a++)
+        {
+            //store the current array index to shorten typing
+            var currentFunction = cEventListener.functionWaitingForMessageQueue[a];
+
+            //check if _messageFunction is empty
+            if (_messageFunction != "")
+            {
+                //check the _messageType's match
+                if (_messageType == currentFunction.type)
+                {
+                    //return current index
+                    return a;
+                }
+            }
+            else
+            {
+                //check if _messageType's and _messageFunction's match
+                if (_messageType == currentFunction.type &&
+                    _messageFunction == currentFunction.message.toString())
+                {
+                    //return current index
+                    return a;
+                }
+            }
+        }
+
+        //return null
+        return -1;
+    }
+}
+
+function cEventListenerMessageFunctions()
+{
+    //handle sending _message from _sender to _listener
+    this.sendMessage = function sendMessage(_sender, _listener, _message)
+    {
+        //invoke receiveMessage on listener
+        _listener.receiveMessage(_sender, _message);
+    }
+
+    //handle sending _message to all listeners listening to _sender
+    this.broadcastMessageAll = function broadcastMessageAll(_sender, _message)
+    {
+        //loop through all listeners and send message
+        for (var l = 0; l < _sender.listeners.length; l++)
+        {
+            //send message to current listener
+            cEventListener.message.sendMessage(_sender, _sender.listeners[l].listener, _message);
+        }
+    }
+
+    //send message to all of type _listenerType
+    this.sendMessageToType = function sendMessageToType(_sender, _message)
+    {
+        //loop through all listeners
+        for (var l = 0; l < _sender.listeners.length; l++)
+        {
+            //check if listener type is the same as the message type
+            if (_sender.listeners[l].message.type == _message.type)
+            {
+                //send message to current listener
+                cEventListener.message.sendMessage(_sender, _sender.listeners[l].listener, _message);
+            }
+        }
+    }
+
+    //handle custom message seperation
+    this.parseCustomHTMLData = function parseCustomHTMLData(_infoToParse) 
+    {
+        //split html to correct format
+        var infoParsedString = _infoToParse.replace(/\t/g, "");
+        var infoSplitStrings = infoParsedString.split("|");
+        var parsedInfo = [];
+                    
+        //loop through inputted strings and pull out useable data from them
+        for (var parsedInfoIndex = 0; parsedInfoIndex < infoSplitStrings.length; parsedInfoIndex++)
+        {
+            parsedInfo.push(infoSplitStrings[parsedInfoIndex].split("=")[1]);
+        }
+        
+        //return parsed data
+        return parsedInfo || [];
+    }
+
+    //handle parsing single message into sub messages
+    this.parseIntoMessages = function parseIntoMessages(_message)
+    {
+        var _messages = [];
+    
+        //check message exists
+        if (_message)
+        {
+            this._actualMessage = null;
+    
+            //check if message has a function to return data
+            if (_message instanceof Function)
+            {
+                _message(this);
+            }
+            else
+            {
+                this._actualMessage = _message;
+            }
+    
+            //check if actual message exists
+            if (this._actualMessage)
+            {
+                if (this._actualMessage instanceof Array)
+                {
+                    //if message is already an array
+                    //presume it's already messages
+                    return this._actualMessage;
+                }
+                else
+                {
+                    //add message to return as it is in
+                    //a message format
+                    _messages.push(this._actualMessage);
+                }
+            }
+        }
+    
+        //if element messages exist then return that
+        //otherwise return null
+        if (_messages.length != 0)
+        {
+            return _messages;
+        }
+        return null;
+        
+    }
+
+    //find and return messages of type from message list
+    this.findMessageOfType = function findMessageOfType (_type, _messages)
+    {
+        //check if messages exists
+        if (_messages)
+        {
+            //convert messages into array
+            var parsedMessages = cEventListener.message.parseIntoMessages(_messages);
+
+            //check parsed messages exist
+            if (parsedMessages)
+            {
+                //check if messages is an array
+                if (parsedMessages instanceof Array)
+                {
+                    //loop through messages and return of type
+                    for (var i = 0; i < parsedMessages.length; i++)
+                    {
+                        if (parsedMessages[i].messageType == _type)
+                        {
+                            return parsedMessages[i].message;
+                        }
+                    }
+                }
+            }
+        }
+
+        //no message of type exists
+        return null;
+    }
+}
+
+
+/*
+	Title:
 		Custom Maths
 	
 	Description:
@@ -2928,1557 +4482,6 @@ function customMathPositioningFunctions()
 
 
 /*
-	Title:
-		Elements
-	
-	Description:
-		Attempt at making an array to hold elements dynamcally
-*/
-
-window.cElement = window.cElement || new function cElement()
-{
-
-    //===LOCAL VARIABLES===//
-    this.uniqueID = 10000;
-    this.elementArray = [];
-
-    //====DATA TYPES====//
-    this.dataTypes = new cElementDataTypes();
-    
-    //holds basic message information that is used by the event listener
-    this.Element = this.dataTypes.element.prototype;
-    this.element = this.dataTypes.element;
-
-    //====FUNCTIONS====//
-    this.setup = new cElementSetupFunctions();
-    this.generic = new cElementGenericFunctions();
-    this.search = new cElementSearchFunctions();
-    this.modify = new cElementModifyFunctions();
-
-    //===RUN-TIME FUNCTIONS===//
-    (function setupElementListenerCreation()
-    {
-        
-        //check if cEventListener has been defined
-        if (typeof cEventListener !== 'undefined')
-        {
-            //add element setup to "EventListenerCreation" 
-            cEventListener.generic.addFunctionToWaitingForMessage("afterEventListenerCreation",
-                { 
-                    setupFunction : 
-                        function () 
-                        {
-                            //call any functions listening to "afterElementSetup"
-                            new cTimer.timer("Element Wait For Message",
-                                                new cTimer.callback(
-                                                    function ()
-                                                    { 
-                                                        cEventListener.queue.invokeMessageQueue("afterElementSetup");
-                                                    })
-                                                , 100, 10);
-                        }
-                }
-            );
-            
-            //add element registration to event listeners
-            cEventListener.generic.addRegistrationFunction("element",
-                { 
-                    getRegisterQueueType : 
-                        function (_data) 
-                        {
-                            return window.cElement.search.getElementID(_data.message).eventListener;
-                        }  
-                }
-            );
-        }
-        else
-        {
-            //retry in 10ms if undefined
-            setTimeout(function() { setupElementListenerCreation(); }, 10);
-        }
-        
-    })();
-    
-}
-
-function cElementDataTypes()
-{
-    this.element = function element(_elementObject, _moodObject, _elementParentObject, _ID)
-    {
-        this.elementObject = _elementObject;
-        this.elementParentObject = _elementParentObject || (_moodObject === true ? $(_elementObject).closest(".WebPanelOverlay")[0] : this.elementObject);
-        this.ID = _ID || cElement.uniqueID;
-        this.elementEnabled = false;
-        
-        if (_ID == cElement.uniqueID)
-        {
-            cElement.uniqueID++;
-        }
-    
-        this.eventListener = new cEventListener.listener();
-
-        //store a link to this current element for functions below
-        var currentElement = this;
-        
-        this.eventListener.messagesListeningTo.push(
-            new cEventListener.basicMessage('listenToToggleElementToEnableStatus', 
-            { 
-                receiveMessage : function (_data) 
-                {
-                    cElement.modify.toggleElement(currentElement.ID,
-                                                    _data.message,
-                                                    _data.senderListener.message.message
-                                                );
-                }
-            }
-            )
-        );
-
-        this.eventListener.messagesListeningTo.push(
-            new cEventListener.basicMessage('listenToToggleElementToDisableStatus', 
-            { 
-                receiveMessage : function (_data) 
-                {
-                    cElement.modify.toggleElement(currentElement.ID,
-                                                    _data.message,
-                                                    _data.senderListener.message.message
-                                                );
-                }
-            }
-            )
-        );
-    }
-}
-
-function cElementSetupFunctions()
-{
-    this.createElement = function createElement(_elementData)
-    {
-        //check if element info actually has anything in it
-        if (_elementData)
-        {
-            //create element
-            cElement.generic.addElement(_elementData.elementObject, _elementData.isMoodObject, _elementData.elementParentObject, _elementData.id);
-
-            //modify original id to increase to shorten creation code
-            _elementData.id++;
-        }
-        else
-        {
-            console.warn("Warning: HTML/JS is empty, if not adding elements ignore this");
-        }
-    }
-}
-
-function cElementGenericFunctions()
-{
-    this.addElement = function addElement(_elementObject, _moodObject, _elementParentObject, _ID)
-    {
-        var _ID = _ID || cElement.uniqueID;
-
-        var exists = cElement.search.checkElementExists(_elementObject);
-        if (exists == -1)
-        {
-            //setup the element
-            var _customElement = new cElement.element(_elementObject, _moodObject, _elementParentObject, parseInt(_ID));
-
-            //add the element to the array
-            cElement.elementArray.push(_customElement);
-
-            var _styleData = new cCss.styleSheetModificationData("zIndex", null, false, null, "unset", -1, true);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _ID, _styleData);
-
-            $(_customElement.elementParentObject).addClass("Element" + _ID);
-
-            //return the newly created element
-            console.log("Created Element with object: " + _elementObject);
-            return _customElement;
-        }
-
-        //return the element that already exists
-        console.log("Element with name: "+ _elementName + " Exists");
-        return cElement.elementArray[exists];
-    }
-
-    this.removeElement = function removeElement(_elementName, _elementExtra, _elementType)
-    {
-        //check if the element exists in the array and where
-        var exists = cElement.search.checkElementExists(_elementName, _elementExtra, _elementType)
-        if (exists != -1)
-        {
-            //if the element exists remove it and return true
-            var currentElement = cElement.elementArray[exists];
-
-            //loop through all listeners attached to element and remove them
-            while (currentElement.listener.length > 0)
-            {
-                cEventListener.generic.deregisterListener(currentElement, currentElement.listeners[0].listener, currentElement.listener[0].listenerType, currentElement.listener[0].listenerExtra);
-            }
-
-            //loop through all things the element is listening too and remove them
-            while (currentElement.listeningTo.length > 0)
-            {
-                cEventListener.generic.deregisterListener(currentElement.listeningTo[0].listener, currentElement, currentElement.listeningTo[0].listenerType, currentElement.listeningTo[0].listenerExtra)
-            }
-
-            //remove the element from the element array and return true
-            cElement.elementArray.splice(exists,1);
-            return true;
-        }
-
-        //return false because element doesn't exist
-        console.log("Element with name: " + _elementName + " Doesn't Exist");
-        return false;
-    }
-}
-
-function cElementSearchFunctions()
-{
-
-    //return the element associated with a listener
-    this.returnElementListener = function returnElementListener(_listener)
-    {
-        //check type of input and return based on that
-        if (typeof _listener.message == "string" || typeof _listener.messages == "number")
-        {
-            //find the element from an ID
-            var _element = cElement.search.getElementID(_listener.message);
-
-            //check if element exists, if so return the listener
-            if (_element)
-            {
-                return _element.eventListener;
-            }
-        }
-        else if (_listener.message instanceof cElement.element)
-        {
-            return _listener.message.eventListener;
-        }
-
-        return null;
-    }
-
-    //check element exists and return the index
-    this.checkElementExists = function checkElementExists(_elementObject)
-    {
-        for (var i = 0; i < cElement.elementArray.length; i++)
-        {
-            //check if the names and role match
-            if (cElement.elementArray[i].elementObject == _elementObject)
-            {
-                //return the position in the array
-                return i;
-            }
-        }
-
-        //return -1 if not found
-        return -1;
-    }
-
-    //search for and return the elements with _elementName
-    this.getElementByName = function getElementByName(_elementName)
-    {
-        //store elements
-        var ret = [];
-
-        //loop through every element in the array
-        cElement.elementArray.forEach(function (_element, _index, _arr)
-        {
-            if (_element.elementName == _elementName)
-            {
-                ret.push(_arr[_index]);
-            }
-        });
-
-        if (ret.length <= 0)
-        {
-            //return null if not found
-            console.log("Element with name: " + _elementName + " Doesn't exist");
-        }
-
-        return ret;
-    }
-
-    //return the element with _ID
-    this.getElementID = function getElementID(_ID)
-    {
-        //loop through every element in the array
-        var _ret = null;
-        cElement.elementArray.forEach(function (_element, _index, _arr)
-        {
-            if (_element.ID == _ID) { return _ret = _arr[_index]; }
-        });
-
-        if (_ret)
-        {
-            return _ret;
-        }
-
-        //return null if not found
-        console.log("Element with ID: " + _ID + " Doesn't Exists");
-        return null;
-    }
-
-    //return the listener 
-    this.getElementByListener = function getElementByListener(_listener)
-    {
-        //loop through every element in the array
-        var _ret = null;
-        cElement.elementArray.forEach(function (_element, _index, _arr)
-        {
-            if (_element.eventListener.ID == _listener.ID) { return _ret = _arr[_index]; }
-        });
-
-        if (_ret)
-        {
-            return _ret;
-        }
-        //return null if not found
-        console.log("Element with listener: " + _listener + " Doesn't Exist");
-        return null;
-    }
-
-    this.getElementBy
-
-}
-
-function cElementModifyFunctions()
-{
-    this.toggleElement = function toggleElement(_elementID, _enabled, _messageData) 
-    {	
-        var _element = cElement.search.getElementID(_elementID);
-    
-        var _messageData = _messageData || {};
-    
-        //check if element isn't null
-        if (_element) 
-        {
-            //find HTML object attached to element
-            //var htmlObject = _element.elementObject;
-
-            if (_element.elementObject) 
-            {
-                //turn message enable/disable into bool
-                var _toEnable = (_enabled.message === "enable" || _enabled.message === true);
-        
-                //modify the element's extras I.E position and zIndex
-                cElement.modify.modifyElementOpacity(_element, _messageData, _toEnable);
-                cElement.modify.modifyElementPosition(_element, _messageData);
-
-                //check if the element now has a different active status and modify
-                if (_enabled.message == "enable" && !_element.elementEnabled || 
-                    _enabled.message == "disable" && _element.elementEnabled)
-                {
-                    //update listenerToElementEnabledChange and set element to be opposite
-                    cEventListener.message.sendMessageToType(_element.eventListener, new cEventListener.basicMessage("listenToElementEnableChange", _enabled.message));
-                    _element.elementEnabled = !_element.elementEnabled;						
-                }
-            }
-            
-            //log warning fail and return false
-            console.warn("Warning: No HTML Element Found With Name: " + _element.elementName + " Check HTML is correct, This usually happens when an object doesn't exist but is still being refenced");
-            return false;
-        }
-            
-        //log warning fail and return false
-        console.warn("Warning: No Element Found Check HTML is correct");
-        return false;
-    }
-
-    this.modifyElementOpacity = function modifyElementOpacity(_element, _messageData, _enabled)
-    {
-        if (_messageData.opacityTime)
-        {
-            var _transitionData = "opacity " + ((_messageData.opacityTime || 0) / 1000).toString() + "s";
-            _transitionData += " " + (_messageData.opacityTiming || "linear");
-            _transitionData += " " + ((_messageData.opacityDelay || 0) / 1000).toString() + "s";
-                  
-            var _styleData = new cCss.styleSheetModificationData("transition", "opacity", true, 2, _transitionData, -1, false);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
-        }
-        else
-        {
-            var _transitionData = "opacity 0s linear 0s";    
-            var _styleData = new cCss.styleSheetModificationData("transition", "opacity", true, 2, _transitionData, -1, false);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
-        }
-
-        if (_enabled)
-        {
-            var _zIndexToSet = (_messageData.zIndex == null ? "10000" : _messageData.zIndex);
-            var _zIndexImportanceToSet = (_messageData.zIndexImportance == null  ? true : _messageData.zIndexImportance);
-            var _styleData = new cCss.styleSheetModificationData("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);    
-
-            //change html style to be visiblie and set zIndex to default
-            var _opacityToSet = _messageData.opacity == null ? 100 : _messageData.opacity;
-            _styleData = new cCss.styleSheetModificationData("opacity", null, false, null, _opacityToSet.toString(), -1, false);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
-
-            _styleData = new cCss.styleSheetModificationData("visibility", null, false, null, "visible", -1, false);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
-
-            var _opacityTimer = cTimer.generic.findTimerByName("ElementOpacityTimer" + _element.ID);
-
-            if (_opacityTimer)
-            {
-                _opacityTimer.destroy();
-            }
-        }
-        else
-        {
-            //change html style to be visiblie and set zIndex to default
-            var _opacityToSet = _messageData.opacity == null ? 0 : _messageData.opacity;
-            var _styleData = new cCss.styleSheetModificationData("opacity", null, false, null, _opacityToSet.toString(), -1, false);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
-            
-            if (_element.elementEnabled == true && _enabled == false)
-            {
-                var currentDelay = (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0);
-
-                function opacityChange(_args)
-                {
-                    _styleData = new cCss.styleSheetModificationData("visibility", null, false, null, "hidden", -1, false);
-                    cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);            
-                            
-                    var _zIndexToSet = (_messageData.zIndex == null ? "0" : _messageData.zIndex);
-                    var _zIndexImportanceToSet = (_messageData.zIndexImportance == null ? true : _messageData.zIndexImportance);
-                    _styleData = new cCss.styleSheetModificationData("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
-                    cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
-                }
-                
-                new cTimer.realtimeTimer("ElementOpacityTimer" + _element.ID, new cTimer.callback(opacityChange, this), true, currentDelay + 1, true);
-            }
-        }
-    }
-
-    this.modifyElementPosition = function modifyElementPosition(_element, _messageData)
-    {
-        //setup position variables
-        var _posX = _messageData.posX != null ? _messageData.posX : typeof _messageData.generatePosX == "function" ? _messageData.generatePosX() : null;
-        var _posY = _messageData.posY != null ? _messageData.posY : typeof _messageData.generatePosY == "function" ? _messageData.generatePosY() : null;
-
-        var _transitionData = ((_messageData.positionMoveTime || 0) / 1000).toString() + "s"
-                                + " " + (_messageData.positionTiming || "linear") + " "
-                                + ((_messageData.positionDelay || 0) / 1000).toString() + "s";
-
-        if (_posX) 
-        {
-            var _styleData = new cCss.styleSheetModificationData("transition", "left", true, 2, _transitionData, -1, false);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
-
-            _styleData = new cCss.styleSheetModificationData("left", null, false, 0, _posX + "px", -1, true);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
-        }
-
-        if (_posY) 
-        {
-            var _styleData = new cCss.styleSheetModificationData("transition", "top", true, 2, _transitionData, -1, false);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
-
-            _styleData = new cCss.styleSheetModificationData("top", null, false, 0, _posY + "px", -1, true);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
-        }
-    }
-
-    //add onClick to element's html
-    this.addOnClickToElement = function addOnClickToElement(_elementID, _function, _addOrCreate, _css)
-	{
-		
-		var _css = _css || null;
-		//find all html objects from ID
-		var elementObjs = cElement.search.getElementID(_elementID).elementObject;
-		
-		if (elementObjs)
-		{
-			//loop through all objects
-			for (var e = 0; e < elementObjs.length; e++)
-			{
-				//add onto onclick
-				cUtility.addOnClickToHTML(elementObjs[e], _function, _addOrCreate);
-
-				if (_css)
-				{
-					//Add css based on button
-					elementObjs[e].classList.add(_css);
-				}
-			}
-		}
-	}
-}
-
-
-/*
-	Title:
-		Elements Groups
-	
-	Description:
-		Attempt at making a grouping system to hold elements
-*/
-
-var cElementGroup = window.cElementGroup || new function cElementGroup()
-{
-	//===LOCAL VARIABLES===//
-	this.elementGroupArray = [];
-
-    //====DATA TYPES====//
-	this.dataTypes = new cElementGroupDataTypes();
-	
-	this.ElementGroup = this.dataTypes.elementGroup.prototype;
-	this.elementGroup = this.dataTypes.elementGroup;
-
-	//====FUNCTIONS====//
-	this.setup = cElementGroupSetupFunctions();
-	this.search = cElementGroupSearchFunctions();
-
-	//===RUN-TIME FUNCTIONS===//
-	(function setupElementGroupListenerCreation()
-    {
-        
-        //check if cEventListener has been defined
-        if (typeof cEventListener !== 'undefined')
-        {           
-            //add element group registration to event listeners
-            cEventListener.generic.addRegistrationFunction("elementGroup",
-                { 
-                    getRegisterQueueType : 
-                        function (_data) 
-                        {
-                            return window.cElementGroup.search.returnElementGroupFromID(_data.message).eventListener;
-                        }  
-                }
-            );
-        }
-        else
-        {
-            //retry in 10ms if undefined
-            setTimeout(function() { setupElementGroupListenerCreation(); }, 10);
-        }
-        
-    })();
-}
-
-function cElementGroupDataTypes()
-{
-	this.elementGroup = function elementGroup(_ID, _elementsInGroup, _eventListener)
-	{
-		this.ID = _ID || cElement.uniqueID;
-		this.elementsInGroup = _elementsInGroup || [];
-		this.eventListener = _eventListener || new cEventListener.listener();
-
-		var currentElementGroup = this;
-        
-        this.eventListener.messagesListeningTo.push(
-            new cEventListener.basicMessage('listenToToggleElementToEnableStatus', 
-            { 
-                receiveMessage : function (_data) 
-                {
-					/*
-                    cElement.modify.toggleElement(currentElement.ID,
-                                                    _data.message,
-                                                    _data.senderListener.message.message
-												);
-					*/
-					//Relay Message Data To Elements
-                }
-            }
-            )
-        );
-
-        this.eventListener.messagesListeningTo.push(
-            new cEventListener.basicMessage('listenToToggleElementToDisableStatus', 
-            { 
-                receiveMessage : function (_data) 
-                {
-					/*
-                    cElement.modify.toggleElement(currentElement.ID,
-                                                    _data.message,
-                                                    _data.senderListener.message.message
-												);
-					*/
-					//Relay Message Data To Elements
-                }
-            }
-            )
-        );}
-}
-
-function cElementGroupSetupFunctions()
-{
-	//add a new element group to the array
-	this.addElementGroup = function addElementGroup(_ID, _elementsInGroup)
-	{
-		//find if element group exists
-		var _elementGroupExists = cElementGroup.search.returnElementGroupIndexFromID(_ID);
-
-		if (_elementGroupExists == -1)
-		{
-			//element group doesn't exist so add it to array and return the new group
-			var _elementGroup = new cElementGroup.elementGroup(_ID, _elementsInGroup);
-			cElementGroup.elementGroupArray.push(_elementGroup);
-
-			return _elementGroup;
-		}
-		
-		//element group already exists so exit
-		return null;
-	}
-
-	//remove an element group from the array
-	this.removeElementGroup = function removeElementGroup(_ID)
-	{
-		//find if element group exists
-		var _elementGroupExists = cElementGroup.search.returnElementGroupIndexFromID(_ID);
-
-		if (_elementGroupExists == -1)
-		{
-			//remove the element group and return true
-			cElementGroup.elementGroupArray.splice(_elementGroupExists, 1);
-
-			return true;
-		}
-
-		//element group doesn't exist so return false
-		return false;
-	}
-}
-
-function cElementGroupSearchFunctions()
-{
-	//return the element group with _ID
-	this.returnElementGroupFromID = function returnElementGroupFromID(_ID)
-	{
-		//find the index for the element group
-		var _index = cElementGroup.search.returnElementGroupIndexFromID(_ID);
-
-		//check index is valid
-		if (_index != -1)
-		{
-			//return the element group at index
-			return cElementGroup.elementGroupArray[_index];
-		}
-
-		//return null as no element group exists
-		return null;
-	}
-
-	//return the index of element group with _ID
-	this.returnElementGroupIndexFromID = function returnElementGroupIndexFromID(_ID)
-	{
-		//loop through all element groups and find the index with _ID
-		for (var i = 0; i < cElementGroup.elementGroupArray.length; i++)
-		{
-			//check ID's match
-			if (cElementGroup.elementGroupArray[i].ID == _ID)
-			{
-				//return index;
-				return i;
-			}
-		}
-
-		//return -1 as no element group exists
-		return -1;
-	}
-}
-
-
-/*
-	Title:
-		Custom Event Listener
-	
-	Description:
-		Attempt at making an event listener 
-*/
-
-//Main Type
-window.cEventListener = window.cEventListener || new function customEventListener() 
-{
-    //====VARIABLES====//
-
-    //setup variables
-    //default listener ID to stop IDs from overlapping
-    this.uniqueListenerID = 0;
-
-    //store all listeners in an easy to access place
-    this.allListeners = [];
-
-    //store all listeners waiting to be registered
-    //also store any custom functions that have been added to
-    //handle the registration of listeners
-    this.listenerRegistrationQueue = [];
-    this.listenerRegistrationFunctions = [];
-
-    //store scaled time for timer for registering queue listeners
-    this.listenerRegistrationQueueScaledTimer = 
-    [
-        {threshold : 0, interval : 500},
-        {threshold : 10, interval : 1000},
-        {threshold : 65, interval : 2000},
-        {threshold : 185, interval : 5000}
-    ];
-
-    //store timer for registering queue listeners
-    this.listenerRegistrationQueueTimer = null;
-
-    //store any messages to be broadcasted (change to priortiy queue list?)
-    this.functionWaitingForMessageQueue = [];
-
-    //store any messages broadcasted and ready to be removed
-    this.functionWaitingInvoked = [];
-
-    //store if queue invoke process has started
-    this.functionQueueProcessStarted = 0;
-
-    //====DATA TYPES====//
-    this.dataTypes = new cEventListenerDataTypes();
-    
-    //holds basic message information that is used by the event listener
-    this.BasicMessage = this.dataTypes.basicMessage.prototype;
-    this.basicMessage = this.dataTypes.basicMessage;
-
-    //holds basic listener specific message information
-    this.ListenerMessage = this.dataTypes.listenerMessage.prototype;
-    this.listenerMessage = this.dataTypes.listenerMessage;
-
-    //holds basic listener specific information for the queue register
-    this.listenerQueuerInfo = this.dataTypes.listenerQueuerInfo.prototype;
-    this.listenerQueuerInfo = this.dataTypes.listenerQueuerInfo;
-
-    //holds all the main listener specfic information
-    this.Listener = this.dataTypes.listener.prototype;
-    this.listener = this.dataTypes.listener;
-
-    //====FUNCTIONS====//
-    this.generic = new cEventListenerGenericFunctions();
-    this.queue = new cEventListenerQueueFunctions();
-    this.search = new cEventListenerSearchFunctions();
-    this.message = new cEventListenerMessageFunctions();
-
-    //===RUN TIME===//
-    //initiate and run event listener on MooD page load
-    (function initiateEventListener()
-    {
-        //check if Salamander/MooD has been setup
-        if (Salamander.lang.isSysDefined())
-        {		
-            if (Sys.WebForms)
-            {
-                if (Sys.WebForms.PageRequestManager)
-                {
-                    if (Sys.WebForms.PageRequestManager.getInstance())
-                    {
-                        //add eventListenerPageLoaded to run on page load
-                        Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cEventListener.generic.eventListenerPageLoaded);
-                        return;
-                    }
-                }
-            }	
-        }
-        
-        //if Salamander/MooD hasn't been setup then retry in 10ms
-        setTimeout(function() { initiateEventListener(); },10);
-    })();
-}
-
-function cEventListenerDataTypes()
-{
-    //structure of the messages the event listener uses
-    //hold basic message data
-    this.basicMessage = function basicMessage(_type, _message)
-    {
-        //force inputted variables to be valid
-        this.type = _type || '';
-        this.message = _message || '';
-    
-        //run _messageFunction on _message if available, otherwise return message
-        this.evaluateMessage =  function evaluateMessage(_messageFunction, _messageExtras, _comparison)
-        {
-            //check if _messageFunction exists otherwise set it to null
-            _messageFunction = _messageFunction || 'null';
-            _messageExtras = _messageExtras || "";
-            _comparison = _comparison || false;
-    
-            //check if the message is a custom object
-            if (this.message === Object(this.message))
-            {
-                //check that the custom message function exists
-                if (typeof this.message[_messageFunction] === "function")
-                {
-                    //check if evaluate message is being used for comparison
-                    if (_comparison)
-                    {
-                        //return the function itself
-                        return this.message[_messageFunction];
-                    }
-                    else 
-                    {
-                        //otherwise invoke custom message function on the message
-                        return this.message[_messageFunction].call(this.message, _messageExtras);
-                    }
-                }
-                
-                //return the messageFunction as it isn't
-                //a function and is probably a value instead
-                return this.message[_messageFunction];
-            }
-            
-            //return evaluated message as the
-            //message is a primative type
-            //return this.message;
-
-            //return null as no function found
-            return null;
-        }
-    }
-
-    //Holds basic listener messaging information
-    this.listenerMessage = function listenerMessage(_listener, _message)
-    {	
-        this.listener = _listener;
-        this.message = _message || new cEventListener.basicMessage('','');
-    }
-
-    //holds basic listener information inside a queue to setup listener at intervals
-    this.listenerQueuerInfo = function listenerQueuerInfo(_listenerInfo, _listenToInfo)
-    {
-        this.listenerInfo = _listenerInfo || new cEventListener.listenerMessage(null, null);
-        this.listenToInfo = _listenToInfo || new cEventListener.listenerMessage(null, null);
-    }
-
-    //hold all information to do with individual listeners
-    this.listener = function listener()
-    {
-        //setup basic variables
-        //store what is listening to this listener
-        this.listeners = [];
-
-        //store what this listener is listening to
-        this.listeningTo = [];
-
-        //store the messages this listener is looking for
-        this.messagesListeningTo = [];
-
-        //store ID for listener and increment global listener ID
-        this.listenerID = cEventListener.uniqueListenerID;
-        var _currentListener = this;
-
-        cEventListener.uniqueListenerID++;
-
-        //handle recieving messages
-        this.receiveMessage = function receiveMessage(_sender, _message)
-        {
-            //loop through all messages this listener is listening to
-            for (var i = 0; i < this.messagesListeningTo.length; i++)
-            {
-                //check if the message type is on of the messages this listener is listening to
-                if (_message.type == this.messagesListeningTo[i].type)
-                {
-                    //check if this listener has a method of handling the message type
-                    if (this.messagesListeningTo[i].message != null)
-                    {
-                        //find any listener specific data attached to this message
-                        //NEEDS EDITING LATER                        
-                        var _messageType = _message.evaluateMessage(_message.type) || _message.type;
-
-                        var senderListenerIndex = 
-                            _currentListener.findListeningTo(
-                                _sender.listenerID,
-                                _messageType
-                            );
-
-                        var senderListenerData = _currentListener.listeningTo[senderListenerIndex];
-
-                        //return the result of the method used to handle this message
-                        return this.messagesListeningTo[i].evaluateMessage
-                        (
-                            "receiveMessage",
-                            {   //sender extra message data
-                                message: _message,
-                                sender: _sender,
-                                senderListener: senderListenerData
-                            }
-                        );
-                    }
-                }
-            }
-        }
-
-        //find listener from ID and Type
-        this.findListener = function findListener(_id, _type)
-        {
-            return _currentListener.findListenerIndexInList(_id, _type, _currentListener.listeners);
-        }
-
-        //check if listener exists
-        this.checkListenerExists = function checkListenerExists(_id, _type)
-        {
-            return (_currentListener.findListener(_id, _type) != -1)
-        }
-
-        //find listeningTo from ID and Type
-        this.findListeningTo = function findListeningTo(_id, _type)
-        {
-            return _currentListener.findListenerIndexInList(_id, _type, _currentListener.listeningTo);
-        }
-
-        //check if listenTo exists
-        this.checkListeningToExists = function checkListeningToExists(_id, _type)
-        {
-            return (_currentListener.findListeningTo(_id, _type) != -1)
-        }
-
-        //find listener information in list
-        this.findListenerIndexInList = function findListenerIndexInList(_id, _type, _list)
-        {
-            //loop through all _list listeners
-            for (var l = 0; l < _list.length; l++)
-            {
-                //check if listenerID and listenerType are the same
-                if (_list[l].listener.listenerID == _id
-                    && _list[l].message.type == _type)
-                {
-                    return l;
-                }
-            }
-
-            //return -1 if no listener exists
-            return -1;
-        }
-    }
-}
-
-function cEventListenerGenericFunctions()
-{
-    //run any functions needed on page load (Salamader/MooD finished setup)
-    this.eventListenerPageLoaded = function eventListenerPageLoaded()
-    {
-        //remove eventListenerPageLoaded from page loading to stop duplicate responses
-        Sys.WebForms.PageRequestManager.getInstance().remove_pageLoaded(cEventListener.generic.eventListenerPageLoaded);
-        
-        //broadcast ready signal to anything listening
-        (function invokeAfterCreation() {
-            setTimeout(function() {
-                return cEventListener.queue.invokeMessageQueue("afterEventListenerCreation");
-            }, 500);
-        })();
-        
-        //setup interval for registering any listeners in the queue,
-        //run based on a slowdown timer
-        (function setupScaledTimer() {
-            //check if timer exists
-            if (cTimer)
-            {
-                //setup scaled timer
-                cEventListener.listenerRegistrationQueueTimer 
-                = new cTimer.scaledTimer( "EventListenerRegistrationQueueTimer", new cTimer.callback(
-                                            function() { return cEventListener.queue.registerListenersInQueue(); }), true, 
-                                            cEventListener.listenerRegistrationQueueScaledTimer
-                                        );
-            }
-            else
-            {
-                //wait until scaled timer exists
-                setTimeout(function() { return setupScaledTimer()}, 10);
-            }
-        })();
-
-    }
-
-    //handle registering listener to "listen to"
-    this.registerListener = function registerListener(_listenTo, _listener, _listenerMessage)
-    {
-        //check if both inputs are valid
-        if (_listener && _listenTo)
-        {
-            //check if listener is not already registered to _listenTo
-            if (!_listenTo.checkListenerExists(_listener.listenerID, _listenerMessage.type))
-            {
-                //add listener to _listenTo listeners
-                //and add _listeningTo to listener's listeningTo
-                _listenTo.listeners.push(new cEventListener.listenerMessage(_listener, _listenerMessage));
-                _listener.listeningTo.push(new cEventListener.listenerMessage(_listenTo, _listenerMessage));
-
-                var message = new cEventListener.basicMessage("registerListenerSuccesful",
-                {
-                    listeningTo: _listenTo,
-                    listener: _listener,
-                    message: _listenerMessage,
-                    registerListenerSuccesful: function() {
-                        return this.message.type;
-                    }
-                });
-
-                //call register succesful on listener
-                cEventListener.message.sendMessage(_listenTo, _listener, message);
-                
-                return true;
-
-            }
-            else
-            {
-                //log a warning that the _listener is already listening to the _listeningTo with the same message type
-                console.warn("Listener already exists with ID: " + _listener.listenerID + " and Type:" + _listenerInfo.type + " Listening to: " + _listenTo.listenerID);
-                return false;
-            }
-        }
-        else //log a warning that one of the inputted values does not exist
-        {
-            console.warn("Listener: " + _listener + " or " + _listenTo + " does not exists");
-            return false;
-        }
-    
-    }
-
-    //handle de-registering listener from "listen to"
-    this.deregisterListener = function deregisterListener(_listenTo, _listener, _listenerInfo)
-    {
-        //setup temporary listenerMessages
-        var tempListener = new cEventListener.listenerMessage(_listener, _listenerMessage);
-        var tempListeningTo = new cEventListener.listenerMessage(_listenTo, _listenerMessage);
-        
-        //check the listener is valid
-        if (_listener)
-        {
-            //find where the listener is inside _listenTo's listeners
-            var listenerIndex = cEventListener.search.findListenerIndexFromIDType(_listener.id, _listener.tpye, _listenTo.listeners);
-            
-            //check if listener is registered to _listenTo
-            if (listenerIndex != -1)
-            {
-                //remove listener from listenTo
-                _listenTo.listeners.splice(listenerIndex,1);
-                
-                //check if _listenTo exists
-                if (_listenTo)
-                {
-                    //find index for _listenTo inside what _listener is listening too
-                    var listeningToIndex = cEventListener.search.findListenerIndexFromIDType(_listenTo.id, _listenerInfo.type, _listener.listeningTo);
-                    
-                    //check if listenTo is within _listener's listenTo
-                    if (listeningToIndex != -1) 
-                    {
-                        
-                        var message = new cEventListener.basicMessage("deregisterListenerSuccesful",
-                        {
-                            listeningTo: tempListeningTo,
-                            listener: tempListener
-                        });
-
-                        /*
-                        //setup deregister successful message
-                        var messageContents = {
-                            listeningTo: tempListeningTo,
-                            listener: tempListener,
-                            message: "deregisterListenerSuccesful"
-                        }
-
-                        //create message with type deregister successful and the above message contents
-                        var message = new cEventListener.basicMessage("deregisterListenerSuccesful", messageContents);
-                        */
-
-                        //call deregister succesful on listener
-                        cEventListener.message.sendMessage(_listenTo, _listener, message);
-                        
-                        //remove listenTo from listener
-                        _listener.listeningTo.splice(listeningToIndex,1);
-                    }
-                }
-                
-                //NEEDS EDITING LATER
-                return true;
-            }
-            else
-            {
-                console.warn (_listener + " Does not exist within " + _listenTo + "'s listeners");
-                return false;
-            }
-        }
-        
-        console.warn ("_listener is an invalid input: " + _listener);
-        return false;
-    }
-
-    //add queue registration function
-    this.addRegistrationFunction = function addRegistrationFunction(_queueType, _queueFunction)
-    {
-            //find queueFunction index
-            var registraitonFunction = cEventListener.search.findRegistrationFunction(_queueType);
-            
-            //check index exists
-            if (registraitonFunction == null)
-            {
-                //add new function to the list of registration functions
-                cEventListener.listenerRegistrationFunctions.push(new cEventListener.basicMessage(_queueType, _queueFunction));
-                return true;
-            }
-            
-            //display warning that there is already a function with the same type 
-            console.warn("Queue Registration Function Already Exists With Type: " + _queueType);
-    }
-    
-    //remove queue registration function
-    this.removeRegistrationFunction = function removeRegistrationFunction(_queueType)
-    {
-            //find queueFunction index
-            var registraitonFunction = cEventListener.search.findRegistrationFunction(_queueType);
-            
-            //check index exists
-            if (registraitonFunction != null)
-            {
-                //remove function from the list of registration functions
-                cEventListener.listenerRegistrationFunctions.splice(registraitonFunction, 1);
-                return true;
-            }
-            
-            //display warning that the function doesn't exist with _queueType
-            console.warn("Queue Registration Function Does Not Exist With Type: " + _queueType);
-    }
-
-    //add waiting for message functions to array
-    this.addFunctionToWaitingForMessage = function addFunctionToWaitingForMessage(_messageType, _messageFunction)
-    {
-        //add message to function array
-        cEventListener.functionWaitingForMessageQueue.push(new cEventListener.basicMessage(_messageType, _messageFunction));
-    }
-
-    //remove waiting for message functions
-    this.removeFunctionFromWaitingForMessage = function removeFunctionFromWaitingForMessage(_messageType, _messageFunction)
-    {
-        //store current index of message
-        var currentIndex = -1;
-
-        //loop until all messages have been removed
-        do {
-
-            //store the next index of _messageType/_messageFunction
-            currentIndex = cEventListener.search.returnFunctionWaitingForMessageIndex(_messageType, _messageFunction);
-
-            //check if current index is not null
-            if (currentIndex != -1)
-            {
-                //remove current index from array
-                cEventListener.functionWaitingForMessageQueue.splice(currentIndex, 1);
-            }
-
-        } while (currentIndex != -1);
-
-    }
-}
-
-function cEventListenerQueueFunctions()
-{
-    //run all setup listener functions
-    this.invokeMessageQueue = function invokeMessageQueue(_functionType)
-    {
-        //store any messages that have been invoked
-        cEventListener.functionQueueProcessStarted += 1;
-
-        //loop through all functions within the current message queue
-        for (var l = 0; l < cEventListener.functionWaitingForMessageQueue.length; l++)
-        {
-            //check if message type is the same as _functionType
-            if (cEventListener.functionWaitingForMessageQueue[l].type == _functionType)
-            {
-
-                if (cEventListener.queue.checkMessageQueueInvoked(cEventListener.functionWaitingForMessageQueue[l]) == -1)
-                {
-                    //invoke the "setupFunction" of that message
-                    cEventListener.functionWaitingForMessageQueue[l].evaluateMessage("setupFunction");
-
-                    //add this individual to be removed
-                    cEventListener.functionWaitingInvoked.push(
-                        new cEventListener.basicMessage(_functionType,
-                            cEventListener.functionWaitingForMessageQueue[l].evaluateMessage(
-                                "setupFunction", null, true)
-                        )
-                    );
-
-                }
-            }
-        }
-
-        cEventListener.functionQueueProcessStarted -= 1;
-
-        if (cEventListener.functionQueueProcessStarted == 0)
-        {
-            //loop through all messages that have been invoked and remove them
-            for (var m = 0; m < cEventListener.functionWaitingInvoked.length; m++)
-            {
-                cEventListener.queue.removeFromMessageQueue(cEventListener.functionWaitingInvoked[m]);
-                cEventListener.functionWaitingInvoked.splice(m,1);
-                m--;
-            }
-        }
-    }
-
-    this.checkMessageQueueInvoked = function checkMessageQueueInvoked(_messageQueuer)
-    {
-        //loop through all messages that have been invoked and remove them
-        for (var m = 0; m < cEventListener.functionWaitingInvoked.length; m++)
-        {
-            if (cEventListener.functionWaitingInvoked[m] == _messageQueuer)
-            {
-                return m;
-            }
-        }
-
-        //otherwise return -1 because it doesn't exist
-        return -1;
-    }
-
-    this.removeFromMessageQueue = function removeFromMessageQueue(_message)
-    {
-        //loop through all functions within the current message queue
-        for (var l = 0; l < cEventListener.functionWaitingForMessageQueue.length; l++)
-        {
-            //check if message type is the same as _functionType
-            if (cEventListener.functionWaitingForMessageQueue[l].type == _message.type &&
-                cEventListener.functionWaitingForMessageQueue[l].evaluateMessage("setupFunction", null, true) == _message.message)
-            {
-                //remove the message as removing it within the
-                //loop can cause array mismatches
-                cEventListener.functionWaitingForMessageQueue.splice(l,1);
-                return;
-            }
-        }
-    }
-
-    //loop through listeners waiting to be registered and register them
-    this.registerListenersInQueue = function registerListenersInQueue () 
-    {
-        console.log("Executed Queue Register");
-
-        //store if any listener has been registered for scaled timer purposes
-        var _listenerHasBeenRegistered = false;
-
-        //run any functions that are waiting for registration of listeners to start
-        cEventListener.queue.invokeMessageQueue("registeringListeners");
-	
-        //loop through all listeners in queue
-        for (var l = 0; l < cEventListener.listenerRegistrationQueue.length; l++)
-        {
-        
-            //check listener data exists
-            var listener = null;
-            if (typeof cEventListener.listenerRegistrationQueue[l].returnListener != "undefined")
-            {
-                //get listener data based on registration function information
-                //listener = cEventListener.search.returnQueueListener(cEventListener.listenerRegistrationQueue[l].listenerInfo);
-                if (typeof cEventListener.listenerRegistrationQueue[l].returnListener == "function")
-                {
-                    listener = cEventListener.listenerRegistrationQueue[l].returnListener();
-                }
-                else
-                {
-                    listener = cEventListener.listenerRegistrationQueue[l].returnListener;
-                }
-            }
-            else
-            {
-                //warn that some of the information doesn't exist and then remove it from the list
-                console.warn("Warning: Failed To Register Due To Listener Data Not Existing");
-                console.warn(cEventListener.listenerRegistrationQueue[l]);
-                cEventListener.listenerRegistrationQueue.splice(l,1);
-                continue;
-            }
-            
-            //check listenTo data exists
-            var listenTo = null;
-            if (typeof cEventListener.listenerRegistrationQueue[l].returnListenTo != "undefined")
-            {
-                //get listener data based on registration function information
-                //listener = cEventListener.search.returnQueueListener(cEventListener.listenerRegistrationQueue[l].listenerInfo);
-                if (typeof cEventListener.listenerRegistrationQueue[l].returnListenTo == "function")
-                {
-                    listenTo = cEventListener.listenerRegistrationQueue[l].returnListenTo();
-                }
-                else
-                {
-                    listenTo = cEventListener.listenerRegistrationQueue[l].returnListenTo;
-                }
-            }
-            else
-            {
-                //warn that some of the information doesn't exist and then remove it from the list
-                console.warn("Warning: Failed To Register Due To ListenTo Data Not Existing");
-                console.warn(cEventListener.listenerRegistrationQueue[l]);
-                cEventListener.listenerRegistrationQueue.splice(l,1);
-                continue;
-            }
-            
-            //check if listener and listenTo exist
-            if (listener && listenTo)
-            {
-                //try to register listener
-                if (cEventListener.generic.registerListener(listenTo, listener, cEventListener.listenerRegistrationQueue[l].message))
-                {
-                    //if succesful then pop listener from register
-                    cEventListener.listenerRegistrationQueue.splice(l,1);
-                    l--;
-                    _listenerHasBeenRegistered = true;
-                }
-            }
-        }
-        
-        //run any functions that are waiting for registration of listeners to finish
-        cEventListener.queue.invokeMessageQueue("registeredListeners");
-
-        return _listenerHasBeenRegistered;
-    }
-}
-
-function cEventListenerSearchFunctions()
-{
-    //return if the listener is in a list
-    this.checkListenerInList = function checkListenerInList(_ID, _type, _list)
-    {
-        //return true if index exists otherwise return false
-        return cEventListener.search.findListenerIndexFromIDType(_ID, _type, _list) != -1;
-    }
-
-    //return the index of a listener in a list
-    this.findListenerIndex = function findListenerIndex(_listenerMessage, _list)
-    {
-        //loop through _list
-        for (var l = 0; l < _list.length; l++)
-        {
-            //check if listenerID and listenerType are the same
-            if (_list[l].listener.listenerID == _listenerMessage.listener.listenerID
-                && _list[l].message.type == _listenerMessage.message.type)
-            {
-                return l;
-            }
-        }
-
-        console.warn(_listenerMessage.listener.listenerID + " does not exist in list");
-        return -1;
-    }
-
-    //return the index of a listener in a list from ID/type
-    this.findListenerIndexFromIDType = function findListenerIndexFromIDType(_ID, _type, _list)
-    {
-        //loop through _list
-        for (var l = 0; l < _list.length; l++)
-        {
-            //check if listenerID and listenerType are the same
-            if (_list[l].listener.listenerID == _ID
-                && _list[l].message.type == _type)
-            {
-                return l;
-            }
-        }
-
-        console.warn("Either: ID: " + _ID + " Or Type: " + _type + " does not exist in List: " + _list);
-        return -1;
-    }
-
-    //return the index of a registration function with the type _queueType
-    this.findRegistrationFunction = function findRegistrationFunction(_queuerType)
-    {
-        //Loop through all registration functions
-        for (var l = 0; l < cEventListener.listenerRegistrationFunctions.length; l++)
-        {
-            //check if function type is the same as _queueType
-            if (cEventListener.listenerRegistrationFunctions[l].type == _queuerType)
-            {
-                return l;
-            }
-        }
-        
-        return null;
-    }
-
-    //returns queueListener based on custom registration functions
-    this.returnQueueListener = function returnQueueListener(_data)
-    {
-        //find queueFunction index
-        var registraitonFunction = cEventListener.search.findRegistrationFunction(_data.type);
-        
-        //check index exists
-        if (registraitonFunction != null)
-        {
-            //return the queue listener based on _data
-            return cEventListener.listenerRegistrationFunctions[registraitonFunction].evaluateMessage("getRegisterQueueType", _data);
-        }
-        
-        //return null if no custom type found
-        return null;
-    }
-
-    //returns the message 
-    this.returnFunctionWaitingForMessageIndex = function returnFunctionWaitingForMessageIndex(_messageType, _messageFunction)
-    {
-        //check if message function has been entered
-        var _messageFunction = _messageFunction || "";
-
-        //loop through all messages in the "waiting" array
-        for (var a = 0; a < cEventListener.functionWaitingForMessageQueue.length; a++)
-        {
-            //store the current array index to shorten typing
-            var currentFunction = cEventListener.functionWaitingForMessageQueue[a];
-
-            //check if _messageFunction is empty
-            if (_messageFunction != "")
-            {
-                //check the _messageType's match
-                if (_messageType == currentFunction.type)
-                {
-                    //return current index
-                    return a;
-                }
-            }
-            else
-            {
-                //check if _messageType's and _messageFunction's match
-                if (_messageType == currentFunction.type &&
-                    _messageFunction == currentFunction.message.toString())
-                {
-                    //return current index
-                    return a;
-                }
-            }
-        }
-
-        //return null
-        return -1;
-    }
-}
-
-function cEventListenerMessageFunctions()
-{
-    //handle sending _message from _sender to _listener
-    this.sendMessage = function sendMessage(_sender, _listener, _message)
-    {
-        //invoke receiveMessage on listener
-        _listener.receiveMessage(_sender, _message);
-    }
-
-    //handle sending _message to all listeners listening to _sender
-    this.broadcastMessageAll = function broadcastMessageAll(_sender, _message)
-    {
-        //loop through all listeners and send message
-        for (var l = 0; l < _sender.listeners.length; l++)
-        {
-            //send message to current listener
-            cEventListener.message.sendMessage(_sender, _sender.listeners[l].listener, _message);
-        }
-    }
-
-    //send message to all of type _listenerType
-    this.sendMessageToType = function sendMessageToType(_sender, _message)
-    {
-        //loop through all listeners
-        for (var l = 0; l < _sender.listeners.length; l++)
-        {
-            //check if listener type is the same as the message type
-            if (_sender.listeners[l].message.type == _message.type)
-            {
-                //send message to current listener
-                cEventListener.message.sendMessage(_sender, _sender.listeners[l].listener, _message);
-            }
-        }
-    }
-
-    //handle custom message seperation
-    this.parseCustomHTMLData = function parseCustomHTMLData(_infoToParse) 
-    {
-        //split html to correct format
-        var infoParsedString = _infoToParse.replace(/\t/g, "");
-        var infoSplitStrings = infoParsedString.split("|");
-        var parsedInfo = [];
-                    
-        //loop through inputted strings and pull out useable data from them
-        for (var parsedInfoIndex = 0; parsedInfoIndex < infoSplitStrings.length; parsedInfoIndex++)
-        {
-            parsedInfo.push(infoSplitStrings[parsedInfoIndex].split("=")[1]);
-        }
-        
-        //return parsed data
-        return parsedInfo || [];
-    }
-
-    //handle parsing single message into sub messages
-    this.parseIntoMessages = function parseIntoMessages(_message)
-    {
-        var _messages = [];
-    
-        //check message exists
-        if (_message)
-        {
-            this._actualMessage = null;
-    
-            //check if message has a function to return data
-            if (_message instanceof Function)
-            {
-                _message(this);
-            }
-            else
-            {
-                this._actualMessage = _message;
-            }
-    
-            //check if actual message exists
-            if (this._actualMessage)
-            {
-                if (this._actualMessage instanceof Array)
-                {
-                    //if message is already an array
-                    //presume it's already messages
-                    return this._actualMessage;
-                }
-                else
-                {
-                    //add message to return as it is in
-                    //a message format
-                    _messages.push(this._actualMessage);
-                }
-            }
-        }
-    
-        //if element messages exist then return that
-        //otherwise return null
-        if (_messages.length != 0)
-        {
-            return _messages;
-        }
-        return null;
-        
-    }
-
-    //find and return messages of type from message list
-    this.findMessageOfType = function findMessageOfType (_type, _messages)
-    {
-        //check if messages exists
-        if (_messages)
-        {
-            //convert messages into array
-            var parsedMessages = cEventListener.message.parseIntoMessages(_messages);
-
-            //check parsed messages exist
-            if (parsedMessages)
-            {
-                //check if messages is an array
-                if (parsedMessages instanceof Array)
-                {
-                    //loop through messages and return of type
-                    for (var i = 0; i < parsedMessages.length; i++)
-                    {
-                        if (parsedMessages[i].messageType == _type)
-                        {
-                            return parsedMessages[i].message;
-                        }
-                    }
-                }
-            }
-        }
-
-        //no message of type exists
-        return null;
-    }
-}
-
-
-/*
     Title:
         Timer
 
@@ -4560,6 +4563,7 @@ function cTimerDataTypes()
         this.enableOffset = _enableOffset || false;
         this.intervalOffset = 0;
         this.skipOffset = true;
+        this.skipOffsetIfTooLarge = false;
 
         //will start the timer
         this.start = function start()
@@ -4648,9 +4652,16 @@ function cTimerDataTypes()
 
                 //if offset is more than interval total
                 //limit offset to be interval (instant loop)
-                if (this.intervalOffset < - this.currentInterval)
+                if (this.intervalOffset < -this.currentInterval)
                 {
-                    this.intervalOffset = -this.currentInterval;
+                    if (skipOffsetIfTooLarge)
+                    {
+                        this.intervalOffset = -(this.currentInterval % this.intervalOffset);
+                    }
+                    else
+                    {
+                        this.intervalOffset = -this.currentInterval;
+                    }
                 }
             }
             else
@@ -4748,6 +4759,7 @@ function cTimerDataTypes()
         //store time scaling variables
         this.currentFailedCount = 0;
         this.timeScalers = _timeScalers || [new cTimer.timeScalers(null,null)];
+        this.resetSkipOffset = null;
 
         //loop through all time scalers and find current
         //scaled time for failed count
@@ -4810,12 +4822,21 @@ function cTimerDataTypes()
                 }
             }
 
+            //reset skip offset if it was previous active
+            if (this.skipOffset != null)
+            {
+                this.skipOffset = this.resetSkipOffset;
+                this.skipOffset = null;
+            }
+
             //check if interval is changing, then
-            //force offset skipping to allow interval change
+            //force offset skipping to allow interval change without instant call
             if (this.currentInterval != this.interval)
             {
+                this.resetSkipOffset = this.skipOffset;
                 this.skipOffset = true;
             }
+
         }
 
         //create timer with the callback of "waitForTimer"
@@ -4890,6 +4911,8 @@ function cTimerFunctions()
         return _ret;
     }
 
+    /* Depricated Due to not needing it anymore
+
     //run timer function
     this.runTimerFunction = function runTimerFunction(_function, _id)
     {
@@ -4904,7 +4927,7 @@ function cTimerFunctions()
                 _timer[_function]();
             }
         }
-    }
+    } */
 }
 
 
@@ -5057,6 +5080,382 @@ window.cUtility = window.cUtility || new function cUtility()
 			//create on click to be _function
 			_htmlObj.setAttribute("onclick", _function);
 		}
+	}
+
+}
+
+
+/*
+	Title:
+		cExpander
+	
+	Description:
+        Handle size expandable functions to
+        resize DOM objects to remove scrollers
+*/
+
+window.cExpander = window.cExpander || new function customExpander()
+{
+
+	//====DATA TYPES====//
+	this.dataTypes = new cExpanderDataTypes();
+
+	this.ExpansionData = this.dataTypes.expansionData.prototype;
+	this.expansionData = this.dataTypes.expansionData;
+
+	this.CalculatedObjectData = this.dataTypes.calculatedObjectData.prototype;
+	this.calculatedObjectData = this.dataTypes.calculatedObjectData;
+	
+	//====FUNCTIONS====//
+	this.expansion = new cExpanderFunctions();
+	this.search = new cExpanderSearchFunctions();
+
+	//====VARIABLES====//
+	this.allExpansionData = [];
+	this.allCalculatedObjects = [];
+	this.uniqueID = 1;
+	this.uniqueCalculatedID = 1;
+
+	//====RUN-TIME FUNCTIONS====//
+
+}
+
+function cExpanderDataTypes()
+{
+
+	this.expansionData = function expansionData(_objectToExpand, _scroller, _scrollerWidthOffset, _expandToJQuery, _expansionCssClass, _expansionID)
+	{
+		if (_objectToExpand == null || _scroller == null)
+		{
+			return null;
+		}
+
+		var _this = this;
+		this.ID = _expansionID || cExpander.uniqueID;
+
+		if (this.ID >= cExpander.uniqueID) { cExpander.uniqueID = this.ID + 1; }
+
+		this.objectToExpand = _objectToExpand;
+		this.objectToExpandDOM = this.objectToExpand;
+		this.usesElement = false;
+
+		if (typeof this.objectToExpand === "object")
+		{
+			if (typeof window.cElement != "undefined")
+			{
+				if (this.objectToExpand instanceof cElement.element)
+				{
+					this.usesElement = true;
+					this.objectToExpandDOM = cUtility.findHTMLObjects(_this.objectToExpand);
+				}
+			}
+		}
+		else
+		{
+			this.objectToExpandDOM = $(this.objectToExpand);
+		}
+
+		this.scroller = _scroller || ".scroller, .matrix-Scroller";
+		this.scrollerDOM = this.objectToExpandDOM.find(_this.scroller);
+		this.scrollerWidthOffset = _scrollerWidthOffset || 0;
+
+		if (this.objectToExpandDOM.length && this.objectToExpandDOM.length > 0)
+		{
+			this.objectToExpandDOM = this.objectToExpandDOM[0];
+		}
+
+		this.expandToJQuery = _expandToJQuery || "*";
+
+		this.expansionCssClass = _expansionCssClass || "defaultExpansion";
+		
+		$(_this.objectToExpandDOM).addClass(_this.expansionCssClass);
+		this.scrollerDOM.addClass(_this.expansionCssClass);
+		
+		this.originalHeight = -1;
+		this.heightChanged = -1;
+		this.expanded = false;
+		this.previousExpanded = false;
+
+		this.objectsMovedDOM = [];
+
+		this.checkMovedExists = function checkMovedExists(_toCheck)
+        {
+            for (var i = 0; i < _this.objectsMovedDOM.length; i++)
+            {
+                if (_this.objectsMovedDOM[i] == _toCheck)
+                {
+                    return true;
+                }
+            }
+		}
+
+		this.resetMoved = function resetMoved()
+		{
+			while(_this.objectsMovedDOM.length > 0)
+			{
+				var _styleData = new cCss.styleSheetModificationData("transform", "translateY", true, 1, null, 0, true);
+				var _objectStyleID = cExpander.search.returnCalculatedObjectDataFromObject(_this.objectsMovedDOM[0], cExpander.uniqueCalculatedID);
+				var _selector = cCss.styleSheet.translateCssSelector(".ExpansionMoved" + _objectStyleID.ID, "MainExpansionStyles");
+				var _currentTransform = cCss.styleSheet.getCssStyle(_selector.style, _styleData, 2);
+
+				_styleData.value = (_currentTransform.values.length > 0) ? parseInt(_currentTransform.values[0].replace(/\(|\)/gi, ""), 10) - _this.heightChanged : 0;
+				_styleData.value += "px";
+
+				cCss.styleSheet.replaceCssStyle("MainExpansionStyles", ".ExpansionMoved" + _objectStyleID.ID, _styleData);
+
+				_this.objectsMovedDOM.shift();
+			}
+		}
+	}
+
+	this.calculatedObjectData = function calculatedObjectData(_object, _id)
+	{
+		if (_object == null) { return null; }
+		this.object = _object;
+		this.ID = _id || cExpander.uniqueCalculatedID;
+
+		if (this.ID >= cExpander.uniqueCalculatedID) { cExpander.uniqueCalculatedID = this.ID + 1; }
+	}
+
+}
+
+function cExpanderSearchFunctions()
+{
+	this.returnExpansionDataFromObject = function returnExpansionData(_objectToExpand, _expansionCreationData)
+	{
+		for (var l = 0; l < cExpander.allExpansionData.length; l++)
+		{
+			if (cExpander.allExpansionData[l].objectToExpand == _objectToExpand ||
+				cExpander.allExpansionData[l].objectToExpandDOM == _objectToExpand)
+			{
+				return cExpander.allExpansionData[l];
+			}
+		}
+		
+		if (_expansionCreationData != null)
+		{
+			return cExpander.expansion.createExpansionData(_expansionCreationData);
+		}
+
+		return null;
+	}
+
+	this.returnExpansionDataFromID = function returnExpansionDataFromID(_id, _expansionCreationData)
+	{
+		for (var l = 0; l < cExpander.allExpansionData.length; l++)
+		{
+			if (cExpander.allExpansionData[l].id == _id) { return cExpander.allCalculatedObjects[l]; }
+		}
+		
+		if (_expansionCreationData != null)
+		{
+			return cExpander.expansion.createExpansionData(_expansionCreationData);
+		}
+
+		return null;
+	}
+
+	this.returnCalculatedObjectDataFromObject = function returnCalculatedObjectDataFromObject(_object, _createOnFailID)
+	{
+		for (var l = 0; l < cExpander.allCalculatedObjects.length; l++)
+		{
+			if (cExpander.allCalculatedObjects[l].object == _object) { return cExpander.allCalculatedObjects[l]; }
+		}
+
+		if (_createOnFailID)
+		{
+			return cExpander.expansion.createCalculatedData(_object, _createOnFailID);
+		}
+
+		return null;
+	}
+
+	this.returnCalculatedObjectDataFromID = function returnCalculatedObjectDataFromID(_id, _createOnFailObject)
+	{
+		for (var l = 0; l < cExpander.allCalculatedObjects.length; l++)
+		{
+			if (cExpander.allCalculatedObjects[l].ID == _id) { return cExpander.allCalculatedObjects[l]; }
+		}
+
+		if (_createOnFailObject)
+		{
+			return cExpander.expansion.createCalculatedData(_createOnFailObject, _id);
+		}
+		
+		return null;
+	}
+}
+
+function cExpanderFunctions()
+{
+
+	this.createExpansionData = function createExpansionData(_expansionCreationData)
+	{
+		var _expansionData = new cExpander.expansionData(
+										_expansionCreationData._objectToExpand
+										, _expansionCreationData._scroller
+										, _expansionCreationData._scrollerWidthOffset
+										, _expansionCreationData._expandToJQuery
+										, _expansionCreationData._expansionCssClass
+										, _expansionCreationData._id);
+
+		cExpander.allExpansionData.push(_expansionData);
+		return _expansionData;
+	}
+
+	this.createCalculatedData = function createCalculatedData(_object, _id)
+	{
+		var _calculatedData = new cExpander.calculatedObjectData(_object, _id);
+		cExpander.allCalculatedObjects.push(_calculatedData);
+		return _calculatedData;
+	}
+
+	this.toggleExpansionID = function toggleExpansionID(_id, _expanded)
+	{
+		return cExpander.expansion.toggleExpansion(cExpander.search.returnExpansionDataFromID(_id), _expanded);
+	}
+
+	this.toggleExpansionObject = function toggleExpansion(_object, _expanded)
+	{
+		return cExpander.expansion.toggleExpansion(cExpander.search.returnExpansionDataFromObject(_object), _expanded);
+	}
+
+	this.toggleExpansion = function toggleExpansion(_expansionData, _expanded)
+	{
+		if (_expansionData == null) { return false; }
+
+		_expansionData.previousExpanded = _expansionData.expanded;
+
+		if (_expanded)
+		{
+			_expansionData.expanded = _expanded;
+		}
+		else
+		{
+			_expansionData.expanded = !_expansionData.expanded;
+		}
+
+		cExpander.expansion.updateExpansion(_expansionData);
+		return true;
+	}
+
+	this.updateExpansion = function updateExpansion(_expansionData)
+	{
+		if (_expansionData.expanded)
+		{
+			//get total size of all items inside the inline form
+			var totalSize = cMaths.Bounds.fromObject(_expansionData.objectToExpandDOM
+											, document, _expansionData.expandToJQuery).size.y;
+
+			if (_expansionData.previousExpanded == false)
+			{
+				totalSize += _expansionData.scrollerWidthOffset;
+			}
+
+			if (_expansionData.previousExpanded != _expansionData.expanded)
+			{
+				_expansionData.originalHeight = cMaths.Bounds.fromObject(_expansionData.scrollerDOM[0], document, null).size.y;
+				_expansionData.heightChanged = totalSize - _expansionData.originalHeight;
+			}
+
+			//set height to be total size
+			var _styleData = new cCss.styleSheetModificationData("height", null, false, 0, totalSize + "px", -1, true);
+			cCss.styleSheet.replaceCssStyle("MainExpansionStyles", "." + _expansionData.expansionCssClass, _styleData);
+
+			//move all other html that might've been affected
+			cExpander.expansion.moveHTMLToNotOverlap(_expansionData)
+
+		}
+		else
+		{
+			if (_expansionData.originalHeight != -1)
+			{
+				var _styleData = new cCss.styleSheetModificationData("height", null, false, 0, _expansionData.originalHeight + "px", -1, true);
+				cCss.styleSheet.replaceCssStyle("MainExpansionStyles", "." + _expansionData.expansionCssClass, _styleData);	
+
+            	//move all other html that might've been affected
+            	_expansionData.resetMoved();
+			}
+		}
+
+		if (cPageResizer != null)
+		{
+			cPageResizer.resizePage();
+		}
+	}
+
+	this.moveHTMLToNotOverlap = function moveHTMLToNotOverlap(_expansionData, _object, _allElements)
+	{
+		var _objectBounds = cMaths.Bounds.fromObject(_object, document);
+
+		if (!_allElements)
+		{
+			var _allElements = [];
+			_expansionData.moved = [];
+			_objectBounds = cMaths.Bounds.fromObject(_expansionData.objectToExpandDOM, document);
+
+			var _objToIgnore = [$("img[usemap='#ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']"[0]),
+								$("map[name='ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']"[0]),
+								$("[id=ctl00_ContentPlaceHolder1_InteractiveModel1_shadow]")[0],
+								_expansionData.objectToExpandDOM]
+
+			var _allElements = $(".InteractiveModel").children().filter(function() {
+
+				if (_objToIgnore.includes(this)) { return false; }
+
+				if ($(this).is("div"))
+				{
+					var _bounds = cMaths.Bounds.fromObject(this, document);
+
+					if (_bounds.y2 > _objectBounds.y1)
+					{
+						return true;
+					}
+				}
+
+				return false;
+
+			}).toArray();
+		}
+
+		var _allWithin = null;
+		var _lastLowest = null;
+		var _completeBounds = _objectBounds.clone();
+
+		do {
+			_lastLowest = _allWithin == null ? null : _allWithin.length > 0 ? _allWithin[0].object : null;
+			_allWithin = cMaths.collision.returnObjectsIntersectArea(_completeBounds, _allElements).sort(function(a, b) {
+				return (a.y2 > b.y2);
+			});
+
+			if (_allWithin.length > 0)
+			{
+				_completeBounds.y2 = _allWithin[0].y2;
+				_completeBounds.updateExtras();
+			}
+		} while (_allWithin.length != 0 && _allWithin[0].object != _lastLowest)
+
+		for (var i = 0; i < _allWithin.length; i++)
+		{
+			if (!(_expansionData.checkMovedExists(_allWithin[i]._object)))
+			{
+				
+                var _styleData = new cCss.styleSheetModificationData("transform", "translateY", true, 1, null, 0, true);
+				var _objectStyleID = cExpander.search.returnCalculatedObjectDataFromObject(_allWithin[i]._object, cExpander.uniqueCalculatedID);
+				var _selector = cCss.styleSheet.translateCssSelector(".ExpansionMoved" + _objectStyleID.ID, "MainExpansionStyles");
+				
+				var _currentTransform = cCss.styleSheet.getCssStyle(_selector.style, _styleData, 2);
+				
+				_styleData.value = (_currentTransform.values.length > 0) ? parseInt(_currentTransform.values[0].replace(/\(|\)/gi, ""), 10) + _expansionData.heightChanged : _expansionData.heightChanged;
+				_styleData.value += "px";
+				
+				cCss.styleSheet.replaceCssStyle("MainExpansionStyles", ".ExpansionMoved" + _objectStyleID.ID, _styleData);
+
+                _expansionData.objectsMovedDOM.push(_allWithin[i]._object);
+                $(_allWithin[i]._object).addClass("ExpansionMoved" + _objectStyleID.ID);
+			}
+		}
+		
 	}
 
 }
@@ -5399,5 +5798,337 @@ function cFaderSearchFunctions()
         }
 
         return -1;
+    }
+}
+
+
+/*
+	Title:
+		Inline Form Code
+	
+	Description:
+		Modify Inline Forms To Make Relatinships Navigable
+		Modify Inline Forms To Make Relatinships Size Correct
+*/
+
+window.cInlineForm = window.cInlineForm || new function customInlineForm()
+{
+
+    this.enableRelationshipNavigation = true;
+    this.enableKnowledgeActivatedDocumentsNavigation = true;
+    this.enableInlineFormWidthChanges = true;
+    this.enableHideEmptyInlineForms = true;
+    this.inlineFormsWidth = "75em";
+
+    this.hideEmptyHTMLFields = function hideEmptyHTMLFields()
+    {
+        $("div.HtmlEditorReadOnly").each(function(index, element)
+        {
+            var editorElement = $(element);
+
+            if (editorElement.outerHeight() === 0) {
+
+                var parent = editorElement.closest("div.fieldContainer");
+                parent.css('display', 'none');
+
+                var separator = parent.prev(".separator")
+                if (separator)
+                {
+                    $(separator).css('display','none');
+                }
+            }
+        });
+    }
+
+    //applies any width changes and titles css changes to inline forms
+    this.modifyInlineFields = function modifyInlineFields ()
+    {
+        $(".mood-inlineformelementeditor").each(function () {
+
+            var currentInlineForm = this;
+
+            //wait until the inline form has been populated
+            (function checkSize()
+            {
+                var totalSize = 0;
+
+                $(currentInlineForm).find(".editorContainer").each(function() {
+
+                    totalSize += $(this).outerHeight();
+
+                });
+
+                if (totalSize == 0)
+                {
+                    setTimeout(checkSize, 100);
+                }
+            });
+
+            $(this).find(".fieldLabel").each(function () {
+                this.classList.add("inlineFormTitleModified");
+            });
+
+            $(this).find(".fieldControlContainer").each(function() {
+                $(this).removeClass("widthSingle").css("width",cInlineForm.inlineFormsWidth);
+                $(this).closest(".fieldContainer").removeClass("widthSingle").css("width",cInlineForm.inlineFormsWidth);
+            });
+
+        });
+
+    }
+
+    //remove check boxes and excess relationships visuals
+    this.setupInlineRelationships = function setupInlineRelationships() {
+    
+        //search for all relationship tick/radio lists
+        $(".RelationshipTickListFieldControl, .RelationshipRadioListFieldControl").each(function () {
+    
+            //force opacity to be full on disabled relationship links
+            $(this).find(".dx-state-disable.dx-list.dx-widget").each(function () {
+                this.style.opacity = 1;
+            });
+    
+            //remove all of the "none" options
+            $(this).find(".list-item-text[title='None']").closest(".dx-list-item").each(function () {
+    
+                this.remove();
+    
+            });
+    
+            //remove all of the checkboxes
+            $(this).find(".dx-list-item-before-bag").each(function () {
+    
+                this.remove();
+    
+            });
+    
+            //set all of the remaining items width to "auto"
+            //and make cursor change to pointer when selecting
+            //and add css class to text
+            $(this).find(".dx-list-item").each(function () {
+    
+                this.style.width = "auto";
+    
+                $(this).find(".list-item-text").each(function () {
+                    $(this).addClass("inlineFormRelationshipTextModified");
+                });
+    
+            });
+    
+        });
+        
+    }
+}
+
+function enableInlineOptions()
+{
+    if (Salamander.lang.isSysDefined())
+        {		
+            if (Sys.WebForms)
+            {
+                if (Sys.WebForms.PageRequestManager)
+                {
+                    if (Sys.WebForms.PageRequestManager.getInstance())
+                    {
+                        if (cInlineForm.enableHideEmptyInlineForms)
+                        {
+                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.hideEmptyHTMLFields);
+                        }
+
+                        if (cInlineForm.enableInlineFormWidthChanges)
+                        {
+                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.modifyInlineFields);
+                        }
+
+                        if (cInlineForm.enableRelationshipNavigation)
+                        {
+                            var doit = function notready() { window.alert("Ooops"); };
+
+                            doit = function ready() {
+                                if (Salamander.lang.isNullOrUndefined(Salamander.widget.List)) {
+                                    setTimeout(doit);
+                                } else {
+
+                                    Salamander.widget.List.prototype.alternativeTemplate = function alternativeTemplate(data) {
+                                        if (data.Value && data.Value.length) {
+                                            var parts = data.Value.split('-');
+                                            var elementType = parts[0];
+                                            var elementId = parts[1];
+                                            return Salamander.dx.templates.listItemTemplate(data.Text, data.IconUrl, "Controller.aspx?elementId=" + elementId + "&elementType=" + elementType);
+                                        } else {
+                                            return null;
+                                        }
+                                    };
+
+                                    var ensureConfiguration = Salamander.widget.List.prototype.ensureConfiguration;
+
+                                    Salamander.widget.List.prototype.ensureConfiguration = function ensureconfiguration(config) {
+                                        var result = ensureConfiguration.call(this, config);
+                                        result.itemTemplate = this.alternativeTemplate;
+                                        result.enabled = false;
+                                        return result;
+                                    };
+
+                                }
+
+
+                            };
+
+                            doit();
+
+                        }
+
+                        if (cInlineForm.enableKnowledgeActivatedDocumentsNavigation)
+                        {
+                            var dothat = function notready() { window.alert("Not ready"); };
+
+                            dothat = function ready()
+                            {
+                                if (Salamander.lang.isNullOrUndefined(Salamander.dx) || Salamander.lang.isNullOrUndefined(Salamander.dx.templates))
+                                {
+                                    setTimeout(dothat);
+                                } else {
+                                    Salamander.dx.templates.navigateAndStopClick = function isKnowledgeActivated(event, url) {
+                                        if (event.preventDefault)
+                                        {
+                                            event.preventDefault();
+                                        }
+                                        if (event.stopPropagation)
+                                        {
+                                            event.stopPropagation();
+                                        }
+                                        if (event.returnValue)
+                                        {
+                                            event.returnValue();
+                                        }
+                                        if (Salamander.util.DetermineLocation(url))
+                                        {
+                                            return window.location.href = url;
+                                        }
+
+                                        return false;
+                                    };
+                                }
+                            };
+
+                            dothat();
+                        }
+
+                        if (cInlineForm.enableRelationshipNavigation || cInlineForm.enableKnowledgeActivatedDocumentsNavigation)
+                        {
+                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.setupInlineRelationships);                            
+                        }
+    
+                        return;
+                    }
+                }
+            }
+        }
+                       
+        setTimeout(function() { enableInlineOptions(); }, 10);
+}
+
+enableInlineOptions();
+
+
+
+/*
+	Title:
+		Resize Model Masters
+	
+	Description:
+		script for auto-resizing model based on lowest elements or page marker
+*/
+
+window.cPageResizer = window.cPageResizer || new function customPageResizer()
+{
+
+    //store offsets for page end and screen end
+    this.lowestOffset = 32;
+    this.endOfPageOffset = 32;
+
+    this.resizePage = function resizePage()
+    {
+        //find the lowest object or marker if placed
+        //higher = lower due to Y starting from top of the page
+        var lowest = cPageResizer.findLowestPoint();
+        
+        //This is just an extra 32px on the
+        //bottom of the screen so it doesn't feel too close
+        lowest += cPageResizer.lowestOffset; 
+    
+        //this next part sets the two html parents of the page to hide the overflow(bit after max height)
+        //and to set the height of the entire page 
+        $("#ctl00_ContentPlaceHolder1_Container").addClass("modelMasterResizer");
+        $("#ctl00_ContentPlaceHolder1_InteractiveModel1").addClass("modelMasterResizer");
+        $("[id=ctl00_ContentPlaceHolder1_InteractiveModel1_shadow]").addClass("modelMasterResizer");
+    
+        $("#ctl00_ContentPlaceHolder1_Container").css("overflow","hidden").css("height",lowest + cPageResizer.endOfPageOffset +"px");
+        $("#ctl00_ContentPlaceHolder1_InteractiveModel1").css("overflow","hidden").css("height",lowest+"px");
+        $("[id=ctl00_ContentPlaceHolder1_InteractiveModel1_shadow]").css("top",(lowest - 8)+"px");
+    
+        //force browser to be within page view
+        if (window.scrollY > lowest)
+        {
+            window.moveTo(window.scrollX, lowest);
+        }
+    }
+
+    //find the lowest position on the page
+    this.findLowestPoint = function findLowestPoint()
+    {
+        //check if a marker exists on the page
+        var marker = $(".mood-node-name-page-marker");
+
+        marker.sort(function(a, b) {
+            var _heightA = cMaths.Bounds.fromObject(a, document);
+            var _heightB = cMaths.Bounds.fromObject(b, document);
+            return _heightA.y2 < _heightB.y2;
+        })
+        
+        //if marker exists go to manual resizing
+        if (marker.length > 0) 
+        {
+            return cMaths.Bounds.fromObject(marker[0], document).y2;
+        }
+        
+        //else calculate the lowest point
+        return cPageResizer.findLowestHTMLObject();
+    }
+
+    //calculate the lowest positioned object in HTML
+    this.findLowestHTMLObject = function findLowestHTMLObject()
+    {
+        var _lowest = 0;
+
+        var _objToIgnore = [$("img[usemap='#ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']")[0],
+								$("map[name='ctl00$ContentPlaceHolder1$InteractiveModel1$ctl01']")[0],
+								$("[id=ctl00_ContentPlaceHolder1_InteractiveModel1_shadow]")[0]]
+        
+        //loop through all the main element html in page (the containers for each element)
+        $("[id=ctl00_ContentPlaceHolder1_InteractiveModel1]").children().each(function() {
+
+            if (_objToIgnore.includes(this)) { return; }
+
+            if ($(this).is("div"))
+			{
+                var _currentBounds = cMaths.Bounds.fromObject(this, document);
+                var _currentHeight = _currentBounds.y2;
+
+                //check if the currentHeight is a valid value
+                if (_currentHeight)
+                {
+                    //check currentHeight is greater than the
+                    //lowest point(top to bottom so technically lower)
+                    if (_currentHeight > _lowest)
+                    {
+                        //set new lowest to be currentHeight
+                        _lowest = _currentHeight;
+                    }
+                }
+            }
+        });  
+        
+        return _lowest;
     }
 }

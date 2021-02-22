@@ -65,7 +65,7 @@ window.cButton = window.cButton || new function cButton()
 
 function cButtonDataTypes()
 {
-	this.button = function button(_htmlButtonID, _moodButtonID, _buttonElementID, _buttonEnabledByDefault, _canDisableSelf, _element)
+	this.button = function button(_buttonName, _buttonHTML, _htmlButtonID, _moodButtonID, _buttonElementID, _buttonEnabledByDefault, _canDisableSelf, _element)
 	{	
 		this.htmlButtonID = _htmlButtonID;
 		this.moodButtonID = _moodButtonID;
@@ -79,7 +79,7 @@ function cButtonDataTypes()
 		this.canDisableSelf = _canDisableSelf || false;
 		this.buttonEnabled = "false";
 		
-		this.elementOwned = _element || new customElement(_htmlButtonID + ' ' + _buttonElementID.toString(), '', '', _buttonElementID);
+		this.elementOwned = _element || cElement.generic.addElement({ name: _buttonName, id: _buttonElementID, htmlObj: _buttonHTML }, _moodButtonID == null ? false : true, null, _buttonElementID);
 		this.buttonElementID = this.elementOwned.ID || uniqueID;
 		
         //store a link to this current element for functions below
@@ -134,7 +134,7 @@ function cButtonSetupFunctions()
 	this.createButton = function createButton(_buttonData)
 	{
 		//create or find element for button
-		var _elementGenerated = cElement.generic.addElement(_buttonData.buttonObject, _buttonData.isMoodObject, _buttonData.buttonParentObject, _buttonData.id);
+		var _elementGenerated = cElement.generic.addElement(_buttonData.buttonHTML, _buttonData.isMoodObject, _buttonData.buttonParentObject, _buttonData.id);
 	
 		//find html data for button
 		var moodButton = _elementGenerated.elementObject;
@@ -145,16 +145,16 @@ function cButtonSetupFunctions()
 		if (moodButton == null)
 		{
 			//add and/or get button 
-			buttonGenerated = cButton.generic.addButton(_elementGenerated.ID, _elementGenerated.ID, 
-								_elementGenerated.ID, _buttonData.elementsToEnable, 
+			buttonGenerated = cButton.generic.addButton(_buttonData.name, _buttonData.buttonHTML, _elementGenerated.ID, _elementGenerated.ID, 
+								_buttonData.elementsToEnable, 
 								_buttonData.elementsToDisable, _buttonData.enabledOnDefault, 
 								_buttonData.canDisableSelf, _buttonData.id);
 		}
 		else
 		{
 			//add and/or get button 
-			buttonGenerated = cButton.generic.addButton(moodButton.id, moodButton.id, 
-									_elementGenerated.ID, _buttonData.elementsToEnable, 
+			buttonGenerated = cButton.generic.addButton(_buttonData.name, _buttonData.buttonHTML, moodButton.id, moodButton.id, 
+									_buttonData.elementsToEnable, 
 									_buttonData.elementsToDisable, _buttonData.enabledOnDefault, 
 									_buttonData.canDisableSelf, _buttonData.id);
 		}
@@ -189,7 +189,7 @@ function cButtonSetupFunctions()
 			if (_buttonData.onClick == null)
 			{
 				_buttonData.onClick = "cButton.modify.toggleButtonClick(" + buttonGenerated.buttonElementID + ")";
-			}
+			}			
 	
 			//check if onClick is in string
 			if (_buttonData.onClick.charAt(0) == '"')
@@ -199,7 +199,7 @@ function cButtonSetupFunctions()
 			}
 
 			//add on click to object
-			cElement.modify.addOnClickToElement(buttonGenerated.buttonElementID, _buttonData.onClick, true);
+			cElement.modify.addOnClickToElement(buttonGenerated.buttonElementID, _buttonData.onClick, true, _buttonData.onClickCss);
 	
 			//return succeeded
 			return true;
@@ -455,12 +455,11 @@ function cButtonGenericFunctions()
 	}
 
 	//function to add button
-	this.addButton = function addButton(_htmlButtonID, _moodButtonID, _buttonElementID, _tabElementsToEnable, _tabElementsToDisable, _buttonEnabledByDefault, _canDisableSelf, _ID)
+	this.addButton = function addButton(_buttonName, _buttonHTML, _htmlButtonID, _moodButtonID, _tabElementsToEnable, _tabElementsToDisable, _buttonEnabledByDefault, _canDisableSelf, _ID)
 	{
 		
 		var _buttonEnabledByDefault = _buttonEnabledByDefault || false;
 		var _canDisableSelf = _canDisableSelf || false;
-		var _ID = _ID || uniqueID;
 
 		var button = null;
 		
@@ -469,7 +468,7 @@ function cButtonGenericFunctions()
 		if (exists == -1)
 		{
 			//setup button and add to buttonArray
-			button = new cButton.button(_htmlButtonID, _moodButtonID, parseInt(_buttonElementID),
+			button = new cButton.button(_buttonName, _buttonHTML, _htmlButtonID, _moodButtonID, _ID,
 											 _buttonEnabledByDefault, _canDisableSelf,
 											  cElement.search.getElementID(_ID));
 			cButton.buttonArray.push(button);

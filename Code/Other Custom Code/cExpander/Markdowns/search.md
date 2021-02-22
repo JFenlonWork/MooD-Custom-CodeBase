@@ -1,31 +1,80 @@
-# <a name="title"/> search
-### <a name="description"/> _INSERT_DESCRIPTION
+# <a id="title"/> cExpanderSearchFunctions
+### <a id="description"/> Holds functions related to searching through [expansionData](#INSERT_LINK) and [calculatedObjectData](#INSERT_LINK).
 #
 
-#### <a name="codeprefix"/> Code Prefix:
-    _INSERT_PREFIX.  
+#### <a id="codeprefix"/> Code Prefix:
+    cExpander.search.
+
+* <a id="methods"/> <h2> Methods: </h2>
+
+    * <a id="returnexpansiondatafromobject"/> [returnExpansionDataFromObject](#returnexpansiondatafromobjectexample) <p style="padding-left: 20px;"> Find/Create expansion data from a DOM and returns the result. </p>
+
+	<br>
+
+    * <a id="returnexpansiondatafromid"/> [returnExpansionDataFromID](#returnexpansiondatafromidexample) <p style="padding-left: 20px;"> Find/Create expansion data from an ID and returns the result. </p>
+
+	<br>
+
+    * <a id="returncalculatedobjectdatafromobject"/> [returnCalculatedObjectDataFromObject](#returncalculatedobjectdatafromobjectexample) <p style="padding-left: 20px;"> Find/Create calculated object data from a DOM and returns the result. </p>
+
+	<br>
+
+    * <a id="returncalculatedobjectdatafromid"/> [returnCalculatedObjectDataFromID](#returncalculatedobjectdatafromidexample) <p style="padding-left: 20px;"> Find/Create calculated object data from an ID and returns the result. </p>
+
+
+* <a id="examples"/> <h2> Examples: </h2>
+
+ * <a id="returnexpansiondatafromobjectexample"/>
+	returnExpansionDataFromObject
 	
-* <a name="parameters"/> <h3> Parameters: </h3> <hr style="height:2px;border:none;margin-top: -10px;">
+	reference: [_expansionCreationData](#INSERT_LINK)
+	```Javascript
+	var _DOM = document.getElementById("Example");
 
-* <a name="properties"/> <h2> Properties: </h2>
+	// _expansionCreationData can be null if you don't
+	// want to create an expansionData if it doesn't exist
+	var _expansionData = cExpander.search.returnExpansionDataFromObject(_DOM, _expansionCreationData);
+	```
+	<hr>
 
-* <a name="_INSERTNAME"/> _INSERTNAME <p style="padding-left: 20px;"> _INSERT_INFORMATIION </p>
+ * <a id="returnexpansiondatafromidexample"/>
+	returnExpansionDataFromID
+	
+	reference: [_expansionCreationData](#INSERT_LINK)
+	```Javascript
+	var _ID = 1;
 
-* <a name="methods"/> <h2> Methods: </h2>
+	// _expansionCreationData can be null if you don't
+	// want to create an expansionData if it doesn't exist
+	var _expansionData = cExpander.search.returnExpansionDataFromObject(_ID, _expansionCreationData);
+	```
+	<hr>
 
-* <a name="privatemethods"/> <h2> Private Methods: </h2>
+ * <a id="returncalculatedobjectdatafromobjectexample"/>
+	returnCalculatedObjectDataFromObject
+	
+	reference: [_createOnFailID](#INSERT_LINK)
+	```Javascript
+	var _DOM = document.getElementById("Example");
 
-* <a name="datatypes"/> <h2> Data Types: </h2>
+	// _createOnFailID can be null if you don't
+	// want to create an calculatedObjectData if it doesn't exist
+	var _expansionData = cExpander.search.returnExpansionDataFromObject(_DOM, _createOnFailID);
+	```
+	<hr>
 
-	* ".dataTypes" contains original functions for below.
-	* Protoypes of below start with capital instead of lowercase.
-	* _INSERT_DATA_TYPES
+ * <a id="returncalculatedobjectdatafromidexample"/>
+	returnCalculatedObjectDataFromObject
+	
+	reference: [_createOnFailObject](#INSERT_LINK)
+	```Javascript
+	var _ID = 1;
 
-* <a name="functions"/> <h2> Functions: </h2>
-
-	* <a name="_INSERTNAME"/> _INSERTNAME <p style="padding-left: 20px;"> _INSERT_INFORMATIION </p>
-
-* <a name="examples"/> <h2> Examples: </h2>
+	// _createOnFailObject can be null if you don't
+	// want to create an calculatedObjectData if it doesn't exist
+	var _expansionData = cExpander.search.returnExpansionDataFromObject(_ID, _createOnFailObject);
+	```
+	
 
 #### References: 
   
