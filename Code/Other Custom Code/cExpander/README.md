@@ -32,6 +32,7 @@
 
   * [".expansion"](./Markdowns/expansion.md) is a collection of basic functions for cExpander.
   <br>
+
   * ["search"](./Markdowns/search.md) is a collection of functions for finding data within allExpansionData and allCalculatedObjects.
 
 #### References: 
