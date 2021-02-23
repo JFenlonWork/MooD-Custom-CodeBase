@@ -20,5 +20,5 @@ Code Contents:
  * Other Code
    * [Page Resizer](/Code/Other%20Custom%20Code/cPageResizer/README.md)
    * [Fader]
-   * [Expander]
+   * [Expander](/Code/Other%20Custom%20Code/cExpander/README.md)
    * [Inline Forms](/Code/Other%20Custom%20Code/cInlineForms/README.md)
