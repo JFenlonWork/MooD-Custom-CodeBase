@@ -19,6 +19,6 @@ Code Contents:
      * [Maths]
  * Other Code
    * [Page Resizer](/Code/Other%20Custom%20Code/cPageResizer/README.md)
-   * [Fader]
+   * [Fader](/code/Other%20Custom%20Code/cFader/README.md)
    * [Expander](/Code/Other%20Custom%20Code/cExpander/README.md)
    * [Inline Forms](/Code/Other%20Custom%20Code/cInlineForms/README.md)
