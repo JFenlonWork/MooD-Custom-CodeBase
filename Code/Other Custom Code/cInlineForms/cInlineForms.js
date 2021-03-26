@@ -72,7 +72,11 @@ window.cInlineForm = window.cInlineForm || new function customInlineForm()
 
             $(this).find(".fieldControlContainer").each(function() {
                 $(this).removeClass("widthSingle").css("width", cInlineForm.fieldInnerWidth);
-                $(this).siblings(".fieldInformation").removeClass("widthSingle").css("width", "100%");
+                if (cInlineForm.fieldAndDescriptionSameLine) {
+                    $(this).siblings(".fieldInformation").removeClass("widthSingle").css("width", "auto").css("max-width", "45%");
+                } else {
+                    $(this).siblings(".fieldInformation").removeClass("widthSingle").css("width", "auto").css("max-width", "100%");
+                }
                 $(this).closest(".fieldContainer").removeClass("widthSingle").css("width", cInlineForm.fieldOuterWidth).css("padding-right", "0%");
             });
 
@@ -90,7 +94,8 @@ window.cInlineForm = window.cInlineForm || new function customInlineForm()
 
             if (cInlineForm.fieldAndDescriptionSameLine) {
                 $(this).find(".fieldLabel").each(function() {
-                    $(this).css("display", "inline-block").css("max-width", "45%").css("width", "auto").css("margin-bottom", "0%");
+                    var _this = $(this).parent(".fieldInformation").length > 0 ? $(this).parent(".fieldInformation") : this;
+                    $(_this).css("display", "inline-block").css("max-width", "45%").css("width", "auto").css("margin-bottom", "0%");
                 });
 
                 $(this).find(".fieldDescription").each(function() {
