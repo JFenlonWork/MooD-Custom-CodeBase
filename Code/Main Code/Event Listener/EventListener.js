@@ -333,7 +333,7 @@ function cEventListenerGenericFunctions()
             else
             {
                 //log a warning that the _listener is already listening to the _listeningTo with the same message type
-                console.warn("Listener already exists with ID: " + _listener.listenerID + " and Type:" + _listenerInfo.type + " Listening to: " + _listenTo.listenerID);
+                console.warn("Listener already exists with ID: " + _listener.listenerID + " and Type:" + _listenerMessage.type + " Listening to: " + _listenTo.listenerID);
                 return false;
             }
         }
@@ -346,7 +346,7 @@ function cEventListenerGenericFunctions()
     }
 
     //handle de-registering listener from "listen to"
-    this.deregisterListener = function deregisterListener(_listenTo, _listener, _listenerInfo)
+    this.deregisterListener = function deregisterListener(_listenTo, _listener, _listenerMessage)
     {
         //setup temporary listenerMessages
         var tempListener = new cEventListener.listenerMessage(_listener, _listenerMessage);
@@ -356,7 +356,7 @@ function cEventListenerGenericFunctions()
         if (_listener)
         {
             //find where the listener is inside _listenTo's listeners
-            var listenerIndex = cEventListener.search.findListenerIndexFromIDType(_listener.id, _listener.tpye, _listenTo.listeners);
+            var listenerIndex = cEventListener.search.findListenerIndexFromIDType(_listener.id, _listener.type, _listenTo.listeners);
             
             //check if listener is registered to _listenTo
             if (listenerIndex != -1)
@@ -368,7 +368,7 @@ function cEventListenerGenericFunctions()
                 if (_listenTo)
                 {
                     //find index for _listenTo inside what _listener is listening too
-                    var listeningToIndex = cEventListener.search.findListenerIndexFromIDType(_listenTo.id, _listenerInfo.type, _listener.listeningTo);
+                    var listeningToIndex = cEventListener.search.findListenerIndexFromIDType(_listenTo.id, _listenerMessage.type, _listener.listeningTo);
                     
                     //check if listenTo is within _listener's listenTo
                     if (listeningToIndex != -1) 

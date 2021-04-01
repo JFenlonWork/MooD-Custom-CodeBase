@@ -7,15 +7,15 @@
 * 20
 * 991
 * 1855
-* 2336
-* 2510
-* 3406
-* 4483
-* 4933
-* 5087
-* 5463
-* 5804
-* 6034
+* 2338
+* 2512
+* 3408
+* 4485
+* 4935
+* 5089
+* 5465
+* 5806
+* 6070
 ***********************************************************************************/
 
 /*
@@ -2203,6 +2203,8 @@ function cElementModifyFunctions()
                     cEventListener.message.sendMessageToType(_element.eventListener, new cEventListener.basicMessage("listenToElementEnableChange", _enabled.message));
                     _element.elementEnabled = !_element.elementEnabled;						
                 }
+
+                return true;
             }
             
             //log warning fail and return false
@@ -5818,7 +5820,9 @@ window.cInlineForm = window.cInlineForm || new function customInlineForm()
     this.enableKnowledgeActivatedDocumentsNavigation = true;
     this.enableInlineFormWidthChanges = true;
     this.enableHideEmptyInlineForms = true;
-    this.inlineFormsWidth = "75em";
+    this.fieldAndDescriptionSameLine = true;
+    this.fieldOuterWidth = "75em";
+    this.fieldInnerWidth = "95%";
 
     this.hideEmptyHTMLFields = function hideEmptyHTMLFields()
     {
@@ -5868,10 +5872,42 @@ window.cInlineForm = window.cInlineForm || new function customInlineForm()
                 this.classList.add("inlineFormTitleModified");
             });
 
-            $(this).find(".fieldControlContainer").each(function() {
-                $(this).removeClass("widthSingle").css("width",cInlineForm.inlineFormsWidth);
-                $(this).closest(".fieldContainer").removeClass("widthSingle").css("width",cInlineForm.inlineFormsWidth);
+            $(this).find(".fieldDescription").each(function () {
+                this.classList.add("inlineFormDescriptionModified");
             });
+
+            $(this).find(".fieldControlContainer").each(function() {
+                $(this).removeClass("widthSingle").css("width", cInlineForm.fieldInnerWidth);
+                if (cInlineForm.fieldAndDescriptionSameLine) {
+                    $(this).siblings(".fieldInformation").removeClass("widthSingle").css("width", "auto").css("max-width", "45%");
+                } else {
+                    $(this).siblings(".fieldInformation").removeClass("widthSingle").css("width", "auto").css("max-width", "100%");
+                }
+                $(this).closest(".fieldContainer").removeClass("widthSingle").css("width", cInlineForm.fieldOuterWidth).css("padding-right", "0%");
+            });
+
+            $(this).find(".editorContainer").each(function() {
+                $(this).css("padding-right", "0%");
+            });
+
+            $(this).find(".HtmlEditor").each(function() {
+                $(this).removeClass("widthSingle").css("width", cInlineForm.richTextEditorWidth);
+            });
+
+            $(this).find(".HtmlEditorReadOnly").each(function() {
+                $(this).children("div").css("overflow-y", "hidden");
+            });
+
+            if (cInlineForm.fieldAndDescriptionSameLine) {
+                $(this).find(".fieldLabel").each(function() {
+                    var _this = $(this).parent(".fieldInformation").length > 0 ? $(this).parent(".fieldInformation") : this;
+                    $(_this).css("display", "inline-block").css("max-width", "45%").css("width", "auto").css("margin-bottom", "0%");
+                });
+
+                $(this).find(".fieldDescription").each(function() {
+                    $(this).css("display", "inline-block").css("max-width", "45%").css("width", "auto").css("margin-left", "5%");
+                });
+            }
 
         });
 

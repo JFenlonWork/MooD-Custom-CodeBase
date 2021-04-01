@@ -13,14 +13,21 @@ window.cInlineForm = window.cInlineForm || new function customInlineForm()
     this.enableRelationshipNavigation = true;
     this.enableKnowledgeActivatedDocumentsNavigation = true;
     this.enableInlineFormWidthChanges = true;
+
     this.enableHideEmptyInlineForms = true;
+    this.emptyInlineSearchTerm = "div.fieldControlContainer";
+
     this.fieldAndDescriptionSameLine = true;
     this.fieldOuterWidth = "75em";
     this.fieldInnerWidth = "95%";
 
+    this.generic = new cInlineFormFunctions();
+}
+
+function cInlineFormFunctions() {
     this.hideEmptyHTMLFields = function hideEmptyHTMLFields()
     {
-        $("div.HtmlEditorReadOnly").each(function(index, element)
+        $(emptyInlineSearchTerm).each(function(index, element)
         {
             var editorElement = $(element);
 
@@ -82,10 +89,6 @@ window.cInlineForm = window.cInlineForm || new function customInlineForm()
 
             $(this).find(".editorContainer").each(function() {
                 $(this).css("padding-right", "0%");
-            });
-
-            $(this).find(".HtmlEditor").each(function() {
-                $(this).removeClass("widthSingle").css("width", cInlineForm.richTextEditorWidth);
             });
 
             $(this).find(".HtmlEditorReadOnly").each(function() {
@@ -162,12 +165,12 @@ function enableInlineOptions()
                     {
                         if (cInlineForm.enableHideEmptyInlineForms)
                         {
-                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.hideEmptyHTMLFields);
+                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.generic.hideEmptyHTMLFields);
                         }
 
                         if (cInlineForm.enableInlineFormWidthChanges)
                         {
-                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.modifyInlineFields);
+                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.generic.modifyInlineFields);
                         }
 
                         if (cInlineForm.enableRelationshipNavigation)
@@ -246,7 +249,7 @@ function enableInlineOptions()
 
                         if (cInlineForm.enableRelationshipNavigation || cInlineForm.enableKnowledgeActivatedDocumentsNavigation)
                         {
-                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.setupInlineRelationships);                            
+                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.generic.setupInlineRelationships);                            
                         }
     
                         return;

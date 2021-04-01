@@ -1,5 +1,5 @@
 # Timer.js
-### This code uses a custom implementation of [setTimeout](#settimeout) to create a re-usable accurate timer.
+### This code uses a custom implementation of [setTimeout](#settimeout) to create a re-usable and customisable accurate timer.
 #
 
 #### <a id="codeprefix"/> Code Prefix:

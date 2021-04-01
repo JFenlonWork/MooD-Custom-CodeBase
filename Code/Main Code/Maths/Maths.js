@@ -42,7 +42,7 @@ window.cMaths = new function customMathFunctions()
     }
 
     window.addEventListener("scroll", updateViewportOffset);
-    window.addEventListener("resize", updateViewportOffset)
+    window.addEventListener("resize", updateViewportOffset);
 
 }
 
