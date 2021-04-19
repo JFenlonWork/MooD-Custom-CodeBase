@@ -77,12 +77,12 @@ function customMathTypeData()
             return this;
         },
 
-        Set: function(_vector)
+        setVector: function(_vector)
         {
             if (_vector == null) { return null; }
             
-            this.x += _vector.x;
-            this.x += _vector.y;
+            this.x = _vector.x === undefined ? null : _vector.x;
+            this.y = _vector.y === undefined ? null : _vector.y;
 
             return this;
         },
@@ -197,6 +197,17 @@ function customMathTypeData()
         setZ: function (_z)
         {
             this.z = _z === undefined ? null : _z;
+            return this;
+        },
+
+        setVector: function(_vector)
+        {
+            if (_vector == null) { return null; }
+            
+            this.x = _vector.x === undefined ? null : _vector.x;
+            this.y = _vector.y === undefined ? null : _vector.y;
+            this.z = _vector.z === undefined ? null : _vector.z;
+
             return this;
         },
 
@@ -319,6 +330,18 @@ function customMathTypeData()
         setW: function (_w)
         {
             this.w = _w === undefined ? null : _w;
+            return this;
+        },
+
+        setVector: function(_vector)
+        {
+            if (_vector == null) { return null; }
+            
+            this.x = _vector.x === undefined ? null : _vector.x;
+            this.y = _vector.y === undefined ? null : _vector.y;
+            this.z = _vector.z === undefined ? null : _vector.z;
+            this.w = _vector.w === undefined ? null : _vector.w;
+
             return this;
         },
 

@@ -7,7 +7,7 @@
 
 * <a id="properties"/> <h2> Properties: </h2>
 
-
+  * <a id="viewportoffset"/> viewportOffset <p style="padding-left: 20px;"> Calculates and stores the current page body position offset from the window for easy access. </p> <br>
 
 * <a id="datatypes"/> <h2> Data Types: </h2>
 
@@ -21,13 +21,13 @@
 
 * <a id="functions"/> <h2> Functions: </h2>
 
-* [lineMaths](./Markdowns/lineMaths.md)
+  * [lineMaths](./Markdowns/lineMaths.md)
 
-* [collision](./Markdowns/collision.md)
+  * [collision](./Markdowns/collision.md)
 
-* [maths](./Markdowns/maths.md)
+  * [maths](./Markdowns/maths.md)
 
-* [position](./Markdowns/position.md)
+  * [position](./Markdowns/position.md)
 
 #### References: 
  * <a id="settimeout"/> [setTimeout()](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout)
