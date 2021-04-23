@@ -33,6 +33,9 @@ window.cMaths = new function customMathFunctions()
     this.Bounds = this.dataTypes.bounds.prototype;
     this.bounds = this.dataTypes.bounds;
 
+    this.HtmlBounds = this.dataTypes.htmlBounds.prototype;
+    this.htmlBounds = this.dataTypes.htmlBounds;
+
     //realtime data
     this.viewportOffset = new this.vector2();
 
@@ -307,6 +310,7 @@ function customMathTypeData()
             this.y = _y === undefined ? null : _y;
             this.z = _z === undefined ? null : _z;
             this.w = _w === undefined ? null : _w;
+            return true;
         },
 
         setX: function(_x)
@@ -440,11 +444,46 @@ function customMathTypeData()
         this.y1 = _y1 === undefined ? null : _y1;
         this.x2 = _x2 === undefined ? null : _x2;
         this.y2 = _y2 === undefined ? null : _y2;
-        this.topLeft = new cMaths.vector2(this.x1, this.y1);
-        this.topRight = new cMaths.vector2(this.x2, this.y1);
-        this.bottomRight = new cMaths.vector2(this.x2, this.y2);
-        this.bottomLeft = new cMaths.vector2(this.x1, this.y2);
-        this.size = new cMaths.vector2(this.x2 - this.x1, this.y2 - this.y1);
+
+        //calculate positions and size
+        this.updateExtras = function()
+        {
+            var _this = this;
+            function updateSides(lowestX, lowestY, highestX, highestY)
+            {
+                this.bottomRight = new cMaths.vector2(lowestX, lowestY);
+                this.bottomLeft = new cMaths.vector2(highestX, lowestY);
+                this.topRight = new cMaths.vector2(highestX, highestY);
+                this.topLeft = new cMaths.vector2(lowestX, highestY);
+            }
+
+            if (this.x1 < this.x2)
+            {
+                if (this.y1 < this.y2)
+                {
+                    updateSides(this.x1, this.y1, this.x2, this.y2);
+                }
+                else
+                {
+                    updateSides(this.x1, this.y2, this.x2, this.y1);
+                }
+            }
+            else
+            {
+                if (this.y1 < this.y2)
+                {
+                    updateSides(this.x2, this.y1, this.x1, this.y2);
+                }
+                else
+                {
+                    updateSides(this.x2, this.y2, this.x1, this.y1);
+                }
+            }
+
+            this.size = new cMaths.vector2(this.topRight.x - this.topLeft.x, this.topRight.y - this.bottomRight.y);
+        }
+
+        this.updateExtras();
     }
 
     this.bounds.prototype =
@@ -456,6 +495,7 @@ function customMathTypeData()
             this.x2 = _x2 === undefined ? null : _x2;
             this.y2 = _y2 === undefined ? null : _y2;
             this.updateExtras();
+            return true;
         },
 
         setX1: function(_x1)
@@ -472,28 +512,28 @@ function customMathTypeData()
             return this;
         },
 
-        setX2: function(_x1)
+        setX2: function(_x2)
+        {
+            this.x2 = _x2 === undefined ? null : _x2;
+            this.updateExtras();
+            return this;
+        },
+
+        setY2: function(_y2)
+        {
+            this.y2 = _y2 === undefined ? null : _y2;
+            this.updateExtras();
+            return this;
+        },
+
+        setBound: function(_bound)
         {
             this.x1 = _x1 === undefined ? null : _x1;
-            this.updateExtras();
-            return this;
-        },
-
-        setY2: function(_y1)
-        {
             this.y1 = _y1 === undefined ? null : _y1;
+            this.x2 = _x2 === undefined ? null : _x2;
+            this.y2 = _y2 === undefined ? null : _y2;
             this.updateExtras();
             return this;
-        },
-
-
-        updateExtras: function()
-        {
-            this.topLeft = new cMaths.vector2(this.x1, this.y1);
-            this.topRight = new cMaths.vector2(this.x2, this.y1);
-            this.bottomRight = new cMaths.vector2(this.x2, this.y2);
-            this.bottomLeft = new cMaths.vector2(this.x1, this.y2);
-            this.size = new cMaths.vector2(this.x2 - this.x1, this.y2 - this.y1);
         },
 
         clone: function()
@@ -713,6 +753,47 @@ function customMathTypeData()
         }
     }
 
+    //same as bounds but origin is flipped to represent
+    //HTML origin (0,0) being top left of the page
+    this.htmlBounds = this.bounds;
+    this.htmlBounds.prototype.flippedBounds = new this.bounds();
+    this.htmlBounds.prototype.updateExtras = function()
+    {
+        var _this = this;
+        function updateSides(lowestX, lowestY, highestX, highestY)
+        {
+            this.bottomRight = new cMaths.vector2(lowestX, lowestY);
+            this.bottomLeft = new cMaths.vector2(highestX, lowestY);
+            this.topRight = new cMaths.vector2(highestX, highestY);
+            this.topLeft = new cMaths.vector2(lowestX, highestY);
+        }
+
+        if (this.x1 < this.x2)
+        {
+            if (this.y2 > this.y1)
+            {
+                updateSides(this.x1, this.y2, this.x2, this.y1);
+            }
+            else
+            {
+                updateSides(this.x1, this.y1, this.x2, this.y2);
+            }
+        }
+        else
+        {
+            if (this.y2 > this.y1)
+            {
+                updateSides(this.x2, this.y2, this.x1, this.y1);
+            }
+            else
+            {
+                updateSides(this.x2, this.y1, this.x1, this.y2);
+            }
+        }
+        
+        this.size = new cMaths.vector2(this.topRight.x - this.topLeft.x, this.topRight.y - this.bottomRight.y);
+    }
+
     this.line = function line(_x1, _y1, _x2, _y2)
     {
         this.x1 = _x1 === undefined ? null : _x1;
@@ -754,7 +835,6 @@ function customMathTypeData()
             return (deltaX * deltaX + deltaY * deltaY);
         }
     }
-
 
 }
 

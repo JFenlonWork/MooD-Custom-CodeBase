@@ -25,25 +25,25 @@ cMaths.vector2(_x, _y)
   
     * <a id="setY"/> setY(_y) <p style="padding-left: 20px;"> Set property y to _y. </p> <br>
 
-    * <a id="setVector"/> setVector(_vector) <p style="padding-left: 20px;"> Set property x/y to _vector's x/y. </p> <br>
+    * <a id="setvector"/> setVector(_vector) <p style="padding-left: 20px;"> Set property x/y to _vector's x/y. </p> <br>
 
     * <a id="clone"/> clone() <p style="padding-left: 20px;"> Returns a new vector2 with the same values. </p> <br>
 
     * <a id="add"/> add(_vector) <p style="padding-left: 20px;"> Returns a new vector2 with the _vector added to the original values. </p> <br>
 
-    * <a id="Add"/> Add(_vector) <p style="padding-left: 20px;"> Returns this vector2 with _vector added to the original values. </p> <br>
+    * <a id="addoriginal"/> Add(_vector) <p style="padding-left: 20px;"> Returns this vector2 with _vector added to the original values. </p> <br>
 
     * <a id="subtract"/> subtract(_vector) <p style="padding-left: 20px;"> Returns a new vector2 with the _vector subtracted from the original values. </p> <br>
 
-    * <a id="Subtract"/> Subtract(_vector) <p style="padding-left: 20px;"> Returns this vector2 with _vector subtracted from the original values. </p> <br>
+    * <a id="subtractoriginal"/> Subtract(_vector) <p style="padding-left: 20px;"> Returns this vector2 with _vector subtracted from the original values. </p> <br>
 
     * <a id="scale"/> scale(_scaler) <p style="padding-left: 20px;"> Returns a new vector2 with the original values scaled by the _scalar value. </p> <br>
 
-    * <a id="Scale"/> Scale(_scaler) <p style="padding-left: 20px;"> Returns this vector2 with the original values scaled by the _scalar value. </p> <br>
+    * <a id="scaleoriginal"/> Scale(_scaler) <p style="padding-left: 20px;"> Returns this vector2 with the original values scaled by the _scalar value. </p> <br>
 
     * <a id="dot"/> dot(_vector) <p style="padding-left: 20px;"> Returns a new vector2 with the original values multiplied by the vector's value. </p> <br>
 
-    * <a id="Dot"/> Dot(_vector) <p style="padding-left: 20px;"> Returns this vector2 with the original values multiplied by the vector's value. </p> <br>
+    * <a id="dotoriginal"/> Dot(_vector) <p style="padding-left: 20px;"> Returns this vector2 with the original values multiplied by the vector's value. </p> <br>
 
     * <a id="distance"/> distance() <p style="padding-left: 20px;"> Returns Euclidian distance. </p> <br>
 
