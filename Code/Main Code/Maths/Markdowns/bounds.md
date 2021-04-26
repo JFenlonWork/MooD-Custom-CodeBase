@@ -1,21 +1,21 @@
 # <a id="title"/> bounds
-### <a id="description"/> Holds two floats (x,y) and some common bound functions
+### <a id="description"/> Holds information for box bounding coordinates and some common functions
 #
 
 #### <a id="codeexample"/> Code Example:
 ```Javascript
-cMaths.bounds(_x, _y)
+cMaths.bounds(_x1, _y1, _x2, _y2)
 ```
 
 * <a id="parameters"/> <h3> Parameters: </h3> <hr style="height:2px;border:none;margin-top: -10px;">
 
-    * <a id="_x"/> _x <p style="padding-left: 20px;"> The first float to store. </p> <br>
+    * <a id="_x1"/> _x1 <p style="padding-left: 20px;"> The x position of the first point. </p> <br>
 
-    * <a id="_y"/> _y <p style="padding-left: 20px;"> The second float to store. </p> <br>
+    * <a id="_y1"/> _y1 <p style="padding-left: 20px;"> The y position of the first point. </p> <br>
 
-    * <a id="_z"/> _z <p style="padding-left: 20px;"> The third float to store. </p> <br>
+    * <a id="_x2"/> _x2 <p style="padding-left: 20px;"> The x position of the second point. </p> <br>
 
-    * <a id="_w"/> _w <p style="padding-left: 20px;"> The fourth float to store. </p> <br>
+    * <a id="_y2"/> _y2 <p style="padding-left: 20px;"> The y position of the second point. </p> <br>
 
 * <a id="properties"/> <h2> Properties: </h2>
 
@@ -68,6 +68,8 @@ cMaths.bounds(_x, _y)
     * <a id="fromvector4"/> fromVector4(_vector) <p style="padding-left: 20px;"> Returns a new bounds from a single vector4. </p> <br>
 
     * <a id="fromobject"/> fromObject(_object, _relative, _includeChildren) <p style="padding-left: 20px;"> Returns a new bounds from a DOM object that is based on the origin of _relative if provided or the [document](https://developer.mozilla.org/en-US/docs/Web/API/Document) and includes any child elements based on the _includeChildren which is an array of JQuery search terms. </p> <br>
+
+    * <a id="updateextras"/> updateExtras() <p style="padding-left: 20px;"> Updates the size and sides properties to reflect new values. </p> <br>
 
 #### References: 
 

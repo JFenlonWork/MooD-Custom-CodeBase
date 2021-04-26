@@ -1,10 +1,10 @@
 # <a id="title"/> vector4
-### <a id="description"/> Holds two floats (x,y) and some common vector functions
+### <a id="description"/> Holds four floats (x,y,z,w) and some common vector functions
 #
 
 #### <a id="codeexample"/> Code Example:
 ```Javascript
-cMaths.vector4(_x, _y)
+cMaths.vector4(_x, _y, _z, _w)
 ```
 
 * <a id="parameters"/> <h3> Parameters: </h3> <hr style="height:2px;border:none;margin-top: -10px;">
