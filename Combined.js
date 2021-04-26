@@ -3,19 +3,19 @@
 * The start and end of each file contains a comment with its name, as well as a
 * print statement.
 ***********************************************************************************
-* These are the line numbers for the included files:
+
 * 20
 * 991
 * 1855
 * 2338
 * 2512
 * 3408
-* 4485
-* 4935
-* 5089
-* 5465
-* 5806
-* 6070
+* 4529
+* 4979
+* 5058
+* 5434
+* 5775
+* 6042
 ***********************************************************************************/
 
 /*
@@ -2845,7 +2845,7 @@ function cEventListenerGenericFunctions()
             else
             {
                 //log a warning that the _listener is already listening to the _listeningTo with the same message type
-                console.warn("Listener already exists with ID: " + _listener.listenerID + " and Type:" + _listenerInfo.type + " Listening to: " + _listenTo.listenerID);
+                console.warn("Listener already exists with ID: " + _listener.listenerID + " and Type:" + _listenerMessage.type + " Listening to: " + _listenTo.listenerID);
                 return false;
             }
         }
@@ -2858,7 +2858,7 @@ function cEventListenerGenericFunctions()
     }
 
     //handle de-registering listener from "listen to"
-    this.deregisterListener = function deregisterListener(_listenTo, _listener, _listenerInfo)
+    this.deregisterListener = function deregisterListener(_listenTo, _listener, _listenerMessage)
     {
         //setup temporary listenerMessages
         var tempListener = new cEventListener.listenerMessage(_listener, _listenerMessage);
@@ -2868,7 +2868,7 @@ function cEventListenerGenericFunctions()
         if (_listener)
         {
             //find where the listener is inside _listenTo's listeners
-            var listenerIndex = cEventListener.search.findListenerIndexFromIDType(_listener.id, _listener.tpye, _listenTo.listeners);
+            var listenerIndex = cEventListener.search.findListenerIndexFromIDType(_listener.id, _listener.type, _listenTo.listeners);
             
             //check if listener is registered to _listenTo
             if (listenerIndex != -1)
@@ -2880,7 +2880,7 @@ function cEventListenerGenericFunctions()
                 if (_listenTo)
                 {
                     //find index for _listenTo inside what _listener is listening too
-                    var listeningToIndex = cEventListener.search.findListenerIndexFromIDType(_listenTo.id, _listenerInfo.type, _listener.listeningTo);
+                    var listeningToIndex = cEventListener.search.findListenerIndexFromIDType(_listenTo.id, _listenerMessage.type, _listener.listeningTo);
                     
                     //check if listenTo is within _listener's listenTo
                     if (listeningToIndex != -1) 
@@ -3441,6 +3441,9 @@ window.cMaths = new function customMathFunctions()
     this.Bounds = this.dataTypes.bounds.prototype;
     this.bounds = this.dataTypes.bounds;
 
+    this.HtmlBounds = this.dataTypes.htmlBounds.prototype;
+    this.htmlBounds = this.dataTypes.htmlBounds;
+
     //realtime data
     this.viewportOffset = new this.vector2();
 
@@ -3450,7 +3453,7 @@ window.cMaths = new function customMathFunctions()
     }
 
     window.addEventListener("scroll", updateViewportOffset);
-    window.addEventListener("resize", updateViewportOffset)
+    window.addEventListener("resize", updateViewportOffset);
 
 }
 
@@ -3485,12 +3488,12 @@ function customMathTypeData()
             return this;
         },
 
-        Set: function(_vector)
+        setVector: function(_vector)
         {
             if (_vector == null) { return null; }
             
-            this.x += _vector.x;
-            this.x += _vector.y;
+            this.x = _vector.x === undefined ? null : _vector.x;
+            this.y = _vector.y === undefined ? null : _vector.y;
 
             return this;
         },
@@ -3608,6 +3611,17 @@ function customMathTypeData()
             return this;
         },
 
+        setVector: function(_vector)
+        {
+            if (_vector == null) { return null; }
+            
+            this.x = _vector.x === undefined ? null : _vector.x;
+            this.y = _vector.y === undefined ? null : _vector.y;
+            this.z = _vector.z === undefined ? null : _vector.z;
+
+            return this;
+        },
+
         clone: function()
         {
             return new cMaths.vector3(this.x, this.y, this.z);
@@ -3704,6 +3718,7 @@ function customMathTypeData()
             this.y = _y === undefined ? null : _y;
             this.z = _z === undefined ? null : _z;
             this.w = _w === undefined ? null : _w;
+            return true;
         },
 
         setX: function(_x)
@@ -3727,6 +3742,18 @@ function customMathTypeData()
         setW: function (_w)
         {
             this.w = _w === undefined ? null : _w;
+            return this;
+        },
+
+        setVector: function(_vector)
+        {
+            if (_vector == null) { return null; }
+            
+            this.x = _vector.x === undefined ? null : _vector.x;
+            this.y = _vector.y === undefined ? null : _vector.y;
+            this.z = _vector.z === undefined ? null : _vector.z;
+            this.w = _vector.w === undefined ? null : _vector.w;
+
             return this;
         },
 
@@ -3819,17 +3846,34 @@ function customMathTypeData()
         },
     }
 
-    this.bounds = function bounds(_x1, _y1, _x2, _y2)
+    this.bounds = function bounds(_x1, _y1, _x2, _y2, _flippedY)
     {
         this.x1 = _x1 === undefined ? null : _x1;
         this.y1 = _y1 === undefined ? null : _y1;
         this.x2 = _x2 === undefined ? null : _x2;
         this.y2 = _y2 === undefined ? null : _y2;
-        this.topLeft = new cMaths.vector2(this.x1, this.y1);
-        this.topRight = new cMaths.vector2(this.x2, this.y1);
-        this.bottomRight = new cMaths.vector2(this.x2, this.y2);
-        this.bottomLeft = new cMaths.vector2(this.x1, this.y2);
-        this.size = new cMaths.vector2(this.x2 - this.x1, this.y2 - this.y1);
+
+        //calculate positions and size
+        this.updateExtras = function()
+        {
+            var _this = this;
+            function updateSides(lowestX, lowestY, highestX, highestY)
+            {
+                this.bottomRight = new cMaths.vector2(lowestX, lowestY);
+                this.bottomLeft = new cMaths.vector2(highestX, lowestY);
+                this.topRight = new cMaths.vector2(highestX, highestY);
+                this.topLeft = new cMaths.vector2(lowestX, highestY);
+            }
+
+            updateSides(this.x1 < this.x2 ? this.x1 : this.x2,
+                        this.y1 < this.y2 ? this.y1 : this.y2,
+                        this.x1 < this.x2 ? this.x2 : this.x1,
+                        this.y1 < this.y2 ? this.y2 : this.y1);
+
+            this.size = new cMaths.vector2(this.topRight.x - this.topLeft.x, this.topRight.y - this.bottomRight.y);
+        }
+
+        this.updateExtras();
     }
 
     this.bounds.prototype =
@@ -3841,6 +3885,7 @@ function customMathTypeData()
             this.x2 = _x2 === undefined ? null : _x2;
             this.y2 = _y2 === undefined ? null : _y2;
             this.updateExtras();
+            return true;
         },
 
         setX1: function(_x1)
@@ -3857,28 +3902,28 @@ function customMathTypeData()
             return this;
         },
 
-        setX2: function(_x1)
+        setX2: function(_x2)
+        {
+            this.x2 = _x2 === undefined ? null : _x2;
+            this.updateExtras();
+            return this;
+        },
+
+        setY2: function(_y2)
+        {
+            this.y2 = _y2 === undefined ? null : _y2;
+            this.updateExtras();
+            return this;
+        },
+
+        setBound: function(_bound)
         {
             this.x1 = _x1 === undefined ? null : _x1;
-            this.updateExtras();
-            return this;
-        },
-
-        setY2: function(_y1)
-        {
             this.y1 = _y1 === undefined ? null : _y1;
+            this.x2 = _x2 === undefined ? null : _x2;
+            this.y2 = _y2 === undefined ? null : _y2;
             this.updateExtras();
             return this;
-        },
-
-
-        updateExtras: function()
-        {
-            this.topLeft = new cMaths.vector2(this.x1, this.y1);
-            this.topRight = new cMaths.vector2(this.x2, this.y1);
-            this.bottomRight = new cMaths.vector2(this.x2, this.y2);
-            this.bottomLeft = new cMaths.vector2(this.x1, this.y2);
-            this.size = new cMaths.vector2(this.x2 - this.x1, this.y2 - this.y1);
         },
 
         clone: function()
@@ -4139,7 +4184,6 @@ function customMathTypeData()
             return (deltaX * deltaX + deltaY * deltaY);
         }
     }
-
 
 }
 
@@ -4949,81 +4993,6 @@ window.cUtility = window.cUtility || new function cUtility()
         return $("[class*=-" + nameParsed + "]");
     }
 
-    this.findHTMLObjects = function findHTMLObjects(_element)
-    {
-        //log error if element doesn't exist
-        if (!_element)
-        {
-            console.warn("Warning: Trying To Access Element That Doesn't exist"); 
-            return null;
-        }
-
-        //force values if null/undefined
-        if (!_element.elementName)
-        {
-            console.warn("Warning: No Name Provided To Element, Check HTML");
-            return null;
-        }
-        
-        //force values if element type is null/undefined
-        if (!_element.elementType)
-        {
-            _element.elementType = '';
-        }
-
-        //check if element is a generic mood element with no extra checks/filters needed
-        if (_element.elementType == '')
-        {
-            //return the mood element
-            return window.cUtility.findHTMLObjectsFromClassName(_element.elementName);
-        }
-        
-        //force values if element type is null/undefined
-        if (!_element.elementExtra)
-        {
-            _element.elementExtra = '';
-        }
-
-        //Any extra type of search methods
-
-        //setup type to save on typing
-		var typePrefix = "";
-		
-		//most of mood objects are in lower case text
-		//so convert element details into lower case 
-		var lowerCaseElementName = (_element.elementName).toLowerCase();
-		var lowerCaseElementType = (_element.elementType).toLowerCase();
-		var lowerCaseElementExtra = (_element.elementExtra).toLowerCase();
-		
-		//switch through element type and choose
-		//appropriate search terms to find element
-		switch(lowerCaseElementType)
-		{
-			case "tab-button":
-				return $('[id="' + _element.elementName + '"]');
-			case "mood-button":
-				return $('[aria-label="' + _element.elementName + '"]');
-			case "generic-id":
-				typePrefix = "id";
-				break;
-			case "text-box":
-				return $('img[id="' + _element.elementName + '"]').parent();
-			case "role":
-				return window.cUtility.findHTMLObjectsFromClassName(_element.elementName).find('[role="' + lowerCaseElementExtra + '"]');
-			case "matrix":
-				return window.cUtility.findHTMLObjectsFromClassName(_element.elementExtra + "-" + _element.elementName);
-			
-			//default just incase incorrect typing
-			default:
-				console.log("Invalid element type for search: " + _element.elementName);
-				break;
-		}
-		
-		//return search to save on typing
-		return $('[' + typePrefix + '="' + lowerCaseElementName + '"]');
-
-    }
-
     this.compareMooDValue = function compareMooDValue(_toCheckElement, _toCheckJQuery, _toCheckValue, _compareValue)
     {
         //setup basic variables
@@ -5819,14 +5788,21 @@ window.cInlineForm = window.cInlineForm || new function customInlineForm()
     this.enableRelationshipNavigation = true;
     this.enableKnowledgeActivatedDocumentsNavigation = true;
     this.enableInlineFormWidthChanges = true;
+
     this.enableHideEmptyInlineForms = true;
+    this.emptyInlineSearchTerm = "div.fieldControlContainer";
+
     this.fieldAndDescriptionSameLine = true;
     this.fieldOuterWidth = "75em";
     this.fieldInnerWidth = "95%";
 
+    this.generic = new cInlineFormFunctions();
+}
+
+function cInlineFormFunctions() {
     this.hideEmptyHTMLFields = function hideEmptyHTMLFields()
     {
-        $("div.HtmlEditorReadOnly").each(function(index, element)
+        $(emptyInlineSearchTerm).each(function(index, element)
         {
             var editorElement = $(element);
 
@@ -5888,10 +5864,6 @@ window.cInlineForm = window.cInlineForm || new function customInlineForm()
 
             $(this).find(".editorContainer").each(function() {
                 $(this).css("padding-right", "0%");
-            });
-
-            $(this).find(".HtmlEditor").each(function() {
-                $(this).removeClass("widthSingle").css("width", cInlineForm.richTextEditorWidth);
             });
 
             $(this).find(".HtmlEditorReadOnly").each(function() {
@@ -5968,12 +5940,12 @@ function enableInlineOptions()
                     {
                         if (cInlineForm.enableHideEmptyInlineForms)
                         {
-                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.hideEmptyHTMLFields);
+                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.generic.hideEmptyHTMLFields);
                         }
 
                         if (cInlineForm.enableInlineFormWidthChanges)
                         {
-                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.modifyInlineFields);
+                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.generic.modifyInlineFields);
                         }
 
                         if (cInlineForm.enableRelationshipNavigation)
@@ -6052,7 +6024,7 @@ function enableInlineOptions()
 
                         if (cInlineForm.enableRelationshipNavigation || cInlineForm.enableKnowledgeActivatedDocumentsNavigation)
                         {
-                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.setupInlineRelationships);                            
+                            Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cInlineForm.generic.setupInlineRelationships);                            
                         }
     
                         return;
@@ -6168,3 +6140,6 @@ window.cPageResizer = window.cPageResizer || new function customPageResizer()
         return _lowest;
     }
 }
+
+
+

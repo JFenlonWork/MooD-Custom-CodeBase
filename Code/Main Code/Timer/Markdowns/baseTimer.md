@@ -79,6 +79,6 @@
     * <a id="destroy"/> destroy <p style="padding-left: 20px; padding-bottom: 40px;"> Handles the destruction of the timer and removal from the [timer list](../README.md#timerlist).</p>
 
 #### References:
- * <a id="datetime"/> [date.time()](https://developer.mozilla.org/en-US/docs/We
+ * <a id="datetime"/> [date.time()](https://developer.mozilla.org/en-US/docs/We)
   
 [Return to parent](../README.md)

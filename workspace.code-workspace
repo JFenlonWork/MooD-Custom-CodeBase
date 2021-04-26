@@ -1,0 +1,35 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"combineScripts.markdown.fileGlobs": [
+			"**/*.js"
+		],
+		"combineScripts.markdown.fileHeader": [
+			"/**********************************************************************************",
+			"* This is a concatenation of all the selected files, including files in subfolders.",
+			"* The start and end of each file contains a comment with its name, as well as a",
+			"* print statement.",
+			"***********************************************************************************"
+		],
+		"combineScripts.markdown.fileFooter": [
+			""
+		],
+		"combineScripts.markdown.entryHeader": [
+			""
+		],
+		"combineScripts.markdown.entryFooter": [
+			""
+		],
+		"combineScripts.markdown.tocHeader": [
+			""
+		],
+		"combineScripts.markdown.tocFooter": [
+			"***********************************************************************************/"
+		],
+		"combineScripts.markdown.tocEntry": "* ${lineNo}"
+	}
+}
