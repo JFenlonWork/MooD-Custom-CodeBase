@@ -2604,7 +2604,7 @@ window.cEventListener = window.cEventListener || new function customEventListene
         }
         
         //if Salamander/MooD hasn't been setup then retry in 10ms
-        setTimeout(function() { initiateEventListener(); },10);
+        setTimeout(function() { return initiateEventListener(); },10);
     })();
 }
 
@@ -5372,7 +5372,7 @@ function cExpanderFunctions()
 
 			var _allElements = $(".InteractiveModel").children().filter(function() {
 
-				if (_objToIgnore.includes(this)) { return false; }
+				if ($.inArray(this, _objToIgnore) != -1) { return false; }
 
 				if ($(this).is("div"))
 				{
@@ -6051,6 +6051,8 @@ enableInlineOptions();
 window.cPageResizer = window.cPageResizer || new function customPageResizer()
 {
 
+    this.enablePageResizer = false;
+    
     //store offsets for page end and screen end
     this.lowestOffset = 32;
     this.endOfPageOffset = 32;
@@ -6116,7 +6118,7 @@ window.cPageResizer = window.cPageResizer || new function customPageResizer()
         //loop through all the main element html in page (the containers for each element)
         $("[id=ctl00_ContentPlaceHolder1_InteractiveModel1]").children().each(function() {
 
-            if (_objToIgnore.includes(this)) { return; }
+            if ($.inArray(this, _objToIgnore) != -1) { return; }
 
             if ($(this).is("div"))
 			{
@@ -6139,7 +6141,33 @@ window.cPageResizer = window.cPageResizer || new function customPageResizer()
         
         return _lowest;
     }
+
+    function initiatePageResizer()
+    {
+        //check if Salamander/MooD has been setup
+        if (Salamander.lang.isSysDefined())
+        {		
+            if (Sys.WebForms)
+            {
+                if (Sys.WebForms.PageRequestManager)
+                {
+                    if (Sys.WebForms.PageRequestManager.getInstance())
+                    {
+                        //add eventListenerPageLoaded to run on page load
+                        Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cPageResizer.resizePage);
+                        return;
+                    }
+                }
+            }	
+        }
+        
+        //if Salamander/MooD hasn't been setup then retry in 10ms
+        setTimeout(function() { return initiatePageResizer(); },10);
+    }
+
+    if (this.enablePageResizer)
+    {
+        setTimeout(function() { return initiatePageResizer(); },10);
+    }
 }
-
-
 

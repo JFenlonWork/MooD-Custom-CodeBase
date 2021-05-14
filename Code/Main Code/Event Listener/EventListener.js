@@ -92,7 +92,7 @@ window.cEventListener = window.cEventListener || new function customEventListene
         }
         
         //if Salamander/MooD hasn't been setup then retry in 10ms
-        setTimeout(function() { initiateEventListener(); },10);
+        setTimeout(function() { return initiateEventListener(); },10);
     })();
 }
 

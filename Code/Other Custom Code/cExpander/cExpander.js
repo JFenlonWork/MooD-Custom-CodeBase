@@ -314,7 +314,7 @@ function cExpanderFunctions()
 
 			var _allElements = $(".InteractiveModel").children().filter(function() {
 
-				if (_objToIgnore.includes(this)) { return false; }
+				if ($.inArray(this, _objToIgnore) != -1) { return false; }
 
 				if ($(this).is("div"))
 				{
