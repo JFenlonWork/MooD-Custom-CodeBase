@@ -171,7 +171,7 @@ function cTimerDataTypes()
                 //limit offset to be interval (instant loop)
                 if (this.intervalOffset < -this.currentInterval)
                 {
-                    if (skipOffsetIfTooLarge)
+                    if (this.skipOffsetIfTooLarge)
                     {
                         this.intervalOffset = -(this.currentInterval % this.intervalOffset);
                     }

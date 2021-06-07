@@ -111,7 +111,7 @@ window.cPageResizer = window.cPageResizer || new function customPageResizer()
                 {
                     if (Sys.WebForms.PageRequestManager.getInstance())
                     {
-                        //add eventListenerPageLoaded to run on page load
+                        //add resizePage to run on page load
                         Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cPageResizer.resizePage);
                         return;
                     }

@@ -38,7 +38,7 @@ function cExpanderDataTypes()
 
 	this.expansionData = function expansionData(_objectToExpand, _scroller, _scrollerWidthOffset, _expandToJQuery, _expansionCssClass, _expansionID)
 	{
-		if (_objectToExpand == null || _scroller == null)
+		if (_objectToExpand == null)
 		{
 			return null;
 		}
@@ -157,7 +157,7 @@ function cExpanderSearchFunctions()
 	{
 		for (var l = 0; l < cExpander.allExpansionData.length; l++)
 		{
-			if (cExpander.allExpansionData[l].id == _id) { return cExpander.allCalculatedObjects[l]; }
+			if (cExpander.allExpansionData[l].ID == _id) { return cExpander.allExpansionData[l]; }
 		}
 		
 		if (_expansionCreationData != null)
