@@ -85,6 +85,16 @@ function cButtonDataTypes()
         //store a link to this current element for functions below
         var currentButton = this;
 
+		this.enable = function() 
+		{
+			window.cButton.modify.toggleButtonClick(_htmlButtonID, true);
+		}
+
+		this.disable = function() 
+		{
+			window.cButton.modify.toggleButtonClick(_htmlButtonID, false);
+		}
+
 		this.elementOwned.eventListener.messagesListeningTo.push(
 			new cEventListener.basicMessage('registerListenerSuccesful',
 			{ 
