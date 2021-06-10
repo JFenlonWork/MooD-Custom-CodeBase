@@ -90,6 +90,16 @@ function cElementDataTypes()
 
         //store a link to this current element for functions below
         var currentElement = this;
+
+        this.enable = function()
+        {
+            window.cElement.modify.toggleElement(_ID, new cEventListener.basicMessage(null, true), null);
+        }
+
+        this.disable = function()
+        {
+            window.cElement.modify.toggleElement(_ID, new cEventListener.basicMessage(null, false), null);
+        }
         
         this.eventListener.messagesListeningTo.push(
             new cEventListener.basicMessage('listenToToggleElementToEnableStatus', 
