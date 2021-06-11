@@ -144,7 +144,7 @@ function cButtonSetupFunctions()
 	this.createButton = function createButton(_buttonData)
 	{
 		//create or find element for button
-		var _elementGenerated = cElement.generic.addElement(_buttonData.buttonHTML, _buttonData.isMoodObject, _buttonData.buttonParentObject, _buttonData.id);
+		var _elementGenerated = cElement.generic.addElement(_buttonData.buttonHTML, _buttonData.isMoodObject, _buttonData.buttonParentObject, _buttonData.id, _buttonData.shownOnDefault);
 	
 		//find html data for button
 		var moodButton = _elementGenerated.elementObject;

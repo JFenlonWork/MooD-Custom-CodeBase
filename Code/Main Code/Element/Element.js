@@ -74,12 +74,12 @@ window.cElement = window.cElement || new function cElement()
 
 function cElementDataTypes()
 {
-    this.element = function element(_elementObject, _moodObject, _elementParentObject, _ID)
+    this.element = function element(_elementObject, _moodObject, _elementParentObject, _ID, _enabledByDefault)
     {
         this.elementObject = _elementObject;
         this.elementParentObject = _elementParentObject || (_moodObject === true ? $(_elementObject).closest(".WebPanelOverlay")[0] : this.elementObject);
         this.ID = _ID || cElement.uniqueID;
-        this.elementEnabled = false;
+        this.elementEnabled = (_enabledByDefault != null ? _enabledByDefault : true);
         
         if (_ID == cElement.uniqueID)
         {
@@ -139,7 +139,7 @@ function cElementSetupFunctions()
         if (_elementData)
         {
             //create element
-            cElement.generic.addElement(_elementData.elementObject, _elementData.isMoodObject, _elementData.elementParentObject, _elementData.id);
+            cElement.generic.addElement(_elementData.elementObject, _elementData.isMoodObject, _elementData.elementParentObject, _elementData.id, _elementData.enabledByDefault);
 
             if (_elementData.onClick) {
                 cElement.modify.addOnClickToElement(_elementData.id, _elementData.onClick, true, _elementData.css);
@@ -157,7 +157,7 @@ function cElementSetupFunctions()
 
 function cElementGenericFunctions()
 {
-    this.addElement = function addElement(_elementObject, _moodObject, _elementParentObject, _ID)
+    this.addElement = function addElement(_elementObject, _moodObject, _elementParentObject, _ID, _enabledByDefault)
     {
         var _ID = _ID || cElement.uniqueID;
 
@@ -165,7 +165,7 @@ function cElementGenericFunctions()
         if (exists == -1)
         {
             //setup the element
-            var _customElement = new cElement.element(_elementObject, _moodObject, _elementParentObject, parseInt(_ID));
+            var _customElement = new cElement.element(_elementObject, _moodObject, _elementParentObject, parseInt(_ID), _enabledByDefault);
 
             //add the element to the array
             cElement.elementArray.push(_customElement);
@@ -246,6 +246,7 @@ function cElementSearchFunctions()
     //check element exists and return the index
     this.checkElementExists = function checkElementExists(_elementObject)
     {
+        if (_elementObject == null) return -1;
         for (var i = 0; i < cElement.elementArray.length; i++)
         {
             //check if the names and role match
