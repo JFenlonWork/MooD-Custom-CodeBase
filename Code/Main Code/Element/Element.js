@@ -437,6 +437,16 @@ function cElementModifyFunctions()
                 
                 new cTimer.realtimeTimer("ElementOpacityTimer" + _element.ID, new cTimer.callback(opacityChange, this), true, currentDelay + 1, true);
             }
+            else
+            {
+                _styleData = new cCss.styleSheetModificationData("visibility", null, false, null, "hidden", -1, false);
+                cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);            
+                        
+                var _zIndexToSet = (_messageData.zIndex == null ? "0" : _messageData.zIndex);
+                var _zIndexImportanceToSet = (_messageData.zIndexImportance == null ? true : _messageData.zIndexImportance);
+                _styleData = new cCss.styleSheetModificationData("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+                cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+            }
         }
     }
 

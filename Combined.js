@@ -5,17 +5,17 @@
 ***********************************************************************************
 
 * 20
-* 991
-* 1855
-* 2338
-* 2512
-* 3408
-* 4529
-* 4979
-* 5058
-* 5434
-* 5775
-* 6042
+* 1001
+* 1865
+* 2359
+* 2533
+* 3429
+* 4550
+* 5000
+* 5079
+* 5455
+* 5796
+* 6063
 ***********************************************************************************/
 
 /*
@@ -104,6 +104,16 @@ function cButtonDataTypes()
 		
         //store a link to this current element for functions below
         var currentButton = this;
+
+		this.enable = function() 
+		{
+			window.cButton.modify.toggleButtonClick(_htmlButtonID, true);
+		}
+
+		this.disable = function() 
+		{
+			window.cButton.modify.toggleButtonClick(_htmlButtonID, false);
+		}
 
 		this.elementOwned.eventListener.messagesListeningTo.push(
 			new cEventListener.basicMessage('registerListenerSuccesful',
@@ -1945,6 +1955,16 @@ function cElementDataTypes()
 
         //store a link to this current element for functions below
         var currentElement = this;
+
+        this.enable = function()
+        {
+            window.cElement.modify.toggleElement(_ID, new cEventListener.basicMessage(null, true), null);
+        }
+
+        this.disable = function()
+        {
+            window.cElement.modify.toggleElement(_ID, new cEventListener.basicMessage(null, false), null);
+        }
         
         this.eventListener.messagesListeningTo.push(
             new cEventListener.basicMessage('listenToToggleElementToEnableStatus', 
@@ -2091,6 +2111,7 @@ function cElementSearchFunctions()
     //check element exists and return the index
     this.checkElementExists = function checkElementExists(_elementObject)
     {
+        if (_elementObject == null) return -1;
         for (var i = 0; i < cElement.elementArray.length; i++)
         {
             //check if the names and role match
@@ -4700,7 +4721,7 @@ function cTimerDataTypes()
                 //limit offset to be interval (instant loop)
                 if (this.intervalOffset < -this.currentInterval)
                 {
-                    if (skipOffsetIfTooLarge)
+                    if (this.skipOffsetIfTooLarge)
                     {
                         this.intervalOffset = -(this.currentInterval % this.intervalOffset);
                     }
@@ -5096,7 +5117,7 @@ function cExpanderDataTypes()
 
 	this.expansionData = function expansionData(_objectToExpand, _scroller, _scrollerWidthOffset, _expandToJQuery, _expansionCssClass, _expansionID)
 	{
-		if (_objectToExpand == null || _scroller == null)
+		if (_objectToExpand == null)
 		{
 			return null;
 		}
@@ -5215,7 +5236,7 @@ function cExpanderSearchFunctions()
 	{
 		for (var l = 0; l < cExpander.allExpansionData.length; l++)
 		{
-			if (cExpander.allExpansionData[l].id == _id) { return cExpander.allCalculatedObjects[l]; }
+			if (cExpander.allExpansionData[l].ID == _id) { return cExpander.allExpansionData[l]; }
 		}
 		
 		if (_expansionCreationData != null)
@@ -6153,7 +6174,7 @@ window.cPageResizer = window.cPageResizer || new function customPageResizer()
                 {
                     if (Sys.WebForms.PageRequestManager.getInstance())
                     {
-                        //add eventListenerPageLoaded to run on page load
+                        //add resizePage to run on page load
                         Sys.WebForms.PageRequestManager.getInstance().add_pageLoaded(cPageResizer.resizePage);
                         return;
                     }
@@ -6170,4 +6191,3 @@ window.cPageResizer = window.cPageResizer || new function customPageResizer()
         setTimeout(function() { return initiatePageResizer(); },10);
     }
 }
-
