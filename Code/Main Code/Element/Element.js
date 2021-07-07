@@ -170,7 +170,10 @@ function cElementGenericFunctions()
             //add the element to the array
             cElement.elementArray.push(_customElement);
 
-            var _styleData = new cCss.styleSheetModificationData("zIndex", null, false, null, "unset", -1, true);
+            var _styleData = new cCss.styleSheetModificationData({
+                prop: "zIndex",
+                cssProp: "z-index"
+            }, false, null, "unset", -1, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _ID, _styleData);
 
             $(_customElement.elementParentObject).addClass("Element" + _ID);
@@ -324,8 +327,6 @@ function cElementSearchFunctions()
         return null;
     }
 
-    this.getElementBy
-
 }
 
 function cElementModifyFunctions()
@@ -381,13 +382,21 @@ function cElementModifyFunctions()
             _transitionData += " " + (_messageData.opacityTiming || "linear");
             _transitionData += " " + ((_messageData.opacityDelay || 0) / 1000).toString() + "s";
                   
-            var _styleData = new cCss.styleSheetModificationData("transition", "opacity", true, 2, _transitionData, -1, false);
+            var _styleData = new cCss.styleSheetModificationData({
+                prop: "transition",
+                cssProp: "transition",
+                insidePropProp: "opacity"
+            }, true, 2, _transitionData, -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
         }
         else
         {
             var _transitionData = "opacity 0s linear 0s";    
-            var _styleData = new cCss.styleSheetModificationData("transition", "opacity", true, 2, _transitionData, -1, false);
+            var _styleData = new cCss.styleSheetModificationData({
+                prop: "transition",
+                cssProp: "transition",
+                insidePropProp: "opacity"
+            }, true, 2, _transitionData, -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
         }
 
@@ -395,15 +404,24 @@ function cElementModifyFunctions()
         {
             var _zIndexToSet = (_messageData.zIndex == null ? "10000" : _messageData.zIndex);
             var _zIndexImportanceToSet = (_messageData.zIndexImportance == null  ? true : _messageData.zIndexImportance);
-            var _styleData = new cCss.styleSheetModificationData("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+            var _styleData = new cCss.styleSheetModificationData({
+                prop: "zIndex",
+                cssProp: "z-index" 
+             }, false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);    
 
             //change html style to be visiblie and set zIndex to default
             var _opacityToSet = _messageData.opacity == null ? 100 : _messageData.opacity;
-            _styleData = new cCss.styleSheetModificationData("opacity", null, false, null, _opacityToSet.toString(), -1, false);
+            _styleData = new cCss.styleSheetModificationData({
+               prop: "opacity",
+               cssProp: "opacity" 
+            }, false, null, _opacityToSet.toString(), -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
 
-            _styleData = new cCss.styleSheetModificationData("visibility", null, false, null, "visible", -1, false);
+            _styleData = new cCss.styleSheetModificationData({
+                prop: "visibility",
+                cssProp: "visibility" 
+             }, false, null, "visible", -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
 
             var _opacityTimer = cTimer.generic.findTimerByName("ElementOpacityTimer" + _element.ID);
@@ -417,7 +435,10 @@ function cElementModifyFunctions()
         {
             //change html style to be visiblie and set zIndex to default
             var _opacityToSet = _messageData.opacity == null ? 0 : _messageData.opacity;
-            var _styleData = new cCss.styleSheetModificationData("opacity", null, false, null, _opacityToSet.toString(), -1, false);
+            var _styleData = new cCss.styleSheetModificationData({
+                prop: "opacity",
+                cssProp: "opacity" 
+             }, false, null, _opacityToSet.toString(), -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
             
             if (_element.elementEnabled == true && _enabled == false)
@@ -426,12 +447,18 @@ function cElementModifyFunctions()
 
                 function opacityChange(_args)
                 {
-                    _styleData = new cCss.styleSheetModificationData("visibility", null, false, null, "hidden", -1, false);
+                    _styleData = new cCss.styleSheetModificationData({
+                        prop: "visibility",
+                        cssProp: "visibility" 
+                     }, false, null, "hidden", -1, false);
                     cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);            
                             
                     var _zIndexToSet = (_messageData.zIndex == null ? "0" : _messageData.zIndex);
                     var _zIndexImportanceToSet = (_messageData.zIndexImportance == null ? true : _messageData.zIndexImportance);
-                    _styleData = new cCss.styleSheetModificationData("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+                    _styleData = new cCss.styleSheetModificationData({
+                        prop: "zIndex",
+                        cssProp: "z-index" 
+                     }, false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
                     cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
                 }
                 
@@ -439,12 +466,18 @@ function cElementModifyFunctions()
             }
             else
             {
-                _styleData = new cCss.styleSheetModificationData("visibility", null, false, null, "hidden", -1, false);
+                _styleData = new cCss.styleSheetModificationData({
+                    prop: "visibility",
+                    cssProp: "visibility" 
+                 }, false, null, "hidden", -1, false);
                 cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);            
                         
                 var _zIndexToSet = (_messageData.zIndex == null ? "0" : _messageData.zIndex);
                 var _zIndexImportanceToSet = (_messageData.zIndexImportance == null ? true : _messageData.zIndexImportance);
-                _styleData = new cCss.styleSheetModificationData("zIndex", "z-index", false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+                _styleData = new cCss.styleSheetModificationData({
+                    prop: "zIndex",
+                    cssProp: "z-index" 
+                 }, false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
                 cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
             }
         }
@@ -462,19 +495,33 @@ function cElementModifyFunctions()
 
         if (_posX) 
         {
-            var _styleData = new cCss.styleSheetModificationData("transition", "left", true, 2, _transitionData, -1, false);
+            var _styleData = new cCss.styleSheetModificationData({
+                prop: "transition",
+                cssProp: "transition",
+                insidePropProp: "left" 
+             }, true, 2, _transitionData, -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
 
-            _styleData = new cCss.styleSheetModificationData("left", null, false, 0, _posX + "px", -1, true);
+            _styleData = new cCss.styleSheetModificationData({
+                prop: "left",
+                cssProp: "left" 
+             }, false, 0, _posX + "px", -1, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
         }
 
         if (_posY) 
         {
-            var _styleData = new cCss.styleSheetModificationData("transition", "top", true, 2, _transitionData, -1, false);
+            var _styleData = new cCss.styleSheetModificationData({
+                prop: "transition",
+                cssProp: "transition",
+                insidePropProp: "top"
+             }, true, 2, _transitionData, -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
 
-            _styleData = new cCss.styleSheetModificationData("top", null, false, 0, _posY + "px", -1, true);
+            _styleData = new cCss.styleSheetModificationData({
+                prop: "top",
+                cssProp: "top" 
+             }, false, 0, _posY + "px", -1, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
         }
     }

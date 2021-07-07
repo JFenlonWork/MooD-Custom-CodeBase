@@ -106,7 +106,11 @@ function cExpanderDataTypes()
 		{
 			while(_this.objectsMovedDOM.length > 0)
 			{
-				var _styleData = new cCss.styleSheetModificationData("transform", "translateY", true, 1, null, 0, true);
+				var _styleData = new cCss.styleSheetModificationData({
+					prop: "transform",
+					cssProp: "transform",
+					insidePropProp: "translateY"
+				 }, true, 1, null, 0, true);
 				var _objectStyleID = cExpander.search.returnCalculatedObjectDataFromObject(_this.objectsMovedDOM[0], cExpander.uniqueCalculatedID);
 				var _selector = cCss.styleSheet.translateCssSelector(".ExpansionMoved" + _objectStyleID.ID, "MainExpansionStyles");
 				var _currentTransform = cCss.styleSheet.getCssStyle(_selector.style, _styleData, 2);
@@ -272,7 +276,10 @@ function cExpanderFunctions()
 			}
 
 			//set height to be total size
-			var _styleData = new cCss.styleSheetModificationData("height", null, false, 0, totalSize + "px", -1, true);
+			var _styleData = new cCss.styleSheetModificationData({
+				prop: "height",
+				cssProp: "height" 
+			 }, false, 0, totalSize + "px", -1, true);
 			cCss.styleSheet.replaceCssStyle("MainExpansionStyles", "." + _expansionData.expansionCssClass, _styleData);
 
 			//move all other html that might've been affected
@@ -283,7 +290,10 @@ function cExpanderFunctions()
 		{
 			if (_expansionData.originalHeight != -1)
 			{
-				var _styleData = new cCss.styleSheetModificationData("height", null, false, 0, _expansionData.originalHeight + "px", -1, true);
+				var _styleData = new cCss.styleSheetModificationData({
+					prop: "height",
+					cssProp: "height" 
+				 }, false, 0, _expansionData.originalHeight + "px", -1, true);
 				cCss.styleSheet.replaceCssStyle("MainExpansionStyles", "." + _expansionData.expansionCssClass, _styleData);	
 
             	//move all other html that might've been affected
@@ -353,7 +363,11 @@ function cExpanderFunctions()
 			if (!(_expansionData.checkMovedExists(_allWithin[i]._object)))
 			{
 				
-                var _styleData = new cCss.styleSheetModificationData("transform", "translateY", true, 1, null, 0, true);
+                var _styleData = new cCss.styleSheetModificationData({
+					prop: "transform",
+					cssProp: "transform",
+					insidePropProp: "translateY"
+				 }, true, 1, null, 0, true);
 				var _objectStyleID = cExpander.search.returnCalculatedObjectDataFromObject(_allWithin[i]._object, cExpander.uniqueCalculatedID);
 				var _selector = cCss.styleSheet.translateCssSelector(".ExpansionMoved" + _objectStyleID.ID, "MainExpansionStyles");
 				

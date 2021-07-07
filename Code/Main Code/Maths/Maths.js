@@ -33,9 +33,6 @@ window.cMaths = new function customMathFunctions()
     this.Bounds = this.dataTypes.bounds.prototype;
     this.bounds = this.dataTypes.bounds;
 
-    this.HtmlBounds = this.dataTypes.htmlBounds.prototype;
-    this.htmlBounds = this.dataTypes.htmlBounds;
-
     //realtime data
     this.viewportOffset = new this.vector2();
 

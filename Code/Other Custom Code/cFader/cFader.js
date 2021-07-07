@@ -186,10 +186,17 @@ function cFaderDataTypes ()
         {
             if (this.faderDataParent == null) { return null; }
 
-            var _styleData = new cCss.styleSheetModificationData("opacity", null, false, -1, 0, -1, false);
+            var _styleData = new cCss.styleSheetModificationData({
+                prop: "opacity",
+                cssProp: "opacity" 
+             }, false, -1, 0, -1, false);
             cCss.styleSheet.replaceCssStyle("MainFaderStyles", ".Fader" + this.faderDataParent.id + "Startup" + this.id, _styleData);
 
-            _styleData = new cCss.styleSheetModificationData("transition", "opacity", true, 2, 0, -1, false);
+            _styleData = new cCss.styleSheetModificationData({
+                prop: "transition",
+                cssProp: "transition",
+                insidePropProp: "opacity" 
+             }, true, 2, 0, -1, false);
             cCss.styleSheet.replaceCssStyle("MainFaderStyles", ".Fader" + this.faderDataParent.id + "Startup" + this.id, _styleData);
 
             $(this.objectToFade).addClass("Fader" + this.faderDataParent.id + "Startup" + this.id);

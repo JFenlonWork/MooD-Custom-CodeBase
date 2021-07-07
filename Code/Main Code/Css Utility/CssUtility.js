@@ -51,10 +51,15 @@ function cCssDataTypes()
 	}
 
 	//make value be array to indicate (x,y,z) etc...
-	this.styleSheetModificationData = function styleSheetModificationData(_property, _cssTextProperty, _canBeList, _splitType, _value, _propertyIndex, _importance)
+	this.styleSheetModificationData = function styleSheetModificationData(_property, _canBeList, _splitType, _value, _propertyIndex, _importance)
 	{
-		this.property = _property || "";
-		this.cssTextProperty = _cssTextProperty || "";
+		this.property = _property || {
+			prop: "",
+			cssProp: "",
+			insidePropProp: ""
+		};
+		// this.property = _property || "";
+		// this.cssTextProperty = _cssTextProperty || "";
 		this.canBeList = _canBeList || false;
 
 		//0 = none, 1 = brackets, 2 = commas
@@ -670,7 +675,7 @@ function customCssstyleSheetFunctions()
 	{
 		var _properties = [];
 		var _values = [];
-		var _styleProperty = _style[_styleData.property] || "";
+		var _styleProperty = _style[_styleData.property.prop] || "";
 			
 		//split by 1 == "example(...) example2(...)"
 		if (_styleData.splitType === 1)
@@ -716,7 +721,7 @@ function customCssstyleSheetFunctions()
 		else
 		{
 			return {
-				properties: [_styleData.property],
+				properties: [_styleData.property.prop],
 				values: [_styleProperty],
 				_returnTypeIndex: -1,
 				returnTypeNewCss: ""
@@ -725,7 +730,7 @@ function customCssstyleSheetFunctions()
 
 		var _combinedStyleText = "";
 		var _returnTypeIndex = -1;
-		var _propertyToTest = _styleData.cssTextProperty === null ? _styleData.property : _styleData.cssTextProperty;
+		var _propertyToTest = _styleData.property.insidePropProp === null ? _styleData.property.prop : _styleData.property.insidePropProp;
 
 		_properties.forEach(function(_currentProperty, _index) {
 			if (_currentProperty && _currentProperty !== "" && _currentProperty !== " ")
@@ -764,24 +769,26 @@ function customCssstyleSheetFunctions()
 		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
 		var _style = _selector.style;
 
-		if (_styleData.property)
+		if (_styleData.property.prop)
 		{	
 			var _styleParsedData = cCss.styleSheet.getCssStyle(_style, _styleData, 1)
+
+			var _valueToSet = "";
 
 			if (_styleData.propertyIndex === -1)
 			{
 				if (_styleData.splitType === 1)
 				{
-					_style[_styleData.property] = _styleParsedData.returnTypeNewCss + " " + _styleData.cssTextProperty + "(" + _styleData.value + ")";
+					_valueToSet = _styleParsedData.returnTypeNewCss + " " + _styleData.cssTextProperty + "(" + _styleData.value + ")";
 				}
 				else if (_styleData.splitType === 2)
 				{
-					_style[_styleData.property] = _styleParsedData.returnTypeNewCss + (_styleParsedData.returnTypeNewCss == "" ? "" : ", ") + _styleData.cssTextProperty + " " + _styleData.value;
+					_valueToSet = _styleParsedData.returnTypeNewCss + (_styleParsedData.returnTypeNewCss == "" ? "" : ", ") + _styleData.cssTextProperty + " " + _styleData.value;
 				}
 				else
 				{
 					//replace entire property value
-					_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleData.value;
+					_valueToSet = _styleParsedData.returnTypeNewCss + _styleData.value;
 				}
 			}
 			else if (_styleParsedData.returnTypeIndex !== -1)
@@ -805,11 +812,11 @@ function customCssstyleSheetFunctions()
 
 					if (_styleData.splitType == 1)
 					{
-						_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleParsedData.properties[_styleParsedData.returnTypeIndex] + "(" + _valueSplit.join(",") + ")";
+						_valueToSet = _styleParsedData.returnTypeNewCss + _styleParsedData.properties[_styleParsedData.returnTypeIndex] + "(" + _valueSplit.join(",") + ")";
 					}
 					else
 					{
-						_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleParsedData.properties[_styleParsedData.returnTypeIndex] + " " + _valueSplit.join(" ");
+						_valueToSet = _styleParsedData.returnTypeNewCss + _styleParsedData.properties[_styleParsedData.returnTypeIndex] + " " + _valueSplit.join(" ");
 					}
 				}
 				else
@@ -819,15 +826,15 @@ function customCssstyleSheetFunctions()
 			}
 			else
 			{
-				if (_styleData.cssTextProperty)
+				if (_styleData.property.cssProp)
 				{
 					if (_styleData.splitType == 1)
 					{
-						_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleData.cssTextProperty + "(" + _styleData.value + ")";
+						_valueToSet = _styleParsedData.returnTypeNewCss + _styleData.property.cssProp + "(" + _styleData.value + ")";
 					}
 					else if (_styleData.split == 2)
 					{
-						_style[_styleData.property] = _styleParsedData.returnTypeNewCss + _styleData.cssTextProperty + " " + _styleData.value;						
+						_valueToSet = _styleParsedData.returnTypeNewCss + _styleData.property.cssProp + " " + _styleData.value;						
 					}
 					else
 					{
@@ -840,16 +847,30 @@ function customCssstyleSheetFunctions()
 				}
 			}
 
+			//set the actual property of the style
+			if (_style.setProperty != null)
+			{
+				_style.removeProperty(_styleData.property.cssProp);
+				_style.setProperty(_styleData.property.cssProp, _valueToSet);
+			}
+			else
+			{
+				_style[_styleData.property.prop] = _valueToSet;
+			}
+
 			//add importance to the property
 			if (_styleData.importance !== null)
 			{
 
-				var _stylePropertyToUse = ((_styleData.canBeList === false && _styleData.cssTextProperty !== "") ? _styleData.cssTextProperty : _styleData.property);
+				var _stylePropertyToUse = ((_styleData.canBeList === false && _styleData.property.cssProp !== "") ? _styleData.property.cssProp : _styleData.property.prop);
 				var _regexWithoutNewStyle = "(^|.)(" + _stylePropertyToUse + (_styleData.canBeList === true ? ").*?(?=;)." : ")(?=:).*?(?=;).");
 				var _regexWithStyle = "(^|;).*?(?=(" + _stylePropertyToUse + (_styleData.canBeList === true ? "|$))" : "(?=:)|$))");
 
 				var _cssWithoutStyleChange = _style.cssText.replace(new RegExp(_regexWithoutNewStyle, "gi"), "");
 				var _cssOnlyStyleChange = _style.cssText.replace(new RegExp(_regexWithStyle, "gi"), "");
+
+				//Remove !important if it still exists
+				_cssOnlyStyleChange = _cssOnlyStyleChange.replace(" !important", "");
 
 				_style.cssText = _cssWithoutStyleChange + " " + _cssOnlyStyleChange + " " + (_styleData.importance === true ? " !important;" : ";");
 
