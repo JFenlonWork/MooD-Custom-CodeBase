@@ -77,7 +77,7 @@ function cElementDataTypes()
     this.element = function element(_elementObject, _moodObject, _elementParentObject, _ID, _enabledByDefault)
     {
         this.elementObject = _elementObject;
-        this.elementParentObject = _elementParentObject || (_moodObject === true ? $(_elementObject).closest(".WebPanelOverlay")[0] : this.elementObject);
+        this.elementParentObject = _elementParentObject || (_moodObject === true ? $(_elementObject).closest(".WebPanelOverlay") : this.elementObject);
         this.ID = _ID || cElement.uniqueID;
         this.elementEnabled = (_enabledByDefault != null ? _enabledByDefault : true);
         
@@ -93,12 +93,12 @@ function cElementDataTypes()
 
         this.enable = function()
         {
-            window.cElement.modify.toggleElement(_ID, new cEventListener.basicMessage(null, true), null);
+            window.cElement.modify.toggleElement(currentElement.ID, new cEventListener.basicMessage(null, true), null);
         }
 
         this.disable = function()
         {
-            window.cElement.modify.toggleElement(_ID, new cEventListener.basicMessage(null, false), null);
+            window.cElement.modify.toggleElement(currentElement.ID, new cEventListener.basicMessage(null, false), null);
         }
         
         this.eventListener.messagesListeningTo.push(
@@ -351,6 +351,7 @@ function cElementModifyFunctions()
                 //modify the element's extras I.E position and zIndex
                 cElement.modify.modifyElementOpacity(_element, _messageData, _toEnable);
                 cElement.modify.modifyElementPosition(_element, _messageData);
+                cElement.modify.modifyElementSize(_element, _messageData);
 
                 //check if the element now has a different active status and modify
                 if (_enabled.message == "enable" && !_element.elementEnabled || 
@@ -489,9 +490,13 @@ function cElementModifyFunctions()
         var _posX = _messageData.posX != null ? _messageData.posX : typeof _messageData.generatePosX == "function" ? _messageData.generatePosX() : null;
         var _posY = _messageData.posY != null ? _messageData.posY : typeof _messageData.generatePosY == "function" ? _messageData.generatePosY() : null;
 
-        var _transitionData = ((_messageData.positionMoveTime || 0) / 1000).toString() + "s"
-                                + " " + (_messageData.positionTiming || "linear") + " "
-                                + ((_messageData.positionDelay || 0) / 1000).toString() + "s";
+        var _posXTransitionData = ((_messageData.posXMoveTime || 0) / 1000).toString() + "s"
+                                + " " + (_messageData.posXTiming || "linear") + " "
+                                + ((_messageData.posXDelay || 0) / 1000).toString() + "s";
+
+        var _posYTransitionData = ((_messageData.posYMoveTime || 0) / 1000).toString() + "s"
+                                + " " + (_messageData.posYTiming || "linear") + " "
+                                + ((_messageData.posYDelay || 0) / 1000).toString() + "s";
 
         if (_posX) 
         {
@@ -499,7 +504,7 @@ function cElementModifyFunctions()
                 prop: "transition",
                 cssProp: "transition",
                 insidePropProp: "left" 
-             }, true, 2, _transitionData, -1, false);
+             }, true, 2, _posXTransitionData, -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
 
             _styleData = new cCss.styleSheetModificationData({
@@ -515,13 +520,60 @@ function cElementModifyFunctions()
                 prop: "transition",
                 cssProp: "transition",
                 insidePropProp: "top"
-             }, true, 2, _transitionData, -1, false);
+             }, true, 2, _posYTransitionData, -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
 
             _styleData = new cCss.styleSheetModificationData({
                 prop: "top",
                 cssProp: "top" 
              }, false, 0, _posY + "px", -1, true);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+        }
+    }
+
+    this.modifyElementSize = function modifyElementSize(_element, _messageData)
+    {
+        //setup position variables
+        var _width = _messageData.width != null ? _messageData.width : typeof _messageData.generateWidth == "function" ? _messageData.generateWidth() : null;
+        var _height = _messageData.height != null ? _messageData.height : typeof _messageData.generateHeight == "function" ? _messageData.generateHeight() : null;
+
+        var _widthTransitionData = ((_messageData.widthChangeTime || 0) / 1000).toString() + "s"
+                                + " " + (_messageData.widthChangeTiming || "linear") + " "
+                                + ((_messageData.widthChangeDelay || 0) / 1000).toString() + "s";
+
+        var _heightTransitionData = ((_messageData.heightChangeTime || 0) / 1000).toString() + "s"
+                                + " " + (_messageData.heightChangeTiming || "linear") + " "
+                                + ((_messageData.heightChangeDelay || 0) / 1000).toString() + "s";
+
+        if (_width) 
+        {
+            var _styleData = new cCss.styleSheetModificationData({
+                prop: "transition",
+                cssProp: "transition",
+                insidePropProp: "width" 
+             }, true, 2, _widthTransitionData, -1, false);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+
+            _styleData = new cCss.styleSheetModificationData({
+                prop: "width",
+                cssProp: "width" 
+             }, false, 0, _width + "px", -1, true);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+        }
+
+        if (_height) 
+        {
+            var _styleData = new cCss.styleSheetModificationData({
+                prop: "transition",
+                cssProp: "transition",
+                insidePropProp: "height"
+             }, true, 2, _heightTransitionData, -1, false);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+
+            _styleData = new cCss.styleSheetModificationData({
+                prop: "height",
+                cssProp: "height" 
+             }, false, 0, _height + "px", -1, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
         }
     }

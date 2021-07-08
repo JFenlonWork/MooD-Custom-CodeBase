@@ -55,22 +55,50 @@ window.cUtility = window.cUtility || new function cUtility()
 		//add onto onclick
 		if (_addOrCreate)
 		{
-			//check if onclick exists and is add
-			if (_htmlObj.getAttribute("onclick"))
-			{
-				//add onto onclick
-				_htmlObj.setAttribute("onclick", _htmlObj.getAttribute("onclick") + ";" + _function);
-			}
-			else
-			{
-				//set onclick to be _function
-				_htmlObj.setAttribute("onclick", _function);
-			}
+            if (_htmlObj.length != null)
+            {
+                $(_htmlObj).each(function() {
+                    if (this.getAttribute("onclick"))
+                    {
+                        //add onto onclick
+                        this.setAttribute("onclick", this.getAttribute("onclick") + ";" + _function);
+                    }
+                    else
+                    {
+                        //set onclick to be _function
+                        this.setAttribute("onclick", _function);
+                    }
+                });
+            }
+            else
+            {
+                //check if onclick exists and is add
+                if (_htmlObj.getAttribute("onclick"))
+                {
+                    //add onto onclick
+                    _htmlObj.setAttribute("onclick", _htmlObj.getAttribute("onclick") + ";" + _function);
+                }
+                else
+                {
+                    //set onclick to be _function
+                    _htmlObj.setAttribute("onclick", _function);
+                }
+            }
 		}
 		else
 		{
-			//create on click to be _function
-			_htmlObj.setAttribute("onclick", _function);
+            if (_htmlObj.length != null)
+            {
+                $(_htmlObj).each(function() {
+                    //add onto onclick
+                    this.setAttribute("onclick", _function);
+                });
+            }
+            else
+            {
+                //create on click to be _function
+                _htmlObj.setAttribute("onclick", _function);
+            }
 		}
 	}
 

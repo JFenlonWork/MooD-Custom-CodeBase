@@ -10,11 +10,11 @@
 window.cInlineForm = window.cInlineForm || new function customInlineForm()
 {
 
-    this.enableRelationshipNavigation = true;
-    this.enableKnowledgeActivatedDocumentsNavigation = true;
-    this.enableInlineFormWidthChanges = true;
+    this.enableRelationshipNavigation = false;
+    this.enableKnowledgeActivatedDocumentsNavigation = false;
+    this.enableInlineFormWidthChanges = false;
 
-    this.enableHideEmptyInlineForms = true;
+    this.enableHideEmptyInlineForms = false;
     this.emptyInlineSearchTerm = "div.fieldControlContainer";
 
     this.fieldAndDescriptionSameLine = true;
@@ -27,7 +27,7 @@ window.cInlineForm = window.cInlineForm || new function customInlineForm()
 function cInlineFormFunctions() {
     this.hideEmptyHTMLFields = function hideEmptyHTMLFields()
     {
-        $(emptyInlineSearchTerm).each(function(index, element)
+        $(window.cInlineForm.emptyInlineSearchTerm).each(function(index, element)
         {
             var editorElement = $(element);
 

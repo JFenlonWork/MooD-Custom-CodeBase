@@ -14,8 +14,9 @@
 		_expansionCreationData = {
 			_objectToExpand,
 			_scroller,
+			_expandToHeight,
 			_scrollerWidthOffset,
-			_expandToJQuery,
+			_expanderIncludes,
 			_expansionCssClass,
 			_id 
 		}

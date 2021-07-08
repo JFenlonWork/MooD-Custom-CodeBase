@@ -36,7 +36,7 @@ window.cExpander = window.cExpander || new function customExpander()
 function cExpanderDataTypes()
 {
 
-	this.expansionData = function expansionData(_objectToExpand, _scroller, _scrollerWidthOffset, _expandToJQuery, _expansionCssClass, _expansionID)
+	this.expansionData = function expansionData(_objectToExpand, _scroller, _expandToHeight, _scrollerWidthOffset, _expanderIncludes, _expansionCssClass, _expansionID)
 	{
 		if (_objectToExpand == null)
 		{
@@ -77,13 +77,14 @@ function cExpanderDataTypes()
 			this.objectToExpandDOM = this.objectToExpandDOM[0];
 		}
 
-		this.expandToJQuery = _expandToJQuery || "*";
+		this.expanderIncludes = _expanderIncludes || "*";
 
 		this.expansionCssClass = _expansionCssClass || "defaultExpansion";
 		
 		$(_this.objectToExpandDOM).addClass(_this.expansionCssClass);
 		this.scrollerDOM.addClass(_this.expansionCssClass);
 		
+		this.expandToHeight = _expandToHeight == null ? -1 : _expandToHeight;
 		this.originalHeight = -1;
 		this.heightChanged = -1;
 		this.expanded = false;
@@ -211,8 +212,9 @@ function cExpanderFunctions()
 		var _expansionData = new cExpander.expansionData(
 										_expansionCreationData._objectToExpand
 										, _expansionCreationData._scroller
+										, _expansionCreationData._expandToHeight
 										, _expansionCreationData._scrollerWidthOffset
-										, _expansionCreationData._expandToJQuery
+										, _expansionCreationData._expanderIncludes
 										, _expansionCreationData._expansionCssClass
 										, _expansionCreationData._id);
 
@@ -262,7 +264,15 @@ function cExpanderFunctions()
 		{
 			//get total size of all items inside the inline form
 			var totalSize = cMaths.Bounds.fromObject(_expansionData.objectToExpandDOM
-											, document, _expansionData.expandToJQuery).size.y;
+											, document, _expansionData.expanderIncludes).size.y;
+
+			if (_expansionData.expandToHeight != -1)
+			{
+				if (totalSize > _expansionData.expandToHeight)
+				{
+					totalSize = _expansionData.expandToHeight;
+				}
+			}
 
 			if (_expansionData.previousExpanded == false)
 			{

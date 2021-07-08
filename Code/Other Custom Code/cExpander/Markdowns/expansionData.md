@@ -4,7 +4,7 @@
 
 #### <a id="codeexample"/> Code Example:
 ```Javascript
-cExpander.expansionData(_objectToExpand, _scroller, _scrollerWidthOffset, _expandToJQuery, _expansionCssClass, _expansionID)
+cExpander.expansionData(_objectToExpand, _scroller, _expandToHeight, _scrollerWidthOffset, _expanderIncludes, _expansionCssClass, _expansionID)
 ```
 	
 * <a id="parameters"/> <h3> Parameters: </h3> <hr style="height:2px;border:none;margin-top: -10px;">
@@ -13,9 +13,11 @@ cExpander.expansionData(_objectToExpand, _scroller, _scrollerWidthOffset, _expan
 
     * <a id="_scroller"/> _scroller <p style="padding-left: 20px;"> The CSS class that is on the scroller DIV/DOM Object. </p> <br>
 
+    * <a id="_expandToHeight"/> _expandToHeight <p style="padding-left: 20px;"> The height to expand to, if height is -1 then expand to the max size of the child objects. </p> <br>
+
     * <a id="_scrollerwidthoffset"/> _scrollerWidthOffset <p style="padding-left: 20px;"> Applies a height offset if there is a scrollbar for the width. </p> <br>
 
-    * <a id="_expandtojquery"/> _expandToJQuery <p style="padding-left: 20px;"> Defines the JQuery string that [cMaths.Bounds.fromObject](INSERTLINK) will use for [_includeChildren](INSERTLINK). </p> <br>
+    * <a id="_expanderIncludes"/> _expanderIncludes <p style="padding-left: 20px;"> Defines the JQuery string that [cMaths.Bounds.fromObject](INSERTLINK) will use for [_includeChildren](INSERTLINK). </p> <br>
 
     * <a id="_expansioncssclass"/> _expansionCssClass <p style="padding-left: 20px;"> The CSS class that will be applied to the main object's DOM and scroller's DOM. </p> <br>
 
