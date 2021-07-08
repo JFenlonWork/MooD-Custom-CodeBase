@@ -51,7 +51,7 @@ function cCssDataTypes()
 	}
 
 	//make value be array to indicate (x,y,z) etc...
-	this.styleSheetModificationData = function styleSheetModificationData(_property, _canBeList, _splitType, _value, _propertyIndex, _importance)
+	this.styleSheetModificationData = function styleSheetModificationData(_property, _canBeList, _splitType, _value, _propertyIndex, _importance, _delayByFrame)
 	{
 		this.property = _property || {
 			prop: "",
@@ -67,6 +67,7 @@ function cCssDataTypes()
 		this.value = _value == null ? "" : _value;
 		this.importance = _importance || false;
 		this.propertyIndex = _propertyIndex !== null ? _propertyIndex : -1;
+		this.delayByFrame = _delayByFrame || false;
 	}
 
 }
@@ -707,12 +708,12 @@ function customCssstyleSheetFunctions()
 		//split by 2 == test 1s ease-in-out, test2 1s ease-in-out
 		else if (_styleData.splitType === 2)
 		{
-			_styleProperty.split(",").forEach(function (prop) {
+			_styleProperty.split(", ").forEach(function (prop) {
 				var _prop = prop.split(" ")[0];
 				_properties.push(_prop);
 			});
 
-			_styleProperty.split(",").forEach(function (value) {
+			_styleProperty.split(", ").forEach(function (value) {
 				var _value = value.split(" ");
 				_value[0] = "";
 				_values.push(_value.join(" "));
@@ -739,7 +740,7 @@ function customCssstyleSheetFunctions()
 				{
 					if (_returnType === 0 || _returnType === 1)
 					{	
-						_combinedStyleText += _currentProperty + _values[_index] + " ";
+						_combinedStyleText += (_combinedStyleText == "" ? "" : ", ") + _currentProperty + _values[_index];
 					}
 				} 
 				else
@@ -747,7 +748,7 @@ function customCssstyleSheetFunctions()
 					_returnTypeIndex = _index;
 					if (_returnType === 0 || _returnType === 2)
 					{
-						_combinedStyleText += _currentProperty + _values[_index] + " ";
+						_combinedStyleText += (_combinedStyleText == "" ? "" : ", ") + _currentProperty + _values[_index];
 					}
 				}
 			}
@@ -769,72 +770,57 @@ function customCssstyleSheetFunctions()
 		var _selector = cCss.styleSheet.translateCssSelector(_selector, _sheet);
 		var _style = _selector.style;
 
-		if (_styleData.property.prop)
-		{	
-			var _styleParsedData = cCss.styleSheet.getCssStyle(_style, _styleData, 1)
+		var setProp = function setProp()
+		{
+			if (_styleData.property.prop)
+			{	
+				var _styleParsedData = cCss.styleSheet.getCssStyle(_style, _styleData, 1)
 
-			var _valueToSet = "";
+				var _valueToSet = "";
 
-			if (_styleData.propertyIndex === -1)
-			{
-				if (_styleData.splitType === 1)
+				if (_styleData.propertyIndex === -1)
 				{
-					_valueToSet = _styleParsedData.returnTypeNewCss + " " + _styleData.cssTextProperty + "(" + _styleData.value + ")";
-				}
-				else if (_styleData.splitType === 2)
-				{
-					_valueToSet = _styleParsedData.returnTypeNewCss + (_styleParsedData.returnTypeNewCss == "" ? "" : ", ") + _styleData.cssTextProperty + " " + _styleData.value;
-				}
-				else
-				{
-					//replace entire property value
-					_valueToSet = _styleParsedData.returnTypeNewCss + _styleData.value;
-				}
-			}
-			else if (_styleParsedData.returnTypeIndex !== -1)
-			{
-				//replace value at index of property
-				var _valueSplit = "";
-				if (_styleData.splitType === 1)
-				{
-					_valueSplit = _styleParsedData.values[_styleParsedData.returnTypeIndex].substring(1, _styleParsedData.values[_styleParsedData.returnTypeIndex].length - 1).split(",");
-				}
-				else
-				{
-					_valueSplit = _styleParsedData.values[_styleParsedData.returnTypeIndex].split(" ").filter(function(_value) {
-						return _value !== "";
-					});
-				}
-
-				if (_valueSplit.length >= _styleData.propertyIndex && _valueSplit.length != 0 && _styleData.propertyIndex >= 0)
-				{
-					_valueSplit[_styleData.propertyIndex] = _styleData.value;
-
-					if (_styleData.splitType == 1)
+					if (_styleData.splitType === 1)
 					{
-						_valueToSet = _styleParsedData.returnTypeNewCss + _styleParsedData.properties[_styleParsedData.returnTypeIndex] + "(" + _valueSplit.join(",") + ")";
+						_valueToSet = _styleParsedData.returnTypeNewCss + " " + _styleData.property.insidePropProp + "(" + _styleData.value + ")";
+					}
+					else if (_styleData.splitType === 2)
+					{
+						_valueToSet = _styleParsedData.returnTypeNewCss + (_styleParsedData.returnTypeNewCss == "" ? "" : ", ") + _styleData.property.insidePropProp + " " + _styleData.value;
 					}
 					else
 					{
-						_valueToSet = _styleParsedData.returnTypeNewCss + _styleParsedData.properties[_styleParsedData.returnTypeIndex] + " " + _valueSplit.join(" ");
+						//replace entire property value
+						_valueToSet = _styleParsedData.returnTypeNewCss + _styleData.value;
 					}
 				}
-				else
+				else if (_styleParsedData.returnTypeIndex !== -1)
 				{
-					return false;
-				}
-			}
-			else
-			{
-				if (_styleData.property.cssProp)
-				{
-					if (_styleData.splitType == 1)
+					//replace value at index of property
+					var _valueSplit = "";
+					if (_styleData.splitType === 1)
 					{
-						_valueToSet = _styleParsedData.returnTypeNewCss + _styleData.property.cssProp + "(" + _styleData.value + ")";
+						_valueSplit = _styleParsedData.values[_styleParsedData.returnTypeIndex].substring(1, _styleParsedData.values[_styleParsedData.returnTypeIndex].length - 1).split(",");
 					}
-					else if (_styleData.split == 2)
+					else
 					{
-						_valueToSet = _styleParsedData.returnTypeNewCss + _styleData.property.cssProp + " " + _styleData.value;						
+						_valueSplit = _styleParsedData.values[_styleParsedData.returnTypeIndex].split(" ").filter(function(_value) {
+							return _value !== "";
+						});
+					}
+
+					if (_valueSplit.length >= _styleData.propertyIndex && _valueSplit.length != 0 && _styleData.propertyIndex >= 0)
+					{
+						_valueSplit[_styleData.propertyIndex] = _styleData.value;
+
+						if (_styleData.splitType == 1)
+						{
+							_valueToSet = _styleParsedData.returnTypeNewCss + _styleParsedData.properties[_styleParsedData.returnTypeIndex] + "(" + _valueSplit.join(",") + ")";
+						}
+						else
+						{
+							_valueToSet = _styleParsedData.returnTypeNewCss + _styleParsedData.properties[_styleParsedData.returnTypeIndex] + " " + _valueSplit.join(" ");
+						}
 					}
 					else
 					{
@@ -843,41 +829,68 @@ function customCssstyleSheetFunctions()
 				}
 				else
 				{
-					return false;
+					if (_styleData.property.cssProp)
+					{
+						if (_styleData.splitType == 1)
+						{
+							_valueToSet = _styleParsedData.returnTypeNewCss + _styleData.property.cssProp + "(" + _styleData.value + ")";
+						}
+						else if (_styleData.split == 2)
+						{
+							_valueToSet = _styleParsedData.returnTypeNewCss + _styleData.property.cssProp + " " + _styleData.value;						
+						}
+						else
+						{
+							return false;
+						}
+					}
+					else
+					{
+						return false;
+					}
 				}
+
+				//set the actual property of the style
+				if (_style.setProperty != null)
+				{
+					_style.removeProperty(_styleData.property.cssProp);
+					_style.setProperty(_styleData.property.cssProp, _valueToSet);
+				}
+				else
+				{
+					_style[_styleData.property.prop] = _valueToSet;
+				}
+
+				//add importance to the property
+				if (_styleData.importance !== null)
+				{
+
+					var _regexWithoutNewStyle = "(^|.)(" + _styleData.property.cssProp + (_styleData.canBeList === true ? ").*?(?=;)." : ")(?=:).*?(?=;).");
+					var _regexWithStyle = "(^|;).*?(?=(" + _styleData.property.cssProp + (_styleData.canBeList === true ? "|$))" : "(?=:)|$))");
+
+					var _cssWithoutStyleChange = _style.cssText.replace(new RegExp(_regexWithoutNewStyle, "gi"), "");
+					var _cssOnlyStyleChange = _style.cssText.replace(new RegExp(_regexWithStyle, "gi"), "");
+
+					//Remove !important if it still exists
+					_cssOnlyStyleChange = _cssOnlyStyleChange.replace(" !important", "");
+
+					_style.cssText = _cssWithoutStyleChange + " " + _cssOnlyStyleChange + " " + (_styleData.importance === true ? " !important;" : ";");
+
+				}
+				return true;
 			}
-
-			//set the actual property of the style
-			if (_style.setProperty != null)
-			{
-				_style.removeProperty(_styleData.property.cssProp);
-				_style.setProperty(_styleData.property.cssProp, _valueToSet);
-			}
-			else
-			{
-				_style[_styleData.property.prop] = _valueToSet;
-			}
-
-			//add importance to the property
-			if (_styleData.importance !== null)
-			{
-
-				var _stylePropertyToUse = ((_styleData.canBeList === false && _styleData.property.cssProp !== "") ? _styleData.property.cssProp : _styleData.property.prop);
-				var _regexWithoutNewStyle = "(^|.)(" + _stylePropertyToUse + (_styleData.canBeList === true ? ").*?(?=;)." : ")(?=:).*?(?=;).");
-				var _regexWithStyle = "(^|;).*?(?=(" + _stylePropertyToUse + (_styleData.canBeList === true ? "|$))" : "(?=:)|$))");
-
-				var _cssWithoutStyleChange = _style.cssText.replace(new RegExp(_regexWithoutNewStyle, "gi"), "");
-				var _cssOnlyStyleChange = _style.cssText.replace(new RegExp(_regexWithStyle, "gi"), "");
-
-				//Remove !important if it still exists
-				_cssOnlyStyleChange = _cssOnlyStyleChange.replace(" !important", "");
-
-				_style.cssText = _cssWithoutStyleChange + " " + _cssOnlyStyleChange + " " + (_styleData.importance === true ? " !important;" : ";");
-
-			}
-			return true;
+			return false;
 		}
-		return false;
+
+		//delay to allow redraw of DOM Object
+		if (_styleData.delayByFrame)
+		{
+			return setTimeout(function() { return setProp(); }, 100);
+		}
+		else
+		{
+			return setProp();
+		}
 	}
 
 }

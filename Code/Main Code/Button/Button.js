@@ -198,18 +198,24 @@ function cButtonSetupFunctions()
 			//if so set it to default toggleButton
 			if (_buttonData.onClick == null)
 			{
-				_buttonData.onClick = "cButton.modify.toggleButtonClick(" + buttonGenerated.buttonElementID + ")";
+				_buttonData.onClick = function() { cButton.modify.toggleButtonClick(buttonGenerated.buttonElementID); };
 			}			
 	
 			//check if onClick is in string
-			if (_buttonData.onClick.charAt(0) == '"')
+			if (typeof _buttonData.onClick == "string")
 			{
 				//remove quotes from start and end
 				_buttonData.onClick = _buttonData.onClick.substr(1,_buttonData.onClick.length - 2);
 			}
 
 			//add on click to object
-			cElement.modify.addOnClickToElement(buttonGenerated.buttonElementID, _buttonData.onClick, true, _buttonData.onClickCss);
+			$(moodButton).click(function ( event ) {
+				moodButton.onClick();
+				if (_buttonData.stopPropagation)
+				{
+					event.stopPropagation();
+				}
+			});
 	
 			//return succeeded
 			return true;

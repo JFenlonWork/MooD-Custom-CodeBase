@@ -40,11 +40,14 @@ function setupPage()
 		enabledOnDefault : (boolean), Controls if the button should be enabled/disabled on start
 		canDisableSelf : (boolean), Controls if the button can disable it's enabled elements
 		shownOnDefault : (boolean), Controls if the element related to this button is visible on start
-		onClick :  (string), Controls the HTML onClick
+		onClick : (string or function), Controls the HTML onClick
+		stopPropagation : (bool), Controls if the onClick MooD does is activated or ignored
 	};
 
 
 		Button Element Data
+
+			id (int), The id of the element to control
 
 			OPACITY DATA
 
@@ -61,10 +64,10 @@ function setupPage()
 			POSITION DATA
 
 				posX (int), Controls the "left" position of this element on activation
-				generatePosX(), If posX is empty then this can be used to generate a posX with a function
+				generatePosX() (function), If posX is empty then this can be used to generate a posX with a function
 
 				posY (int), Controls the "left" position of this element on activation
-				generatePosY(), If posX is empty then this can be used to generate a posX with a function
+				generatePosY() (function), If posX is empty then this can be used to generate a posX with a function
 
 				posXMoveTime (float), Controls how long it takes for the X position to change
 				posXTiming (float), -----------------------------------------------
@@ -77,10 +80,10 @@ function setupPage()
 			SIZE DATA
 
 				width (int), Controls the "left" position of this element on activation
-				generateWidth(), If width is empty then this can be used to generate a width with a function
+				generateWidth() (function), If width is empty then this can be used to generate a width with a function
 
 				height (int), Controls the "left" position of this element on activation
-				generateHeight(), If height is empty then this can be used to generate a height with a function
+				generateHeight() (function), If height is empty then this can be used to generate a height with a function
 
 				widthChangeTime (float), Controls how long it takes for the width to change
 				widthChangeTiming (float), -----------------------------------------------
@@ -89,6 +92,8 @@ function setupPage()
 				heightChangeTime (float), Controls how long it takes for the height to change
 				heightChangeTiming (float), -----------------------------------------------
 				heightChangeDelay (float), Controls the css transition delay for height change
+
+				sizeChangePanel (string), Specifies the DOM Object to apply SIZE DATA to
 
 	*/
 

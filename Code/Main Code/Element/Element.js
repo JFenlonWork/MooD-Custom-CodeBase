@@ -93,12 +93,21 @@ function cElementDataTypes()
 
         this.enable = function()
         {
-            window.cElement.modify.toggleElement(currentElement.ID, new cEventListener.basicMessage(null, true), null);
+            window.cElement.modify.toggleElement(currentElement, new cEventListener.basicMessage(null, true), null);
         }
 
         this.disable = function()
         {
-            window.cElement.modify.toggleElement(currentElement.ID, new cEventListener.basicMessage(null, false), null);
+            window.cElement.modify.toggleElement(currentElement, new cEventListener.basicMessage(null, false), null);
+        }
+
+        if (this.elementEnabled)
+        {
+            this.enable();
+        }
+        else
+        {
+            this.disable();
         }
         
         this.eventListener.messagesListeningTo.push(
@@ -331,9 +340,9 @@ function cElementSearchFunctions()
 
 function cElementModifyFunctions()
 {
-    this.toggleElement = function toggleElement(_elementID, _enabled, _messageData) 
+    this.toggleElement = function toggleElement(_element, _enabled, _messageData) 
     {	
-        var _element = cElement.search.getElementID(_elementID);
+        var _element = typeof _element == "number" ? cElement.search.getElementID(_element) : _element;
     
         var _messageData = _messageData || {};
     
@@ -379,7 +388,7 @@ function cElementModifyFunctions()
     {
         if (_messageData.opacityTime)
         {
-            var _transitionData = "opacity " + ((_messageData.opacityTime || 0) / 1000).toString() + "s";
+            var _transitionData = ((_messageData.opacityTime || 0) / 1000).toString() + "s";
             _transitionData += " " + (_messageData.opacityTiming || "linear");
             _transitionData += " " + ((_messageData.opacityDelay || 0) / 1000).toString() + "s";
                   
@@ -387,12 +396,12 @@ function cElementModifyFunctions()
                 prop: "transition",
                 cssProp: "transition",
                 insidePropProp: "opacity"
-            }, true, 2, _transitionData, -1, false);
+            }, true, 2, _transitionData, -1);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
         }
         else
         {
-            var _transitionData = "opacity 0s linear 0s";    
+            var _transitionData = "0s linear 0s";    
             var _styleData = new cCss.styleSheetModificationData({
                 prop: "transition",
                 cssProp: "transition",
@@ -401,9 +410,16 @@ function cElementModifyFunctions()
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
         }
 
+        var _opacityTimer = cTimer.generic.findTimerByName("ElementOpacityTimer" + _element.ID);
+
+        if (_opacityTimer)
+        {
+            _opacityTimer.destroy();
+        }
+
         if (_enabled)
         {
-            var _zIndexToSet = (_messageData.zIndex == null ? "10000" : _messageData.zIndex);
+            var _zIndexToSet = (_messageData.zIndex == null ? "9000" : _messageData.zIndex);
             var _zIndexImportanceToSet = (_messageData.zIndexImportance == null  ? true : _messageData.zIndexImportance);
             var _styleData = new cCss.styleSheetModificationData({
                 prop: "zIndex",
@@ -416,7 +432,7 @@ function cElementModifyFunctions()
             _styleData = new cCss.styleSheetModificationData({
                prop: "opacity",
                cssProp: "opacity" 
-            }, false, null, _opacityToSet.toString(), -1, false);
+            }, false, null, _opacityToSet.toString(), -1, false, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
 
             _styleData = new cCss.styleSheetModificationData({
@@ -425,12 +441,6 @@ function cElementModifyFunctions()
              }, false, null, "visible", -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
 
-            var _opacityTimer = cTimer.generic.findTimerByName("ElementOpacityTimer" + _element.ID);
-
-            if (_opacityTimer)
-            {
-                _opacityTimer.destroy();
-            }
         }
         else
         {
@@ -439,15 +449,17 @@ function cElementModifyFunctions()
             var _styleData = new cCss.styleSheetModificationData({
                 prop: "opacity",
                 cssProp: "opacity" 
-             }, false, null, _opacityToSet.toString(), -1, false);
+             }, false, null, _opacityToSet.toString(), -1, false, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
             
             if (_element.elementEnabled == true && _enabled == false)
             {
                 var currentDelay = (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0);
 
-                function opacityChange(_args)
+                var opacityChange = function opacityChange(_args)
                 {
+                    if (_args.ticksElapsed < currentDelay) return true;
+
                     _styleData = new cCss.styleSheetModificationData({
                         prop: "visibility",
                         cssProp: "visibility" 
@@ -461,6 +473,8 @@ function cElementModifyFunctions()
                         cssProp: "z-index" 
                      }, false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
                     cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+
+                    return false;
                 }
                 
                 new cTimer.realtimeTimer("ElementOpacityTimer" + _element.ID, new cTimer.callback(opacityChange, this), true, currentDelay + 1, true);
@@ -510,7 +524,7 @@ function cElementModifyFunctions()
             _styleData = new cCss.styleSheetModificationData({
                 prop: "left",
                 cssProp: "left" 
-             }, false, 0, _posX + "px", -1, true);
+             }, false, 0, _posX + "px", -1, true, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
         }
 
@@ -526,14 +540,14 @@ function cElementModifyFunctions()
             _styleData = new cCss.styleSheetModificationData({
                 prop: "top",
                 cssProp: "top" 
-             }, false, 0, _posY + "px", -1, true);
+             }, false, 0, _posY + "px", -1, true, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
         }
     }
 
     this.modifyElementSize = function modifyElementSize(_element, _messageData)
     {
-        //setup position variables
+        //setup size variables
         var _width = _messageData.width != null ? _messageData.width : typeof _messageData.generateWidth == "function" ? _messageData.generateWidth() : null;
         var _height = _messageData.height != null ? _messageData.height : typeof _messageData.generateHeight == "function" ? _messageData.generateHeight() : null;
 
@@ -552,13 +566,15 @@ function cElementModifyFunctions()
                 cssProp: "transition",
                 insidePropProp: "width" 
              }, true, 2, _widthTransitionData, -1, false);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".ElementSize" + _element.ID, _styleData);
 
             _styleData = new cCss.styleSheetModificationData({
                 prop: "width",
                 cssProp: "width" 
-             }, false, 0, _width + "px", -1, true);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+             }, false, 0, _width + "px", -1, true, true);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".ElementSize" + _element.ID, _styleData);
+
+            $(_messageData.sizeChangePanel).addClass("ElementSize" + _element.ID);
         }
 
         if (_height) 
@@ -568,13 +584,15 @@ function cElementModifyFunctions()
                 cssProp: "transition",
                 insidePropProp: "height"
              }, true, 2, _heightTransitionData, -1, false);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".ElementSize" + _element.ID, _styleData);
 
             _styleData = new cCss.styleSheetModificationData({
                 prop: "height",
                 cssProp: "height" 
-             }, false, 0, _height + "px", -1, true);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+             }, false, 0, _height + "px", -1, true, true);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".ElementSize" + _element.ID, _styleData);
+
+            $(_messageData.sizeChangePanel).addClass("ElementSize" + _element.ID);
         }
     }
 
