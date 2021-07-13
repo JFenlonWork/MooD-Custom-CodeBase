@@ -6,8 +6,7 @@
 		Attempt at making an array to hold elements dynamcally
 */
 
-window.cElement = window.cElement || new function cElement()
-{
+window.cElement = window.cElement || new function cElement() {
 
     //===LOCAL VARIABLES===//
     this.uniqueID = 10000;
@@ -15,7 +14,7 @@ window.cElement = window.cElement || new function cElement()
 
     //====DATA TYPES====//
     this.dataTypes = new cElementDataTypes();
-    
+
     //holds basic message information that is used by the event listener
     this.Element = this.dataTypes.element.prototype;
     this.element = this.dataTypes.element;
@@ -27,126 +26,98 @@ window.cElement = window.cElement || new function cElement()
     this.modify = new cElementModifyFunctions();
 
     //===RUN-TIME FUNCTIONS===//
-    (function setupElementListenerCreation()
-    {
-        
-        //check if cEventListener has been defined
-        if (typeof cEventListener !== 'undefined')
-        {
-            //add element setup to "EventListenerCreation" 
-            cEventListener.generic.addFunctionToWaitingForMessage("afterEventListenerCreation",
-                { 
-                    setupFunction : 
-                        function () 
-                        {
-                            //call any functions listening to "afterElementSetup"
-                            new cTimer.timer("Element Wait For Message",
-                                                new cTimer.callback(
-                                                    function ()
-                                                    { 
-                                                        cEventListener.queue.invokeMessageQueue("afterElementSetup");
-                                                    })
-                                                , 100, 10);
-                        }
-                }
-            );
-            
-            //add element registration to event listeners
-            cEventListener.generic.addRegistrationFunction("element",
-                { 
-                    getRegisterQueueType : 
-                        function (_data) 
-                        {
-                            return window.cElement.search.getElementID(_data.message).eventListener;
-                        }  
-                }
-            );
-        }
-        else
-        {
-            //retry in 10ms if undefined
-            setTimeout(function() { setupElementListenerCreation(); }, 10);
-        }
-        
-    })();
-    
-}
+    (function setupElementListenerCreation() {
 
-function cElementDataTypes()
-{
-    this.element = function element(_elementObject, _moodObject, _elementParentObject, _ID, _enabledByDefault)
-    {
+        //check if cEventListener has been defined
+        if (typeof cEventListener !== 'undefined' &&
+                typeof cTimer !== 'undefined') {
+            //add element setup to "EventListenerCreation" 
+            cEventListener.generic.addFunctionToWaitingForMessage("afterEventListenerCreation", {
+                setupFunction: function () {
+                    //call any functions listening to "afterElementSetup"
+                    new cTimer.timer("Element Wait For Message",
+                        new cTimer.callback(
+                            function () {
+                                cEventListener.queue.invokeMessageQueue("afterElementSetup");
+                            }), 100, 10);
+                }
+            });
+
+            //add element registration to event listeners
+            cEventListener.generic.addRegistrationFunction("element", {
+                getRegisterQueueType: function (_data) {
+                    return window.cElement.search.getElementID(_data.message).eventListener;
+                }
+            });
+        } else {
+            //retry in 10ms if undefined
+            setTimeout(function () {
+                setupElementListenerCreation();
+            }, 10);
+        }
+
+    })();
+
+}();
+
+function cElementDataTypes() {
+    this.element = function element(_elementObject, _moodObject, _elementParentObject, _ID, _enabledByDefault) {
         this.elementObject = _elementObject;
         this.elementParentObject = _elementParentObject || (_moodObject === true ? $(_elementObject).closest(".WebPanelOverlay") : this.elementObject);
         this.ID = _ID || cElement.uniqueID;
         this.elementEnabled = (_enabledByDefault != null ? _enabledByDefault : true);
-        
-        if (_ID == cElement.uniqueID)
-        {
+
+        if (_ID == cElement.uniqueID) {
             cElement.uniqueID++;
         }
-    
+
         this.eventListener = new cEventListener.listener();
 
         //store a link to this current element for functions below
         var currentElement = this;
 
-        this.enable = function()
-        {
+        this.enable = function () {
             window.cElement.modify.toggleElement(currentElement, new cEventListener.basicMessage(null, true), null);
         }
 
-        this.disable = function()
-        {
+        this.disable = function () {
             window.cElement.modify.toggleElement(currentElement, new cEventListener.basicMessage(null, false), null);
         }
 
-        if (this.elementEnabled)
-        {
+        if (this.elementEnabled) {
             this.enable();
-        }
-        else
-        {
+        } else {
             this.disable();
         }
-        
+
         this.eventListener.messagesListeningTo.push(
-            new cEventListener.basicMessage('listenToToggleElementToEnableStatus', 
-            { 
-                receiveMessage : function (_data) 
-                {
+            new cEventListener.basicMessage('listenToToggleElementToEnableStatus', {
+                receiveMessage: function (_data) {
                     cElement.modify.toggleElement(currentElement.ID,
-                                                    _data.message,
-                                                    _data.senderListener.message.message
-                                                );
+                        _data.message,
+                        _data.senderListener.message.message
+                    );
                 }
-            }
-            )
+            })
         );
 
         this.eventListener.messagesListeningTo.push(
-            new cEventListener.basicMessage('listenToToggleElementToDisableStatus', 
-            { 
-                receiveMessage : function (_data) 
-                {
+            new cEventListener.basicMessage('listenToToggleElementToDisableStatus', {
+                receiveMessage: function (_data) {
                     cElement.modify.toggleElement(currentElement.ID,
-                                                    _data.message,
-                                                    _data.senderListener.message.message
-                                                );
+                        _data.message,
+                        _data.senderListener.message.message
+                    );
                 }
-            }
-            )
+            })
         );
     }
 }
 
-function cElementSetupFunctions()
-{
-    this.createElement = function createElement(_elementData)
-    {
+function cElementSetupFunctions() {
+    this.createElement = function createElement(_elementData) {
         //check if element info actually has anything in it
-        if (_elementData)
-        {
+        if (_elementData) {
             //create element
             cElement.generic.addElement(_elementData.elementObject, _elementData.isMoodObject, _elementData.elementParentObject, _elementData.id, _elementData.enabledByDefault);
 
@@ -156,23 +127,18 @@ function cElementSetupFunctions()
 
             //modify original id to increase to shorten creation code
             _elementData.id++;
-        }
-        else
-        {
+        } else {
             console.warn("Warning: HTML/JS is empty, if not adding elements ignore this");
         }
     }
 }
 
-function cElementGenericFunctions()
-{
-    this.addElement = function addElement(_elementObject, _moodObject, _elementParentObject, _ID, _enabledByDefault)
-    {
+function cElementGenericFunctions() {
+    this.addElement = function addElement(_elementObject, _moodObject, _elementParentObject, _ID, _enabledByDefault) {
         var _ID = _ID || cElement.uniqueID;
 
         var exists = cElement.search.checkElementExists(_elementObject);
-        if (exists == -1)
-        {
+        if (exists == -1) {
             //setup the element
             var _customElement = new cElement.element(_elementObject, _moodObject, _elementParentObject, parseInt(_ID), _enabledByDefault);
 
@@ -193,33 +159,29 @@ function cElementGenericFunctions()
         }
 
         //return the element that already exists
-        console.log("Element with id: "+ _ID + " Exists");
+        console.log("Element with id: " + _ID + " Exists");
         return cElement.elementArray[exists];
     }
 
-    this.removeElement = function removeElement(_elementName, _elementExtra, _elementType)
-    {
+    this.removeElement = function removeElement(_elementName, _elementExtra, _elementType) {
         //check if the element exists in the array and where
         var exists = cElement.search.checkElementExists(_elementName, _elementExtra, _elementType)
-        if (exists != -1)
-        {
+        if (exists != -1) {
             //if the element exists remove it and return true
             var currentElement = cElement.elementArray[exists];
 
             //loop through all listeners attached to element and remove them
-            while (currentElement.listener.length > 0)
-            {
+            while (currentElement.listener.length > 0) {
                 cEventListener.generic.deregisterListener(currentElement, currentElement.listeners[0].listener, currentElement.listener[0].listenerType, currentElement.listener[0].listenerExtra);
             }
 
             //loop through all things the element is listening too and remove them
-            while (currentElement.listeningTo.length > 0)
-            {
+            while (currentElement.listeningTo.length > 0) {
                 cEventListener.generic.deregisterListener(currentElement.listeningTo[0].listener, currentElement, currentElement.listeningTo[0].listenerType, currentElement.listeningTo[0].listenerExtra)
             }
 
             //remove the element from the element array and return true
-            cElement.elementArray.splice(exists,1);
+            cElement.elementArray.splice(exists, 1);
             return true;
         }
 
@@ -229,26 +191,20 @@ function cElementGenericFunctions()
     }
 }
 
-function cElementSearchFunctions()
-{
+function cElementSearchFunctions() {
 
     //return the element associated with a listener
-    this.returnElementListener = function returnElementListener(_listener)
-    {
+    this.returnElementListener = function returnElementListener(_listener) {
         //check type of input and return based on that
-        if (typeof _listener.message == "string" || typeof _listener.messages == "number")
-        {
+        if (typeof _listener.message == "string" || typeof _listener.messages == "number") {
             //find the element from an ID
             var _element = cElement.search.getElementID(_listener.message);
 
             //check if element exists, if so return the listener
-            if (_element)
-            {
+            if (_element) {
                 return _element.eventListener;
             }
-        }
-        else if (_listener.message instanceof cElement.element)
-        {
+        } else if (_listener.message instanceof cElement.element) {
             return _listener.message.eventListener;
         }
 
@@ -256,14 +212,11 @@ function cElementSearchFunctions()
     }
 
     //check element exists and return the index
-    this.checkElementExists = function checkElementExists(_elementObject)
-    {
+    this.checkElementExists = function checkElementExists(_elementObject) {
         if (_elementObject == null) return -1;
-        for (var i = 0; i < cElement.elementArray.length; i++)
-        {
+        for (var i = 0; i < cElement.elementArray.length; i++) {
             //check if the names and role match
-            if (cElement.elementArray[i].elementObject == _elementObject)
-            {
+            if (cElement.elementArray[i].elementObject == _elementObject) {
                 //return the position in the array
                 return i;
             }
@@ -274,22 +227,18 @@ function cElementSearchFunctions()
     }
 
     //search for and return the elements with _elementName
-    this.getElementByName = function getElementByName(_elementName)
-    {
+    this.getElementByName = function getElementByName(_elementName) {
         //store elements
         var ret = [];
 
         //loop through every element in the array
-        cElement.elementArray.forEach(function (_element, _index, _arr)
-        {
-            if (_element.elementName == _elementName)
-            {
+        cElement.elementArray.forEach(function (_element, _index, _arr) {
+            if (_element.elementName == _elementName) {
                 ret.push(_arr[_index]);
             }
         });
 
-        if (ret.length <= 0)
-        {
+        if (ret.length <= 0) {
             //return null if not found
             console.log("Element with name: " + _elementName + " Doesn't exist");
         }
@@ -298,17 +247,16 @@ function cElementSearchFunctions()
     }
 
     //return the element with _ID
-    this.getElementID = function getElementID(_ID)
-    {
+    this.getElementID = function getElementID(_ID) {
         //loop through every element in the array
         var _ret = null;
-        cElement.elementArray.forEach(function (_element, _index, _arr)
-        {
-            if (_element.ID == _ID) { return _ret = _arr[_index]; }
+        cElement.elementArray.forEach(function (_element, _index, _arr) {
+            if (_element.ID == _ID) {
+                return _ret = _arr[_index];
+            }
         });
 
-        if (_ret)
-        {
+        if (_ret) {
             return _ret;
         }
 
@@ -318,17 +266,16 @@ function cElementSearchFunctions()
     }
 
     //return the listener 
-    this.getElementByListener = function getElementByListener(_listener)
-    {
+    this.getElementByListener = function getElementByListener(_listener) {
         //loop through every element in the array
         var _ret = null;
-        cElement.elementArray.forEach(function (_element, _index, _arr)
-        {
-            if (_element.eventListener.ID == _listener.ID) { return _ret = _arr[_index]; }
+        cElement.elementArray.forEach(function (_element, _index, _arr) {
+            if (_element.eventListener.ID == _listener.ID) {
+                return _ret = _arr[_index];
+            }
         });
 
-        if (_ret)
-        {
+        if (_ret) {
             return _ret;
         }
         //return null if not found
@@ -338,70 +285,61 @@ function cElementSearchFunctions()
 
 }
 
-function cElementModifyFunctions()
-{
-    this.toggleElement = function toggleElement(_element, _enabled, _messageData) 
-    {	
+function cElementModifyFunctions() {
+    this.toggleElement = function toggleElement(_element, _enabled, _messageData) {
         var _element = typeof _element == "number" ? cElement.search.getElementID(_element) : _element;
-    
+
         var _messageData = _messageData || {};
-    
+
         //check if element isn't null
-        if (_element) 
-        {
+        if (_element) {
             //find HTML object attached to element
             //var htmlObject = _element.elementObject;
 
-            if (_element.elementObject) 
-            {
+            if (_element.elementObject) {
                 //turn message enable/disable into bool
                 var _toEnable = (_enabled.message === "enable" || _enabled.message === true);
-        
+
                 //modify the element's extras I.E position and zIndex
                 cElement.modify.modifyElementOpacity(_element, _messageData, _toEnable);
                 cElement.modify.modifyElementPosition(_element, _messageData);
                 cElement.modify.modifyElementSize(_element, _messageData);
 
                 //check if the element now has a different active status and modify
-                if (_enabled.message == "enable" && !_element.elementEnabled || 
-                    _enabled.message == "disable" && _element.elementEnabled)
-                {
+                if (_enabled.message == "enable" && !_element.elementEnabled ||
+                    _enabled.message == "disable" && _element.elementEnabled) {
                     //update listenerToElementEnabledChange and set element to be opposite
                     cEventListener.message.sendMessageToType(_element.eventListener, new cEventListener.basicMessage("listenToElementEnableChange", _enabled.message));
-                    _element.elementEnabled = !_element.elementEnabled;						
+                    _element.elementEnabled = !_element.elementEnabled;
                 }
 
                 return true;
             }
-            
+
             //log warning fail and return false
             console.warn("Warning: No HTML Element Found With Name: " + _element.elementName + " Check HTML is correct, This usually happens when an object doesn't exist but is still being refenced");
             return false;
         }
-            
+
         //log warning fail and return false
         console.warn("Warning: No Element Found Check HTML is correct");
         return false;
     }
 
-    this.modifyElementOpacity = function modifyElementOpacity(_element, _messageData, _enabled)
-    {
-        if (_messageData.opacityTime)
-        {
+    this.modifyElementOpacity = function modifyElementOpacity(_element, _messageData, _enabled) {
+        if (_messageData.opacityTime) {
             var _transitionData = ((_messageData.opacityTime || 0) / 1000).toString() + "s";
             _transitionData += " " + (_messageData.opacityTiming || "linear");
             _transitionData += " " + ((_messageData.opacityDelay || 0) / 1000).toString() + "s";
-                  
+
             var _styleData = new cCss.styleSheetModificationData({
                 prop: "transition",
                 cssProp: "transition",
                 insidePropProp: "opacity"
             }, true, 2, _transitionData, -1);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
-        }
-        else
-        {
-            var _transitionData = "0s linear 0s";    
+        } else {
+            var _transitionData = "0s linear 0s";
             var _styleData = new cCss.styleSheetModificationData({
                 prop: "transition",
                 cssProp: "transition",
@@ -412,184 +350,170 @@ function cElementModifyFunctions()
 
         var _opacityTimer = cTimer.generic.findTimerByName("ElementOpacityTimer" + _element.ID);
 
-        if (_opacityTimer)
-        {
+        if (_opacityTimer) {
             _opacityTimer.destroy();
         }
 
-        if (_enabled)
-        {
+        if (_enabled) {
             var _zIndexToSet = (_messageData.zIndex == null ? "9000" : _messageData.zIndex);
-            var _zIndexImportanceToSet = (_messageData.zIndexImportance == null  ? true : _messageData.zIndexImportance);
+            var _zIndexImportanceToSet = (_messageData.zIndexImportance == null ? true : _messageData.zIndexImportance);
             var _styleData = new cCss.styleSheetModificationData({
                 prop: "zIndex",
-                cssProp: "z-index" 
-             }, false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
-            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);    
+                cssProp: "z-index"
+            }, false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+            cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
 
             //change html style to be visiblie and set zIndex to default
             var _opacityToSet = _messageData.opacity == null ? 100 : _messageData.opacity;
             _styleData = new cCss.styleSheetModificationData({
-               prop: "opacity",
-               cssProp: "opacity" 
+                prop: "opacity",
+                cssProp: "opacity"
             }, false, null, _opacityToSet.toString(), -1, false, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
 
             _styleData = new cCss.styleSheetModificationData({
                 prop: "visibility",
-                cssProp: "visibility" 
-             }, false, null, "visible", -1, false);
+                cssProp: "visibility"
+            }, false, null, "visible", -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
 
-        }
-        else
-        {
+        } else {
             //change html style to be visiblie and set zIndex to default
             var _opacityToSet = _messageData.opacity == null ? 0 : _messageData.opacity;
             var _styleData = new cCss.styleSheetModificationData({
                 prop: "opacity",
-                cssProp: "opacity" 
-             }, false, null, _opacityToSet.toString(), -1, false, true);
+                cssProp: "opacity"
+            }, false, null, _opacityToSet.toString(), -1, false, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
-            
-            if (_element.elementEnabled == true && _enabled == false)
-            {
+
+            if (_element.elementEnabled == true && _enabled == false) {
                 var currentDelay = (_messageData.opacityTime || 0) + (_messageData.opacityDelay || 0);
 
-                var opacityChange = function opacityChange(_args)
-                {
+                var opacityChange = function opacityChange(_args) {
                     if (_args.ticksElapsed < currentDelay) return true;
 
                     _styleData = new cCss.styleSheetModificationData({
                         prop: "visibility",
-                        cssProp: "visibility" 
-                     }, false, null, "hidden", -1, false);
-                    cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);            
-                            
+                        cssProp: "visibility"
+                    }, false, null, "hidden", -1, false);
+                    cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+
                     var _zIndexToSet = (_messageData.zIndex == null ? "0" : _messageData.zIndex);
                     var _zIndexImportanceToSet = (_messageData.zIndexImportance == null ? true : _messageData.zIndexImportance);
                     _styleData = new cCss.styleSheetModificationData({
                         prop: "zIndex",
-                        cssProp: "z-index" 
-                     }, false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+                        cssProp: "z-index"
+                    }, false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
                     cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
 
                     return false;
                 }
-                
+
                 new cTimer.realtimeTimer("ElementOpacityTimer" + _element.ID, new cTimer.callback(opacityChange, this), true, currentDelay + 1, true);
-            }
-            else
-            {
+            } else {
                 _styleData = new cCss.styleSheetModificationData({
                     prop: "visibility",
-                    cssProp: "visibility" 
-                 }, false, null, "hidden", -1, false);
-                cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);            
-                        
+                    cssProp: "visibility"
+                }, false, null, "hidden", -1, false);
+                cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
+
                 var _zIndexToSet = (_messageData.zIndex == null ? "0" : _messageData.zIndex);
                 var _zIndexImportanceToSet = (_messageData.zIndexImportance == null ? true : _messageData.zIndexImportance);
                 _styleData = new cCss.styleSheetModificationData({
                     prop: "zIndex",
-                    cssProp: "z-index" 
-                 }, false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
+                    cssProp: "z-index"
+                }, false, null, _zIndexToSet, -1, _zIndexImportanceToSet);
                 cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
             }
         }
     }
 
-    this.modifyElementPosition = function modifyElementPosition(_element, _messageData)
-    {
+    this.modifyElementPosition = function modifyElementPosition(_element, _messageData) {
         //setup position variables
         var _posX = _messageData.posX != null ? _messageData.posX : typeof _messageData.generatePosX == "function" ? _messageData.generatePosX() : null;
         var _posY = _messageData.posY != null ? _messageData.posY : typeof _messageData.generatePosY == "function" ? _messageData.generatePosY() : null;
 
-        var _posXTransitionData = ((_messageData.posXMoveTime || 0) / 1000).toString() + "s"
-                                + " " + (_messageData.posXTiming || "linear") + " "
-                                + ((_messageData.posXDelay || 0) / 1000).toString() + "s";
+        var _posXTransitionData = ((_messageData.posXMoveTime || 0) / 1000).toString() + "s" +
+            " " + (_messageData.posXTiming || "linear") + " " +
+            ((_messageData.posXDelay || 0) / 1000).toString() + "s";
 
-        var _posYTransitionData = ((_messageData.posYMoveTime || 0) / 1000).toString() + "s"
-                                + " " + (_messageData.posYTiming || "linear") + " "
-                                + ((_messageData.posYDelay || 0) / 1000).toString() + "s";
+        var _posYTransitionData = ((_messageData.posYMoveTime || 0) / 1000).toString() + "s" +
+            " " + (_messageData.posYTiming || "linear") + " " +
+            ((_messageData.posYDelay || 0) / 1000).toString() + "s";
 
-        if (_posX) 
-        {
+        if (_posX) {
             var _styleData = new cCss.styleSheetModificationData({
                 prop: "transition",
                 cssProp: "transition",
-                insidePropProp: "left" 
-             }, true, 2, _posXTransitionData, -1, false);
+                insidePropProp: "left"
+            }, true, 2, _posXTransitionData, -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
 
             _styleData = new cCss.styleSheetModificationData({
                 prop: "left",
-                cssProp: "left" 
-             }, false, 0, _posX + "px", -1, true, true);
+                cssProp: "left"
+            }, false, 0, _posX + "px", -1, true, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
         }
 
-        if (_posY) 
-        {
+        if (_posY) {
             var _styleData = new cCss.styleSheetModificationData({
                 prop: "transition",
                 cssProp: "transition",
                 insidePropProp: "top"
-             }, true, 2, _posYTransitionData, -1, false);
+            }, true, 2, _posYTransitionData, -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
 
             _styleData = new cCss.styleSheetModificationData({
                 prop: "top",
-                cssProp: "top" 
-             }, false, 0, _posY + "px", -1, true, true);
+                cssProp: "top"
+            }, false, 0, _posY + "px", -1, true, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".Element" + _element.ID, _styleData);
         }
     }
 
-    this.modifyElementSize = function modifyElementSize(_element, _messageData)
-    {
+    this.modifyElementSize = function modifyElementSize(_element, _messageData) {
         //setup size variables
         var _width = _messageData.width != null ? _messageData.width : typeof _messageData.generateWidth == "function" ? _messageData.generateWidth() : null;
         var _height = _messageData.height != null ? _messageData.height : typeof _messageData.generateHeight == "function" ? _messageData.generateHeight() : null;
 
-        var _widthTransitionData = ((_messageData.widthChangeTime || 0) / 1000).toString() + "s"
-                                + " " + (_messageData.widthChangeTiming || "linear") + " "
-                                + ((_messageData.widthChangeDelay || 0) / 1000).toString() + "s";
+        var _widthTransitionData = ((_messageData.widthChangeTime || 0) / 1000).toString() + "s" +
+            " " + (_messageData.widthChangeTiming || "linear") + " " +
+            ((_messageData.widthChangeDelay || 0) / 1000).toString() + "s";
 
-        var _heightTransitionData = ((_messageData.heightChangeTime || 0) / 1000).toString() + "s"
-                                + " " + (_messageData.heightChangeTiming || "linear") + " "
-                                + ((_messageData.heightChangeDelay || 0) / 1000).toString() + "s";
+        var _heightTransitionData = ((_messageData.heightChangeTime || 0) / 1000).toString() + "s" +
+            " " + (_messageData.heightChangeTiming || "linear") + " " +
+            ((_messageData.heightChangeDelay || 0) / 1000).toString() + "s";
 
-        if (_width) 
-        {
+        if (_width) {
             var _styleData = new cCss.styleSheetModificationData({
                 prop: "transition",
                 cssProp: "transition",
-                insidePropProp: "width" 
-             }, true, 2, _widthTransitionData, -1, false);
+                insidePropProp: "width"
+            }, true, 2, _widthTransitionData, -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".ElementSize" + _element.ID, _styleData);
 
             _styleData = new cCss.styleSheetModificationData({
                 prop: "width",
-                cssProp: "width" 
-             }, false, 0, _width + "px", -1, true, true);
+                cssProp: "width"
+            }, false, 0, _width + "px", -1, true, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".ElementSize" + _element.ID, _styleData);
 
             $(_messageData.sizeChangePanel).addClass("ElementSize" + _element.ID);
         }
 
-        if (_height) 
-        {
+        if (_height) {
             var _styleData = new cCss.styleSheetModificationData({
                 prop: "transition",
                 cssProp: "transition",
                 insidePropProp: "height"
-             }, true, 2, _heightTransitionData, -1, false);
+            }, true, 2, _heightTransitionData, -1, false);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".ElementSize" + _element.ID, _styleData);
 
             _styleData = new cCss.styleSheetModificationData({
                 prop: "height",
-                cssProp: "height" 
-             }, false, 0, _height + "px", -1, true, true);
+                cssProp: "height"
+            }, false, 0, _height + "px", -1, true, true);
             cCss.styleSheet.replaceCssStyle("MainElementStyles", ".ElementSize" + _element.ID, _styleData);
 
             $(_messageData.sizeChangePanel).addClass("ElementSize" + _element.ID);
@@ -597,23 +521,23 @@ function cElementModifyFunctions()
     }
 
     //add onClick to element's html
-    this.addOnClickToElement = function addOnClickToElement(_elementID, _function, _addOrCreate, _css)
-	{
-		var _css = _css || null;
-		//find all html objects from ID
+    this.addOnClickToElement = function addOnClickToElement(_elementID, _function, _addOrCreate, _css) {
+        var _css = _css || null;
+        //find all html objects from ID
         var elementObj = cElement.search.getElementID(_elementID)
-		
-		if (elementObj)
-		{
-            if (elementObj.elementObject == null) { console.error("No HTML supplied for: " + _elementID); return; };
-			//add onto onclick
-			cUtility.addOnClickToHTML(elementObj.elementObject, _function, _addOrCreate);
-        
-            if (_css)
-			{
-				//Add css based on button
-				elementObj.elementObject.classList.add(_css);
-			}
+
+        if (elementObj) {
+            if (elementObj.elementObject == null) {
+                console.error("No HTML supplied for: " + _elementID);
+                return;
+            };
+            //add onto onclick
+            cUtility.addOnClickToHTML(elementObj.elementObject, _function, _addOrCreate);
+
+            if (_css) {
+                //Add css based on button
+                elementObj.elementObject.classList.add(_css);
+            }
         }
-	}
+    }
 }

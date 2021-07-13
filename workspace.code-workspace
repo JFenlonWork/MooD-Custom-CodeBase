@@ -30,6 +30,7 @@
 		"combineScripts.markdown.tocFooter": [
 			"***********************************************************************************/"
 		],
-		"combineScripts.markdown.tocEntry": "* ${lineNo}"
+		"combineScripts.markdown.tocEntry": "* \t${lineNo}\t\t${entryPath}",
+		"combineScripts.markdown.outputFileName" : "Combined.js"
 	}
 }
