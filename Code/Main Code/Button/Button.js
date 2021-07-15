@@ -53,7 +53,7 @@ window.cButton = window.cButton || new function cButton() {
 }();
 
 function cButtonDataTypes() {
-	this.button = function button(_buttonName, _buttonHTML, _htmlButtonID, _moodButtonID, _buttonElementID, _buttonEnabledByDefault, _canDisableSelf, _element) {
+	this.button = function button(_buttonName, _buttonHTML, _htmlButtonID, _moodButtonID, _buttonElementID, _buttonEnabledByDefault, _canDisableSelf, _onClick, _stopPropagation, _element) {
 		this.htmlButtonID = _htmlButtonID;
 		this.moodButtonID = _moodButtonID;
 
@@ -73,8 +73,33 @@ function cButtonDataTypes() {
 		}, _moodButtonID == null ? false : true, null, _buttonElementID);
 		this.buttonElementID = this.elementOwned.ID || uniqueID;
 
+		this.onClick = _onClick;
+		this.stopProagation = _stopPropagation || false;
+
+		//check if the button has no special onClick
+		//if so set it to default toggleButton
+		if (this.onClick == null) {
+			this.onClick = function () {
+				cButton.modify.toggleButtonClick(buttonElementID);
+			};
+		}
+
+		//check if onClick is in string
+		if (typeof this.onClick == "string") {
+			//remove quotes from start and end
+			this.onClick = this.onClick.substr(1, _buttonData.onClick.length - 2);
+		}
+
 		//store a link to this current element for functions below
 		var currentButton = this;
+
+		//add on click to object
+		$(this.elementOwned.elementObject).click(function (event) {
+			currentButton.onClick();
+			if (currentButton.stopPropagation) {
+				event.stopPropagation();
+			}
+		});
 
 		this.enable = function () {
 			window.cButton.modify.toggleButtonClick(_htmlButtonID, true);
@@ -132,13 +157,13 @@ function cButtonSetupFunctions() {
 			buttonGenerated = cButton.generic.addButton(_buttonData.name, _buttonData.buttonHTML, _elementGenerated.ID, _elementGenerated.ID,
 				_buttonData.elementsToEnable,
 				_buttonData.elementsToDisable, _buttonData.enabledOnDefault,
-				_buttonData.canDisableSelf, _buttonData.id);
+				_buttonData.canDisableSelf, _buttonData.onClick, _buttonData.stopProagation, _buttonData.id);
 		} else {
 			//add and/or get button 
 			buttonGenerated = cButton.generic.addButton(_buttonData.name, _buttonData.buttonHTML, moodButton.id, moodButton.id,
 				_buttonData.elementsToEnable,
 				_buttonData.elementsToDisable, _buttonData.enabledOnDefault,
-				_buttonData.canDisableSelf, _buttonData.id);
+				_buttonData.canDisableSelf, _buttonData.onClick, _buttonData.stopProagation, _buttonData.id);
 		}
 
 		//modify original id to increase to shorten creation code
@@ -162,28 +187,6 @@ function cButtonSetupFunctions() {
 					}
 				}
 			);
-
-			//check if the button has no special onClick
-			//if so set it to default toggleButton
-			if (_buttonData.onClick == null) {
-				_buttonData.onClick = function () {
-					cButton.modify.toggleButtonClick(buttonGenerated.buttonElementID);
-				};
-			}
-
-			//check if onClick is in string
-			if (typeof _buttonData.onClick == "string") {
-				//remove quotes from start and end
-				_buttonData.onClick = _buttonData.onClick.substr(1, _buttonData.onClick.length - 2);
-			}
-
-			//add on click to object
-			$(moodButton).click(function (event) {
-				moodButton.onClick();
-				if (_buttonData.stopPropagation) {
-					event.stopPropagation();
-				}
-			});
 
 			//return succeeded
 			return true;
@@ -403,7 +406,7 @@ function cButtonGenericFunctions() {
 	}
 
 	//function to add button
-	this.addButton = function addButton(_buttonName, _buttonHTML, _htmlButtonID, _moodButtonID, _tabElementsToEnable, _tabElementsToDisable, _buttonEnabledByDefault, _canDisableSelf, _ID) {
+	this.addButton = function addButton(_buttonName, _buttonHTML, _htmlButtonID, _moodButtonID, _tabElementsToEnable, _tabElementsToDisable, _buttonEnabledByDefault, _canDisableSelf, _onClick, _stopProagation, _ID) {
 
 		var _buttonEnabledByDefault = _buttonEnabledByDefault || false;
 		var _canDisableSelf = _canDisableSelf || false;
@@ -415,7 +418,7 @@ function cButtonGenericFunctions() {
 		if (exists == -1) {
 			//setup button and add to buttonArray
 			button = new cButton.button(_buttonName, _buttonHTML, _htmlButtonID, _moodButtonID, _ID,
-				_buttonEnabledByDefault, _canDisableSelf,
+				_buttonEnabledByDefault, _canDisableSelf, _onClick, _stopProagation,
 				cElement.search.getElementID(_ID));
 			cButton.buttonArray.push(button);
 
