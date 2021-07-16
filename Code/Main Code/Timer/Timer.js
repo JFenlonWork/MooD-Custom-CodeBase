@@ -193,7 +193,7 @@ function cTimerDataTypes()
             this.timeout = window.setTimeout(function() { _this.runLoop() }, this.currentInterval + this.intervalOffset);
         }
 
-        //run callback based on inputted callback
+        //run callback based on input callback
         this.invokeCallback = function (_callback)
         {
             //check callback exists
