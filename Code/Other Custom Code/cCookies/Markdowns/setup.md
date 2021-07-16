@@ -6,13 +6,13 @@
 
 * <a id="methods"/> <h2> Methods: </h2>
 
-    * <a id="addcookielistener"/> [addCookieListner](#addcookielistnerexample) <p style="padding-left: 20px;"> Add callback listener to [cookie data](cookieData.md#listeners). </p>
+    * <a id="addcookielistener"/> [addCookieListener](#addcookielistenerexample) <p style="padding-left: 20px;"> Add callback listener to [cookie data](cookieData.md#listeners). </p>
 
-    * <a id="removecookielistener"/> [removeCookieListner](#removecookielistnerexample) <p style="padding-left: 20px;"> Remove callback listener to [cookie data](cookieData.md#listeners). </p>
+    * <a id="removecookielistener"/> [removeCookieListener](#removecookielistenerexample) <p style="padding-left: 20px;"> Remove callback listener to [cookie data](cookieData.md#listeners). </p>
 
 * <a id="examples"/> <h2> Examples: </h2>
   
-  * <a id="addcookielistener"/> addCookieListner:
+  * <a id="addcookielistener"/> addCookieListener:
     ```Javascript
       var _callbackFunc = function callBack(_value) {
           //Do stuff from cookie
@@ -21,7 +21,7 @@
       //Listen to any change on example cookie and invoke _callbackFunc
       var _callbackData = new cCookies.cookieCallback("Example callback", this, "Example cookie", _callbackFunc, null);
 
-      cCookies.setup.addCookieListner(_callbackData);
+      cCookies.setup.addCookieListener(_callbackData);
     ``` 
     <hr>
 

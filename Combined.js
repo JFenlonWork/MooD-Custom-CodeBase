@@ -13,10 +13,10 @@
 * 4123
 * 4573
 * 4655
-* 4891
-* 5248
-* 5550
-* 5799
+* 4896
+* 5253
+* 5555
+* 5804
 ***********************************************************************************/
 
 /*
@@ -4687,7 +4687,7 @@ window.cCookies = window.cCookies || new function cCookies() {
 
     (function setupTimer() {
         if (typeof cTimer !== 'undefined') {
-            _this.updateCookieTimer = new cTimer.timer("Cookie Update Timer", new cTimer.callback(window.cCookies.internal.updateCookies, null, null), 10, true, null, false);
+            _this.updateCookieTimer = new cTimer.timer("Cookie Update Timer", new cTimer.callback(_this.internal.updateCookies, null, null), 10, true, null, false);
         } else {
             setTimeout(function () {
                 return setupTimer();
@@ -4724,10 +4724,12 @@ function cCookieDataTypes() {
         //loop through all listeners and invoke callback on them
         //if they are listening for the value
         this.sendUpdate = function sendUpdate(_value) {
-            for (var prop in _this.listeners) {
-                if (Object.prototype.hasOwnProperty.call(_this.listeners, prop)) {
-                    if (prop.listenFor == null || value == prop.listenFor) {
-                        cCookies.generic.invokeCallback(prop, value);
+            _value = _value || null;
+            for (var key in _this.listeners) {
+                if (Object.prototype.hasOwnProperty.call(_this.listeners, key)) {
+                    var prop = _this.listeners[key];
+                    if (prop.listenFor == null || _value == prop.listenFor) {
+                        cCookies.internal.invokeCallback(prop, _value);
                     }
                 }
             }
@@ -4737,7 +4739,7 @@ function cCookieDataTypes() {
 
 function cCookiesSetupFunctions() {
 
-    this.addCookieListner = function addCookieListner(_cookieCallback) {
+    this.addCookieListener = function addCookieListener(_cookieCallback) {
         //make sure cookie data exists before adding
         if (cCookies.cookieData[_cookieCallback.listenToCookie] == null) {
             cCookies.cookieData[_cookieCallback.listenToCookie] = new cCookies.cookieData(_cookieCallback.listenToCookie);
@@ -4783,29 +4785,31 @@ function cCookiesInternalFunctions() {
         }
 
         //loop through all previous cookies
-        for (var prop in window.cCookies.lastUpdatedCookies) {
-            if (Object.prototype.hasOwnProperty.call(window.cCookies.lastUpdatedCookies, prop)) {
+        for (var key in window.cCookies.lastUpdatedCookies) {
+            if (Object.prototype.hasOwnProperty.call(window.cCookies.lastUpdatedCookies, key)) {
+                var prop = window.cCookies.lastUpdatedCookies[key];
                 var exists = window.cCookies.currentUpdateCookies[prop.cookie];
 
                 //check if the cookie has been deleted
                 if (exists == null) {
-                    cCookies.generic.cookieChanged(prop.cookie, null);
+                    cCookies.internal.cookieChanged(prop.cookie, null);
                 }
                 //otherwise check if the cookie has been changed
                 else if (exists.value != prop.value) {
-                    cCookies.generic.cookieChanged(prop.cookie, exists.value);
+                    cCookies.internal.cookieChanged(prop.cookie, exists.value);
                 }
             }
         }
 
         //loop through all current cookies
-        for (var prop in window.cCookies.currentUpdateCookies) {
-            if (Object.prototype.hasOwnProperty.call(window.cCookies.currentUpdateCookies, prop)) {
+        for (var key in window.cCookies.currentUpdateCookies) {
+            if (Object.prototype.hasOwnProperty.call(window.cCookies.currentUpdateCookies, key)) {
+                var prop = window.cCookies.currentUpdateCookies[key];
                 var exists = window.cCookies.lastUpdatedCookies[prop.cookie];
 
                 //check if the cookie has been added this update
                 if (exists == null) {
-                    cCookies.generic.cookieChanged(prop.cookie, null);
+                    cCookies.internal.cookieChanged(prop.cookie, null);
                 }
             }
         }
@@ -4818,10 +4822,10 @@ function cCookiesInternalFunctions() {
             //check if caller suppied with callback
             if (_cookieCallback.caller != null) {
                 //invoke callback with caller as "this"
-                return _cookieCallback.callback.call(_cookieCallback.caller, value);
+                return _cookieCallback.callback.call(_cookieCallback.caller, _value);
             } else {
                 //invoke callback with timer as "this"
-                return _cookieCallback.callback.call(this, value);
+                return _cookieCallback.callback.call(this, _value);
             }
         }
 
@@ -4832,8 +4836,9 @@ function cCookiesInternalFunctions() {
     //send update to any cookies that have changed
     this.cookieChanged = function cookieChanged(_cookie, _value) {
         //loop through all cookie data
-        for (var prop in window.cCookies.cookieData) {
-            if (Object.prototype.hasOwnProperty.call(window.cCookies.cookieData, prop)) {
+        for (var key in window.cCookies.cookieData) {
+            if (Object.prototype.hasOwnProperty.call(window.cCookies.cookieData, key)) {
+                var prop = window.cCookies.cookieData[key];
                 //check if the cookie data is for cookie
                 if (prop.cookieName == _cookie) {
                     //send update message to listeners
@@ -4857,7 +4862,7 @@ function cCookiesGenericFunctions() {
             return cCookies.currentUpdateCookies[_cookie].value;
         }
 
-        //check document.cookies if cookie
+        //check document.cookie if cookie
         // doesn't exist or _checkNow is true
         var cookies = document.cookie.split(';');
         for (var i = 0; i < cookies.length; i++) {
@@ -4873,7 +4878,7 @@ function cCookiesGenericFunctions() {
 
     //add cookie to cookies
     this.addCookie = function addCookie(_cookie, _value) {
-        document.cookies = _cookie + "=" + _value + ";";
+        document.cookie = _cookie + "=" + _value + ";";
         cCookies.internal.updateCookies();
     }
 
