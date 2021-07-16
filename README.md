@@ -18,6 +18,7 @@ Code Contents:
      * [Css Utility]
      * [Maths]
  * Other Code
+   * [Cookies](/Code/Other%20Custom%20Code/cCookies/README.md)
    * [Page Resizer](/Code/Other%20Custom%20Code/cPageResizer/README.md)
    * [Fader](/code/Other%20Custom%20Code/cFader/README.md)
    * [Expander](/Code/Other%20Custom%20Code/cExpander/README.md)
