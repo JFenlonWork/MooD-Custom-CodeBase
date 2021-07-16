@@ -1,5 +1,5 @@
 <a id="cookies"/> <h2> internal </h1> 
-  <p style="padding-left: 20px;"> Stores all "internal" functions for [cCookies](../README.md). </p>
+  <p style="padding-left: 20px;"> Stores all "internal" functions for cCookies. </p>
 
 #### <a id="codeprefix"/> Code Prefix:
     cCookies.internal

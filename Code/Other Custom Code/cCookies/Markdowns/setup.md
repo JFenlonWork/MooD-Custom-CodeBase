@@ -1,5 +1,5 @@
 <a id="cookies"/> <h2> setup </h1> 
-  <p style="padding-left: 20px;"> Stores all "setup" functions for [cCookies](../README.md). </p>
+  <p style="padding-left: 20px;"> Stores all "setup" functions for cCookies. </p>
 
 #### <a id="codeprefix"/> Code Prefix:
     cCookies.setup

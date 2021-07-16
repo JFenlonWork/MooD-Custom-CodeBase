@@ -222,13 +222,13 @@ function cCookiesGenericFunctions() {
     }
 
     //add cookie to cookies
-    this.addCookie = function addCookie(_cookie, _value) {
-        document.cookie = _cookie + "=" + _value + ";";
+    this.addCookie = function addCookie(_cookie, _value, _additionalCookieData) {
+        document.cookie = _cookie + "=" + _value + ";" + _additionalCookieData;
         cCookies.internal.updateCookies();
     }
 
-    this.changeCookie = function addCookie(_cookie, _value) {
-        cCookies.generic.addCookie(_cookie, _value);
+    this.changeCookie = function addCookie(_cookie, _value, _additionalCookieData) {
+        cCookies.generic.addCookie(_cookie, _value, _additionalCookieData);
     }
 
     //remove cookie from cookies
